@@ -73,6 +73,35 @@
                     </x-admin.empty-state>
                 </x-slot:empty>
             </x-admin.table-card>
+
+            <x-admin.table-card :items="$acteur->etapes" title="Étapes de traçabilité réalisées">
+                <x-slot:head>
+                    <th scope="col">Lot</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Lieu</th>
+                    <th scope="col">Date et heure</th>
+                    <th scope="col" class="text-right">Fiche</th>
+                </x-slot:head>
+
+                @foreach ($acteur->etapes as $etape)
+                    <tr>
+                        <td>
+                            <div class="nt-cell-title">{{ $etape->lot?->numero_lot }}</div>
+                            <div class="nt-cell-sub">{{ $etape->lot?->produit?->nom }}</div>
+                        </td>
+                        <td><span class="nt-badge">{{ $etape->typeLabel() }}</span></td>
+                        <td class="text-muted">{{ $etape->lieu }}</td>
+                        <td class="text-muted">{{ $etape->date_heure?->format('d/m/Y H:i') }}</td>
+                        <td class="text-right"><x-admin.row-actions :show="route('admin.etapes.show', $etape)" /></td>
+                    </tr>
+                @endforeach
+
+                <x-slot:empty>
+                    <x-admin.empty-state icon="bi-signpost-split" title="Aucune étape réalisée">
+                        Les étapes de lots où intervient cet acteur (Module 3) apparaîtront ici.
+                    </x-admin.empty-state>
+                </x-slot:empty>
+            </x-admin.table-card>
         </div>
     </div>
 @endsection

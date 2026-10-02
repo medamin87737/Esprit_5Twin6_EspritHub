@@ -8,12 +8,14 @@
     <h3 class="nt-form-section-title"><i class="bi bi-link-45deg" aria-hidden="true"></i> Rattachement</h3>
     <div class="form-row">
         <div class="col-md-6">
-            <x-admin.form.select name="lot_id" label="Lot" :options="$lots->pluck('numero_lot', 'id')"
-                                 :value="$etape?->lot_id" placeholder="Choisir un lot…" required
+            <x-admin.form.select name="lot_id" label="Lot"
+                                 :options="$lots->mapWithKeys(fn ($lot) => [$lot->id => $lot->numero_lot . ' · ' . $lot->produit?->nom])"
+                                 :value="$etape?->lot_id ?? request('lot')" placeholder="Choisir un lot…" required
                                  empty-message="Aucun lot disponible : créez-en un d'abord." />
         </div>
         <div class="col-md-6">
-            <x-admin.form.select name="acteur_id" label="Acteur" :options="$acteurs->pluck('nom', 'id')"
+            <x-admin.form.select name="acteur_id" label="Acteur"
+                                 :options="$acteurs->mapWithKeys(fn ($acteur) => [$acteur->id => $acteur->nom . ' (' . $acteur->typeActeur?->libelle . ')'])"
                                  :value="$etape?->acteur_id" placeholder="Choisir un acteur…" required
                                  empty-message="Aucun acteur disponible : le module 2 doit d'abord en créer." />
         </div>

@@ -16,13 +16,7 @@
             </x-admin.form-card>
         </div>
         <div class="col-xl-4">
-            <x-admin.help-card parent="Lot" child="Étape" :rules="[
-                'Lot et acteur' => 'doivent exister.',
-                'Type d\'étape' => 'production, transformation, distribution ou vente.',
-                'Date et heure' => 'obligatoire.',
-                'Transport' => 'une valeur de la liste.',
-                'Remarques' => 'facultatives.',
-            ]" />
+            @include('pages.admin.etapes._aide')
         </div>
     </div>
 @endsection

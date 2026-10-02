@@ -52,7 +52,11 @@ class ProduitController extends Controller
 
     public function show(Produit $produit): View
     {
-        $produit->load(['categorie', 'acteurs.typeActeur']);
+        $produit->load([
+            'categorie',
+            'acteurs.typeActeur',
+            'lots' => fn ($q) => $q->withCount('etapes')->latest('date_production'),
+        ])->loadCount('etapes');
 
         return view('pages.admin.produits.show', ['produit' => $produit]);
     }
@@ -86,6 +90,10 @@ class ProduitController extends Controller
 
     public function destroy(Produit $produit): RedirectResponse
     {
+        if ($produit->lots()->exists()) {
+            return back()->with('error', "Impossible de supprimer « {$produit->nom} » : des lots de ce produit sont enregistrés.");
+        }
+
         if ($produit->image) {
             Storage::disk('public')->delete($produit->image);
         }

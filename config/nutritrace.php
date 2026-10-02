@@ -38,7 +38,7 @@ return [
             'numero' => 3,
             'titre' => 'Traçabilité des lots',
             'icone' => 'bi-signpost-split',
-            'responsable' => 'Ghada',
+            'responsable' => 'Ons',
             'entites' => [
                 ['libelle' => 'Lots', 'route' => 'lots', 'table' => 'lots', 'icone' => 'bi-upc-scan'],
                 ['libelle' => 'Étapes', 'route' => 'etapes', 'table' => 'etapes', 'icone' => 'bi-geo-alt'],
