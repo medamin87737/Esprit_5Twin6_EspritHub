@@ -18,7 +18,7 @@ return [
             'numero' => 1,
             'titre' => 'Produits & Catégories',
             'icone' => 'bi-basket2',
-            'responsable' => 'Amin',
+            'responsable' => 'Ghada',
             'entites' => [
                 ['libelle' => 'Catégories', 'route' => 'categories', 'table' => 'categories', 'icone' => 'bi-tags'],
                 ['libelle' => 'Produits', 'route' => 'produits', 'table' => 'produits', 'icone' => 'bi-box-seam'],
