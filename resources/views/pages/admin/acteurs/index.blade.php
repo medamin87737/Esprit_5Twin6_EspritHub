@@ -33,6 +33,7 @@
             <th scope="col">Type</th>
             <th scope="col">Localisation</th>
             <th scope="col">Téléphone</th>
+            <th scope="col" class="text-center">Produits</th>
             <th scope="col">Inscription</th>
             <th scope="col" class="text-right">Actions</th>
         </x-slot:head>
@@ -49,6 +50,7 @@
                     <div class="nt-cell-sub">{{ $acteur->adresse }}</div>
                 </td>
                 <td class="text-muted">{{ $acteur->telephone }}</td>
+                <td class="text-center font-weight-600">{{ $acteur->produits_count ?? $acteur->produits->count() }}</td>
                 <td class="text-muted">{{ $acteur->date_inscription?->format('d/m/Y') }}</td>
                 <td class="text-right">
                     <x-admin.row-actions
