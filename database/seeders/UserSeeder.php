@@ -30,5 +30,23 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
             ],
         );
+
+        $fournisseurs = [
+            'fournisseur@nutritrace.tn' => 'Délices du Sahel',
+            'capbon@nutritrace.tn' => 'Coopérative du Cap Bon',
+        ];
+
+        foreach ($fournisseurs as $email => $nom) {
+            User::updateOrCreate(
+                ['email' => $email],
+                [
+                    'name' => $nom,
+                    'role' => 'fournisseur',
+                    'active' => true,
+                    'password' => 'Fournisseur@NutriTrace2026',
+                    'email_verified_at' => now(),
+                ],
+            );
+        }
     }
 }

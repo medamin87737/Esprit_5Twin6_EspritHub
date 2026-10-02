@@ -3,10 +3,12 @@
 @section('title', $produit->nom)
 
 @section('content')
-    <x-admin.page-header :title="$produit->nom" module="Module 1 · Produit"
-                         :subtitle="$produit->description" :back="route('admin.produits.index')">
+    @php($estAdmin = $espace === 'admin')
+
+    <x-admin.page-header :title="$produit->nom" :module="$moduleLabel"
+                         :subtitle="$produit->description" :back="route($espace . '.produits.index')">
         <x-slot:actions>
-            <a href="{{ route('admin.produits.edit', $produit) }}" class="btn btn-primary">
+            <a href="{{ route($espace . '.produits.edit', $produit) }}" class="btn btn-primary">
                 <i class="bi bi-pencil mr-1" aria-hidden="true"></i> Modifier
             </a>
         </x-slot:actions>
@@ -34,8 +36,18 @@
                 <div class="card-body">
                     <div class="nt-role-row">
                         <span class="text-muted">Catégorie</span>
-                        @if ($produit->categorie)
+                        @if ($produit->categorie && $estAdmin)
                             <a href="{{ route('admin.categories.show', $produit->categorie) }}" class="nt-badge">{{ $produit->categorie->nom }}</a>
+                        @elseif ($produit->categorie)
+                            <span class="nt-badge">{{ $produit->categorie->nom }}</span>
+                        @endif
+                    </div>
+                    <div class="nt-role-row">
+                        <span class="text-muted">Fournisseur</span>
+                        @if ($produit->fournisseur)
+                            <span><strong>{{ $produit->fournisseur->name }}</strong> <span class="text-muted small">· {{ $produit->fournisseur->email }}</span></span>
+                        @else
+                            <span class="text-muted">Administration</span>
                         @endif
                     </div>
                     <div class="nt-role-row"><span class="text-muted">Code-barres</span><strong>{{ $produit->code_barres }}</strong></div>
@@ -85,7 +97,7 @@
                                 <span class="text-muted">—</span>
                             @endif
                         </td>
-                        <td class="text-right"><x-admin.row-actions :show="route('admin.lots.show', $lot)" /></td>
+                        <td class="text-right"><x-admin.row-actions :show="$estAdmin ? route('admin.lots.show', $lot) : null" /></td>
                     </tr>
                 @endforeach
 
@@ -109,7 +121,7 @@
                         <td class="nt-cell-title">{{ $acteur->nom }}</td>
                         <td><span class="nt-badge">{{ $acteur->typeActeur?->libelle }}</span></td>
                         <td>{{ $acteur->pays }}</td>
-                        <td class="text-right"><x-admin.row-actions :show="route('admin.acteurs.show', $acteur)" /></td>
+                        <td class="text-right"><x-admin.row-actions :show="$estAdmin ? route('admin.acteurs.show', $acteur) : null" /></td>
                     </tr>
                 @endforeach
 

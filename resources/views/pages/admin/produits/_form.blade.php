@@ -1,6 +1,8 @@
 @php
     $produit = $produit ?? null;
     $categories = $categories ?? collect();
+    $fournisseurs = $fournisseurs ?? collect();
+    $espace = $espace ?? 'admin';
 @endphp
 
 <div class="nt-form-section">
@@ -24,6 +26,16 @@
             <x-admin.form.input name="origine" label="Origine" :value="$produit?->origine" required placeholder="Ex. Béja, Tunisie" />
         </div>
     </div>
+    @if ($espace === 'admin')
+        <x-admin.form.select name="fournisseur_id" label="Fournisseur" :options="$fournisseurs->pluck('name', 'id')"
+                             :value="$produit?->fournisseur_id" placeholder="Aucun (produit géré par l'administration)"
+                             help="Le fournisseur choisi pourra modifier et supprimer ce produit depuis son espace." />
+    @else
+        <p class="small text-muted mb-0">
+            <i class="bi bi-person-badge mr-1" aria-hidden="true"></i>
+            Ce produit sera rattaché à votre compte fournisseur : <strong>{{ auth()->user()->name }}</strong>.
+        </p>
+    @endif
 </div>
 
 <div class="nt-form-section">

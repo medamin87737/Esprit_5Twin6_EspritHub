@@ -34,9 +34,14 @@
                     <div class="nt-user-name">{{ $user->name }}</div>
                     <div class="nt-user-role">{{ $user->email }}</div>
                 </div>
-                <a class="dropdown-item" href="{{ route('admin.profile') }}"><i class="bi bi-person" aria-hidden="true"></i> Mon profil</a>
-                <a class="dropdown-item" href="{{ route('admin.users.index') }}"><i class="bi bi-people" aria-hidden="true"></i> Utilisateurs</a>
-                <a class="dropdown-item" href="{{ route('admin.dashboard') }}"><i class="bi bi-grid-1x2" aria-hidden="true"></i> Tableau de bord</a>
+                @if ($user->isAdmin())
+                    <a class="dropdown-item" href="{{ route('admin.profile') }}"><i class="bi bi-person" aria-hidden="true"></i> Mon profil</a>
+                    <a class="dropdown-item" href="{{ route('admin.users.index') }}"><i class="bi bi-people" aria-hidden="true"></i> Utilisateurs</a>
+                    <a class="dropdown-item" href="{{ route('admin.dashboard') }}"><i class="bi bi-grid-1x2" aria-hidden="true"></i> Tableau de bord</a>
+                @else
+                    <a class="dropdown-item" href="{{ route('profile.edit') }}"><i class="bi bi-person" aria-hidden="true"></i> Mon profil</a>
+                    <a class="dropdown-item" href="{{ route('fournisseur.produits.index') }}"><i class="bi bi-box-seam" aria-hidden="true"></i> Mes produits</a>
+                @endif
                 <a class="dropdown-item" href="{{ route('home') }}"><i class="bi bi-house" aria-hidden="true"></i> Site public</a>
                 <div class="dropdown-divider"></div>
                 <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
