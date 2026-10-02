@@ -1,16 +1,16 @@
 @extends('layouts.admin')
 
-@section('title', 'Nouvel acteur')
+@section('title', 'Modifier ' . $acteur->nom)
 
 @section('content')
-    <x-admin.page-header title="Nouvel acteur" module="Module 2 · Acteurs de la chaîne"
-                         subtitle="Enregistrez un intervenant de la chaîne d'approvisionnement."
+    <x-admin.page-header :title="$acteur->nom" module="Module 2 · Modifier l'acteur"
+                         subtitle="Mettez à jour la fiche de cet intervenant et les produits qu'il prend en charge."
                          :back="route('admin.acteurs.index')" />
 
     <div class="row">
         <div class="col-xl-8">
-            <x-admin.form-card title="Fiche acteur"
-                               :action="Route::has('admin.acteurs.store') ? route('admin.acteurs.store') : null"
+            <x-admin.form-card title="Fiche acteur" method="PUT" submit-label="Enregistrer les modifications"
+                               :action="route('admin.acteurs.update', $acteur)"
                                :cancel="route('admin.acteurs.index')">
                 @include('pages.admin.acteurs._form')
             </x-admin.form-card>

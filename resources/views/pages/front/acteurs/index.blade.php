@@ -83,6 +83,19 @@
                                     <li><i class="bi bi-telephone" aria-hidden="true"></i><a href="tel:{{ preg_replace('/\s+/', '', $acteur->telephone) }}">{{ $acteur->telephone }}</a></li>
                                     <li><i class="bi bi-envelope" aria-hidden="true"></i><a href="mailto:{{ $acteur->email }}">{{ $acteur->email }}</a></li>
                                 </ul>
+                                @if ($acteur->relationLoaded('produits') && $acteur->produits->isNotEmpty())
+                                    <div class="actor-card-products">
+                                        <span class="actor-card-products-title"><i class="bi bi-box-seam me-1" aria-hidden="true"></i>Produits ({{ $acteur->produits->count() }})</span>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            @foreach ($acteur->produits->take(4) as $produit)
+                                                <span class="label-chip">{{ $produit->nom }}</span>
+                                            @endforeach
+                                            @if ($acteur->produits->count() > 4)
+                                                <span class="label-chip">+{{ $acteur->produits->count() - 4 }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endif
                             </article>
                         </div>
                     @endforeach
