@@ -14,7 +14,7 @@
         </x-slot:actions>
     </x-admin.page-header>
 
-    <x-admin.table-card :items="$empreintes" title="Liste des empreintes" search-placeholder="Numéro de lot ou méthode…" :filter-keys="['q', 'score']">
+    <x-admin.table-card :items="$empreintes" title="Liste des empreintes" search-placeholder="Lot, produit ou méthode…" :filter-keys="['q', 'score']">
         <x-slot:filters>
             <label for="filter-score" class="sr-only">Score</label>
             <select id="filter-score" name="score" class="custom-select">
@@ -38,7 +38,11 @@
         @foreach ($empreintes as $empreinte)
             <tr>
                 <td>
-                    <div class="nt-cell-title">{{ $empreinte->lot?->numero_lot ?? '—' }}</div>
+                    @if ($empreinte->lot)
+                        <a href="{{ route('admin.lots.show', $empreinte->lot) }}" class="nt-cell-title">{{ $empreinte->lot->numero_lot }}</a>
+                    @else
+                        <div class="nt-cell-title">—</div>
+                    @endif
                     <div class="nt-cell-sub">{{ $empreinte->lot?->produit?->nom }}</div>
                 </td>
                 <td class="text-right font-weight-600">{{ number_format($empreinte->co2_total, 2, ',', ' ') }} kg</td>

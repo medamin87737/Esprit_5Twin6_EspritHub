@@ -40,6 +40,15 @@
                     </div>
                     <div class="nt-role-row"><span class="text-muted">Code-barres</span><strong>{{ $produit->code_barres }}</strong></div>
                     <div class="nt-role-row"><span class="text-muted">Origine</span><strong>{{ $produit->origine }}</strong></div>
+                    <div class="nt-role-row">
+                        <span class="text-muted">Éco-score moyen</span>
+                        @if ($produit->empreintes_avg_co2_total !== null)
+                            @php($scoreMoyen = \App\Models\EmpreinteCarbone::scorePour((float) $produit->empreintes_avg_co2_total))
+                            <span><span class="nt-score nt-score-{{ strtolower($scoreMoyen) }}">{{ $scoreMoyen }}</span> {{ number_format($produit->empreintes_avg_co2_total, 2, ',', ' ') }} kg CO₂e</span>
+                        @else
+                            <span class="text-muted">Non calculé</span>
+                        @endif
+                    </div>
                     <div class="nt-role-row"><span class="text-muted">Ajouté le</span><strong>{{ $produit->created_at?->format('d/m/Y') }}</strong></div>
                 </div>
             </div>
@@ -58,6 +67,7 @@
                     <th scope="col">Production</th>
                     <th scope="col">Péremption</th>
                     <th scope="col" class="text-center">Étapes</th>
+                    <th scope="col" class="text-center">Score</th>
                     <th scope="col" class="text-right">Fiche</th>
                 </x-slot:head>
 
@@ -68,6 +78,13 @@
                         <td class="text-muted">{{ $lot->date_production?->format('d/m/Y') }}</td>
                         <td class="text-muted">{{ $lot->date_peremption?->format('d/m/Y') }}</td>
                         <td class="text-center font-weight-600">{{ $lot->etapes_count }}</td>
+                        <td class="text-center">
+                            @if ($lot->empreinteCarbone)
+                                <span class="nt-score nt-score-{{ strtolower($lot->empreinteCarbone->score) }}">{{ $lot->empreinteCarbone->score }}</span>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </td>
                         <td class="text-right"><x-admin.row-actions :show="route('admin.lots.show', $lot)" /></td>
                     </tr>
                 @endforeach

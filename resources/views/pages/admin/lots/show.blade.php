@@ -40,6 +40,29 @@
                     <div class="nt-role-row"><span class="text-muted">Étapes</span><strong>{{ $lot->etapes->count() }}</strong></div>
                 </div>
             </div>
+
+            <div class="card mt-4">
+                <div class="card-header"><h2 class="nt-card-title">Empreinte carbone</h2></div>
+                <div class="card-body">
+                    @if ($lot->empreinteCarbone)
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="nt-score nt-score-{{ strtolower($lot->empreinteCarbone->score) }} mr-3">{{ $lot->empreinteCarbone->score }}</span>
+                            <div>
+                                <strong>{{ number_format($lot->empreinteCarbone->co2_total, 2, ',', ' ') }} kg CO₂e</strong>
+                                <div class="text-muted small">{{ $lot->empreinteCarbone->methode }} · {{ $lot->empreinteCarbone->indicateurs_count }} indicateur(s)</div>
+                            </div>
+                        </div>
+                        <a href="{{ route('admin.empreintes.show', $lot->empreinteCarbone) }}" class="btn btn-light btn-sm">
+                            <i class="bi bi-cloud-haze2 mr-1" aria-hidden="true"></i> Voir l'empreinte
+                        </a>
+                    @else
+                        <p class="text-muted">Aucune empreinte calculée pour ce lot.</p>
+                        <a href="{{ route('admin.empreintes.create', ['lot' => $lot->id]) }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg mr-1" aria-hidden="true"></i> Calculer l'empreinte
+                        </a>
+                    @endif
+                </div>
+            </div>
         </div>
 
         <div class="col-xl-8">

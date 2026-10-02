@@ -55,8 +55,8 @@ class ProduitController extends Controller
         $produit->load([
             'categorie',
             'acteurs.typeActeur',
-            'lots' => fn ($q) => $q->withCount('etapes')->latest('date_production'),
-        ])->loadCount('etapes');
+            'lots' => fn ($q) => $q->with('empreinteCarbone:id,lot_id,score,co2_total')->withCount('etapes')->latest('date_production'),
+        ])->loadCount('etapes')->loadAvg('empreintes', 'co2_total');
 
         return view('pages.admin.produits.show', ['produit' => $produit]);
     }
