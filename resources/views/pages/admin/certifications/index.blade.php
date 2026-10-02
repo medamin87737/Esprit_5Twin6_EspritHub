@@ -5,13 +5,13 @@
 @section('content')
     @php
         $certifications = $certifications ?? collect();
+        $organismes = $organismes ?? collect();
         $types = config('nutritrace.options.certification_types');
         $statuts = config('nutritrace.options.certification_statuts');
-        $statutClasses = ['valide' => '', 'expiree' => 'nt-badge-danger', 'suspendue' => 'nt-badge-gold'];
     @endphp
 
     <x-admin.page-header title="Certifications" module="Module 5 · Certifications"
-                         subtitle="Les labels attribués aux produits et leur validité.">
+                         subtitle="Les labels attribués aux produits, l'organisme qui les délivre et leur validité.">
         <x-slot:actions>
             <a href="{{ route('admin.certifications.create') }}" class="btn btn-primary">
                 <i class="bi bi-plus-lg mr-1" aria-hidden="true"></i> Nouvelle certification
@@ -19,8 +19,16 @@
         </x-slot:actions>
     </x-admin.page-header>
 
-    <x-admin.table-card :items="$certifications" title="Liste des certifications" search-placeholder="Numéro ou produit…" :filter-keys="['q', 'statut']">
+    <x-admin.table-card :items="$certifications" title="Liste des certifications" search-placeholder="Numéro ou produit…"
+                        :filter-keys="['q', 'statut', 'type', 'organisme']">
         <x-slot:filters>
+            <label for="filter-type" class="sr-only">Type</label>
+            <select id="filter-type" name="type" class="custom-select">
+                <option value="">Tous les labels</option>
+                @foreach ($types as $valeur => $libelle)
+                    <option value="{{ $valeur }}" @selected(request('type') === $valeur)>{{ $libelle }}</option>
+                @endforeach
+            </select>
             <label for="filter-statut" class="sr-only">Statut</label>
             <select id="filter-statut" name="statut" class="custom-select">
                 <option value="">Tous les statuts</option>
@@ -28,11 +36,18 @@
                     <option value="{{ $valeur }}" @selected(request('statut') === $valeur)>{{ $libelle }}</option>
                 @endforeach
             </select>
+            <label for="filter-organisme" class="sr-only">Organisme</label>
+            <select id="filter-organisme" name="organisme" class="custom-select">
+                <option value="">Tous les organismes</option>
+                @foreach ($organismes as $organisme)
+                    <option value="{{ $organisme->id }}" @selected((string) request('organisme') === (string) $organisme->id)>{{ $organisme->nom }}</option>
+                @endforeach
+            </select>
         </x-slot:filters>
 
         <x-slot:head>
             <th scope="col">Numéro</th>
-            <th scope="col">Type</th>
+            <th scope="col">Label</th>
             <th scope="col">Produit</th>
             <th scope="col">Organisme</th>
             <th scope="col">Expiration</th>
@@ -41,19 +56,13 @@
         </x-slot:head>
 
         @foreach ($certifications as $certification)
-            @php($bientotExpiree = $certification->date_expiration && $certification->date_expiration->isFuture() && $certification->date_expiration->lte(now()->addDays(30)))
             <tr>
                 <td class="nt-cell-title">{{ $certification->numero }}</td>
-                <td><span class="nt-badge">{{ $types[$certification->type] ?? $certification->type }}</span></td>
+                <td><span class="nt-badge"><i class="bi {{ $certification->icone() }}" aria-hidden="true"></i> {{ $certification->typeLabel() }}</span></td>
                 <td>{{ $certification->produit?->nom ?? '—' }}</td>
                 <td class="text-muted">{{ $certification->organisme?->nom ?? '—' }}</td>
-                <td>
-                    {{ $certification->date_expiration?->format('d/m/Y') }}
-                    @if ($bientotExpiree)
-                        <span class="nt-badge nt-badge-danger ml-1"><i class="bi bi-alarm" aria-hidden="true"></i> {{ (int) now()->diffInDays($certification->date_expiration) }} j</span>
-                    @endif
-                </td>
-                <td><span class="nt-badge {{ $statutClasses[$certification->statut] ?? 'nt-badge-muted' }}">{{ $statuts[$certification->statut] ?? $certification->statut }}</span></td>
+                <td class="text-muted">{{ $certification->date_expiration?->format('d/m/Y') }}</td>
+                <td>@include('pages.admin.certifications._statut')</td>
                 <td class="text-right">
                     <x-admin.row-actions
                         :show="route('admin.certifications.show', $certification)"
