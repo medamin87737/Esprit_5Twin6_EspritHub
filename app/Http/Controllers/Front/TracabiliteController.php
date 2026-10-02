@@ -16,6 +16,7 @@ class TracabiliteController extends Controller
         $lot = $numero === '' ? null : Lot::query()
             ->with([
                 'produit.categorie',
+                'empreinteCarbone',
                 'etapes' => fn ($q) => $q->with('acteur.typeActeur')->orderBy('date_heure'),
             ])
             ->where('numero_lot', $numero)

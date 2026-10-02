@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Etape extends Model
 {
@@ -27,6 +28,11 @@ class Etape extends Model
     public function acteur(): BelongsTo
     {
         return $this->belongsTo(Acteur::class);
+    }
+
+    public function indicateurs(): HasMany
+    {
+        return $this->hasMany(Indicateur::class);
     }
 
     public function typeLabel(): string

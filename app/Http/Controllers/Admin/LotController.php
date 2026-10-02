@@ -15,7 +15,7 @@ class LotController extends Controller
     public function index(Request $request): View
     {
         $lots = Lot::query()
-            ->with('produit')
+            ->with(['produit', 'empreinteCarbone:id,lot_id,score'])
             ->withCount('etapes')
             ->when($request->filled('q'), fn ($q) => $q->where(fn ($sub) => $sub
                 ->where('numero_lot', 'like', '%'.$request->input('q').'%')
@@ -48,7 +48,8 @@ class LotController extends Controller
     {
         $lot->load([
             'produit.categorie',
-            'etapes' => fn ($q) => $q->with('acteur.typeActeur')->orderBy('date_heure'),
+            'etapes' => fn ($q) => $q->with('acteur.typeActeur')->withCount('indicateurs')->orderBy('date_heure'),
+            'empreinteCarbone' => fn ($q) => $q->withCount('indicateurs'),
         ]);
 
         return view('pages.admin.lots.show', ['lot' => $lot]);

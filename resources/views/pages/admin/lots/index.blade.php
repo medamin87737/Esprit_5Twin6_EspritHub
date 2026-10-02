@@ -35,6 +35,7 @@
             <th scope="col">Production</th>
             <th scope="col">Péremption</th>
             <th scope="col" class="text-center">Étapes</th>
+            <th scope="col" class="text-center">Éco-score</th>
             <th scope="col" class="text-right">Actions</th>
         </x-slot:head>
 
@@ -58,12 +59,19 @@
                     @endif
                 </td>
                 <td class="text-center font-weight-600">{{ $lot->etapes_count ?? $lot->etapes->count() }}</td>
+                <td class="text-center">
+                    @if ($lot->empreinteCarbone)
+                        <span class="nt-score nt-score-{{ strtolower($lot->empreinteCarbone->score) }}">{{ $lot->empreinteCarbone->score }}</span>
+                    @else
+                        <span class="text-muted">—</span>
+                    @endif
+                </td>
                 <td class="text-right">
                     <x-admin.row-actions
                         :show="route('admin.lots.show', $lot)"
                         :edit="route('admin.lots.edit', $lot)"
                         :delete="route('admin.lots.destroy', $lot)"
-                        :confirm="'Supprimer le lot ' . $lot->numero_lot . ' et ses étapes ?'" />
+                        :confirm="'Supprimer le lot ' . $lot->numero_lot . ', ses étapes et son empreinte carbone ?'" />
                 </td>
             </tr>
         @endforeach

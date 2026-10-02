@@ -34,4 +34,9 @@ class Produit extends Model
     {
         return $this->hasManyThrough(Etape::class, Lot::class);
     }
+
+    public function empreintes(): HasManyThrough
+    {
+        return $this->hasManyThrough(EmpreinteCarbone::class, Lot::class);
+    }
 }
