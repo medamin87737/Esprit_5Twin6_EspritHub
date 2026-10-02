@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Categorie;
 use App\Models\Produit;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,5 +22,12 @@ class ProduitFactory extends Factory
             'description' => fake()->sentence(15),
             'composition' => fake()->sentence(8),
         ];
+    }
+
+    public function pourFournisseur(?User $fournisseur = null): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'fournisseur_id' => $fournisseur?->id ?? User::factory()->fournisseur(),
+        ]);
     }
 }
