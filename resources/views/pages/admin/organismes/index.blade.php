@@ -3,7 +3,10 @@
 @section('title', 'Organismes')
 
 @section('content')
-    @php($organismes = $organismes ?? collect())
+    @php
+        $organismes = $organismes ?? collect();
+        $pays = $pays ?? collect();
+    @endphp
 
     <x-admin.page-header title="Organismes certificateurs" module="Module 5 · Certifications"
                          subtitle="Les organismes accrédités qui délivrent les labels.">
@@ -14,7 +17,17 @@
         </x-slot:actions>
     </x-admin.page-header>
 
-    <x-admin.table-card :items="$organismes" title="Liste des organismes" search-placeholder="Nom ou pays…">
+    <x-admin.table-card :items="$organismes" title="Liste des organismes" search-placeholder="Nom ou accréditation…" :filter-keys="['q', 'pays']">
+        <x-slot:filters>
+            <label for="filter-pays" class="sr-only">Pays</label>
+            <select id="filter-pays" name="pays" class="custom-select">
+                <option value="">Tous les pays</option>
+                @foreach ($pays as $p)
+                    <option value="{{ $p }}" @selected(request('pays') === $p)>{{ $p }}</option>
+                @endforeach
+            </select>
+        </x-slot:filters>
+
         <x-slot:head>
             <th scope="col">Organisme</th>
             <th scope="col">Pays</th>
@@ -33,7 +46,10 @@
                 </td>
                 <td>{{ $organisme->pays }}</td>
                 <td><span class="nt-badge nt-badge-info">{{ $organisme->accreditation }}</span></td>
-                <td class="text-center font-weight-600">{{ $organisme->certifications_count ?? $organisme->certifications->count() }}</td>
+                <td class="text-center">
+                    <span class="font-weight-600">{{ $organisme->certifications_count }}</span>
+                    <div class="nt-cell-sub">{{ $organisme->certifications_valides_count }} valide(s)</div>
+                </td>
                 <td class="text-right">
                     <x-admin.row-actions
                         :show="route('admin.organismes.show', $organisme)"

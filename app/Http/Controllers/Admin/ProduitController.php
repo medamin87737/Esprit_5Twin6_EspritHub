@@ -76,6 +76,7 @@ class ProduitController extends Controller
             'categorie',
             'fournisseur',
             'acteurs.typeActeur',
+            'certifications' => fn ($q) => $q->with('organisme:id,nom')->orderBy('type'),
             'lots' => fn ($q) => $q->with('empreinteCarbone:id,lot_id,score,co2_total')->withCount('etapes')->latest('date_production'),
         ])->loadCount('etapes')->loadAvg('empreintes', 'co2_total');
 
