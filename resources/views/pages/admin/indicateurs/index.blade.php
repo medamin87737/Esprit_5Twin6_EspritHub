@@ -43,8 +43,21 @@
                     <span class="nt-badge"><i class="bi {{ $icones[$indicateur->type] ?? 'bi-speedometer2' }}" aria-hidden="true"></i> {{ $types[$indicateur->type] ?? $indicateur->type }}</span>
                 </td>
                 <td class="text-right font-weight-600">{{ number_format($indicateur->valeur, 2, ',', ' ') }} {{ $indicateur->unite }}</td>
-                <td>{{ $indicateur->empreinteCarbone?->lot?->numero_lot ?? '—' }}</td>
-                <td class="text-muted">{{ $indicateur->etape ? ucfirst($indicateur->etape->type_etape) . ' · ' . $indicateur->etape->lieu : 'Aucune' }}</td>
+                <td>
+                    @if ($indicateur->empreinteCarbone)
+                        <a href="{{ route('admin.empreintes.show', $indicateur->empreinteCarbone) }}" class="nt-cell-title">{{ $indicateur->empreinteCarbone->lot?->numero_lot }}</a>
+                        <div class="nt-cell-sub">{{ $indicateur->empreinteCarbone->lot?->produit?->nom }}</div>
+                    @else
+                        —
+                    @endif
+                </td>
+                <td class="text-muted">
+                    @if ($indicateur->etape)
+                        <a href="{{ route('admin.etapes.show', $indicateur->etape) }}">{{ $indicateur->etape->typeLabel() }} · {{ $indicateur->etape->lieu }}</a>
+                    @else
+                        Aucune
+                    @endif
+                </td>
                 <td class="text-right">
                     <x-admin.row-actions
                         :show="route('admin.indicateurs.show', $indicateur)"

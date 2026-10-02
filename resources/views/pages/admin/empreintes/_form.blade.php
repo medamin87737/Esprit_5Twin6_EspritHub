@@ -5,9 +5,11 @@
 
 <div class="form-row">
     <div class="col-md-6">
-        <x-admin.form.select name="lot_id" label="Lot" :options="$lots->pluck('numero_lot', 'id')"
-                             :value="$empreinte?->lot_id" placeholder="Choisir un lot…" required
-                             empty-message="Aucun lot disponible : le module 3 doit d'abord en créer." />
+        <x-admin.form.select name="lot_id" label="Lot"
+                             :options="$lots->mapWithKeys(fn ($lot) => [$lot->id => $lot->numero_lot . ' · ' . $lot->produit?->nom])"
+                             :value="$empreinte?->lot_id ?? request('lot')" placeholder="Choisir un lot…" required
+                             help="Seuls les lots sans empreinte sont proposés (une empreinte par lot)."
+                             empty-message="Aucun lot disponible : tous ont déjà une empreinte, ou le module 3 doit d'abord en créer." />
     </div>
     <div class="col-md-6">
         <x-admin.form.input name="co2_total" type="number" min="0" step="0.01" label="CO₂ total (kg CO₂e)"

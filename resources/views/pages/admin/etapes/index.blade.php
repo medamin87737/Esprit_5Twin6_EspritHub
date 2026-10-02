@@ -41,9 +41,22 @@
 
         @foreach ($etapes as $etape)
             <tr>
-                <td class="nt-cell-title">{{ $etape->lot?->numero_lot ?? '—' }}</td>
+                <td>
+                    @if ($etape->lot)
+                        <a href="{{ route('admin.lots.show', $etape->lot) }}" class="nt-cell-title">{{ $etape->lot->numero_lot }}</a>
+                        <div class="nt-cell-sub">{{ $etape->lot->produit?->nom }}</div>
+                    @else
+                        —
+                    @endif
+                </td>
                 <td><span class="nt-badge">{{ $types[$etape->type_etape] ?? $etape->type_etape }}</span></td>
-                <td>{{ $etape->acteur?->nom ?? '—' }}</td>
+                <td>
+                    @if ($etape->acteur)
+                        <a href="{{ route('admin.acteurs.show', $etape->acteur) }}">{{ $etape->acteur->nom }}</a>
+                    @else
+                        —
+                    @endif
+                </td>
                 <td class="text-muted">{{ $etape->lieu }}</td>
                 <td class="text-muted">{{ $etape->date_heure?->format('d/m/Y H:i') }}</td>
                 <td class="text-muted">{{ $transports[$etape->mode_transport] ?? '—' }}</td>
