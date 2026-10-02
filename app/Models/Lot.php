@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Lot extends Model
 {
@@ -30,6 +31,11 @@ class Lot extends Model
     public function etapes(): HasMany
     {
         return $this->hasMany(Etape::class);
+    }
+
+    public function empreinteCarbone(): HasOne
+    {
+        return $this->hasOne(EmpreinteCarbone::class);
     }
 
     public function estPerime(): bool
