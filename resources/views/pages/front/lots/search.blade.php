@@ -45,6 +45,16 @@
                             <span class="label-chip mb-2">{{ $lot->produit->categorie->nom }}</span>
                         @endif
                         <div class="text-muted"><i class="bi bi-upc me-1" aria-hidden="true"></i>{{ $lot->numero_lot }}</div>
+                        @if ($lot->produit?->certifications->isNotEmpty())
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                @foreach ($lot->produit->certifications as $label)
+                                    <a href="{{ route('front.certifications.index', ['numero' => $label->numero]) }}" class="label-chip text-decoration-none"
+                                       title="Délivré par {{ $label->organisme?->nom }}">
+                                        <i class="bi {{ $label->icone() }}" aria-hidden="true"></i>{{ $label->typeLabel() }} · {{ $label->numero }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
                     <dl class="lot-facts">
                         <div><dt>Quantité</dt><dd>{{ number_format($lot->quantite, 0, ',', ' ') }} unités</dd></div>

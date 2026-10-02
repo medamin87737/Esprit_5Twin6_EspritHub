@@ -13,9 +13,10 @@ class CatalogueController extends Controller
     public function __invoke(Request $request): View
     {
         $produits = Produit::query()
-            ->with('categorie')
+            ->with(['categorie', 'certifications' => fn ($q) => $q->valides()->select('id', 'produit_id', 'type', 'numero')])
             ->when($request->filled('q'), fn ($q) => $q->where('nom', 'like', '%'.$request->input('q').'%'))
             ->when($request->filled('categorie'), fn ($q) => $q->where('categorie_id', $request->input('categorie')))
+            ->when($request->filled('label'), fn ($q) => $q->whereHas('certifications', fn ($c) => $c->valides()->where('type', $request->input('label'))))
             ->latest()
             ->paginate(12)
             ->withQueryString();

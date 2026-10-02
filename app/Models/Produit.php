@@ -44,4 +44,16 @@ class Produit extends Model
     {
         return $this->hasManyThrough(EmpreinteCarbone::class, Lot::class);
     }
+
+    public function certifications(): HasMany
+    {
+        return $this->hasMany(Certification::class);
+    }
+
+    public function organismes(): BelongsToMany
+    {
+        return $this->belongsToMany(Organisme::class, 'certifications')
+            ->withPivot(['numero', 'type', 'statut', 'date_expiration'])
+            ->withTimestamps();
+    }
 }
