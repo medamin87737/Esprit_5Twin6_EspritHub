@@ -1,6 +1,8 @@
 @php
     $acteur = $acteur ?? null;
     $typeActeurs = $typeActeurs ?? collect();
+    $categories = $categories ?? collect();
+    $produitsChoisis = collect(old('produits', $acteur?->produits->pluck('id')->all() ?? []))->map(fn ($id) => (int) $id);
 @endphp
 
 <div class="nt-form-section">
@@ -51,4 +53,35 @@
                                 :value="$acteur?->longitude" placeholder="10.1815" help="Facultatif — entre -180 et 180." />
         </div>
     </div>
+</div>
+
+<div class="nt-form-section">
+    <h3 class="nt-form-section-title"><i class="bi bi-box-seam" aria-hidden="true"></i> Produits pris en charge</h3>
+    @if ($categories->flatMap->produits->isEmpty())
+        <p class="text-muted small mb-0">Aucun produit dans le catalogue : ajoutez-en depuis le Module 1 pour pouvoir les associer.</p>
+    @else
+        <div class="nt-checklist @error('produits') is-invalid @enderror @error('produits.*') is-invalid @enderror">
+            @foreach ($categories as $categorie)
+                @continue($categorie->produits->isEmpty())
+                <div class="nt-checklist-group">
+                    <span class="nt-checklist-title">{{ $categorie->nom }}</span>
+                    @foreach ($categorie->produits as $produit)
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="produit-{{ $produit->id }}" name="produits[]"
+                                   value="{{ $produit->id }}" @checked($produitsChoisis->contains($produit->id))>
+                            <label class="custom-control-label font-weight-normal" for="produit-{{ $produit->id }}">{{ $produit->nom }}</label>
+                        </div>
+                    @endforeach
+                </div>
+            @endforeach
+        </div>
+        @error('produits')
+            <div class="invalid-feedback d-block">{{ $message }}</div>
+        @enderror
+        @error('produits.*')
+            <div class="invalid-feedback d-block">{{ $message }}</div>
+        @else
+            <small class="form-text">Facultatif — les produits que cet acteur produit, transforme ou distribue.</small>
+        @enderror
+    @endif
 </div>

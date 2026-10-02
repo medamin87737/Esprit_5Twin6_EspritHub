@@ -28,7 +28,7 @@ return [
             'numero' => 2,
             'titre' => 'Acteurs de la chaîne',
             'icone' => 'bi-people',
-            'responsable' => 'Sahar',
+            'responsable' => 'Amin',
             'entites' => [
                 ['libelle' => 'Types d\'acteurs', 'route' => 'type-acteurs', 'table' => 'type_acteurs', 'icone' => 'bi-diagram-3'],
                 ['libelle' => 'Acteurs', 'route' => 'acteurs', 'table' => 'acteurs', 'icone' => 'bi-person-badge'],

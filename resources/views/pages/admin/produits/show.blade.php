@@ -50,6 +50,30 @@
                     <p class="mb-0 {{ $produit->composition ? '' : 'text-muted' }}">{{ $produit->composition ?: 'Non renseignée.' }}</p>
                 </div>
             </div>
+
+            <x-admin.table-card :items="$produit->acteurs" title="Acteurs qui prennent en charge ce produit">
+                <x-slot:head>
+                    <th scope="col">Acteur</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Pays</th>
+                    <th scope="col" class="text-right">Fiche</th>
+                </x-slot:head>
+
+                @foreach ($produit->acteurs as $acteur)
+                    <tr>
+                        <td class="nt-cell-title">{{ $acteur->nom }}</td>
+                        <td><span class="nt-badge">{{ $acteur->typeActeur?->libelle }}</span></td>
+                        <td>{{ $acteur->pays }}</td>
+                        <td class="text-right"><x-admin.row-actions :show="route('admin.acteurs.show', $acteur)" /></td>
+                    </tr>
+                @endforeach
+
+                <x-slot:empty>
+                    <x-admin.empty-state icon="bi-people" title="Aucun acteur associé">
+                        Associez ce produit à ses producteurs, transformateurs ou distributeurs depuis la fiche d'un acteur (Module 2).
+                    </x-admin.empty-state>
+                </x-slot:empty>
+            </x-admin.table-card>
         </div>
     </div>
 @endsection

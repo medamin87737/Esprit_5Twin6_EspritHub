@@ -52,7 +52,7 @@ class ProduitController extends Controller
 
     public function show(Produit $produit): View
     {
-        $produit->load('categorie');
+        $produit->load(['categorie', 'acteurs.typeActeur']);
 
         return view('pages.admin.produits.show', ['produit' => $produit]);
     }
