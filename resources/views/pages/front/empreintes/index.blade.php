@@ -74,6 +74,7 @@
                                     <th scope="col">Lot</th>
                                     <th scope="col" class="text-end">CO₂ total</th>
                                     <th scope="col" class="text-center">Score</th>
+                                    <th scope="col">Détail mesuré</th>
                                     <th scope="col">Méthode</th>
                                 </tr>
                             </thead>
@@ -81,9 +82,21 @@
                                 @foreach ($empreintes as $empreinte)
                                     <tr>
                                         <td class="fw-semibold">{{ $empreinte->lot?->produit?->nom }}</td>
-                                        <td class="text-muted">{{ $empreinte->lot?->numero_lot }}</td>
+                                        <td><a href="{{ route('front.lots.search', ['numero' => $empreinte->lot?->numero_lot]) }}" class="text-muted">{{ $empreinte->lot?->numero_lot }}</a></td>
                                         <td class="text-end">{{ number_format($empreinte->co2_total, 2, ',', ' ') }} kg</td>
                                         <td class="text-center"><span class="score-badge eco-{{ strtolower($empreinte->score) }}">{{ $empreinte->score }}</span></td>
+                                        <td>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                @forelse ($empreinte->indicateurs->groupBy('type') as $type => $groupe)
+                                                    <span class="label-chip" title="{{ $groupe->first()->typeLabel() }}">
+                                                        <i class="bi {{ $groupe->first()->icone() }}" aria-hidden="true"></i>
+                                                        {{ number_format($groupe->sum('valeur'), 0, ',', ' ') }} {{ $groupe->first()->unite }}
+                                                    </span>
+                                                @empty
+                                                    <span class="text-muted small">—</span>
+                                                @endforelse
+                                            </div>
+                                        </td>
                                         <td class="text-muted">{{ $empreinte->methode }}</td>
                                     </tr>
                                 @endforeach
@@ -91,6 +104,9 @@
                         </table>
                     </div>
                 </div>
+                @if ($empreintes instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator && $empreintes->hasPages())
+                    <div class="mt-5 d-flex justify-content-center">{{ $empreintes->links('pagination::bootstrap-5') }}</div>
+                @endif
             @endif
         </div>
     </section>

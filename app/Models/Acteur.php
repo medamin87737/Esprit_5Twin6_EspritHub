@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Acteur extends Model
 {
@@ -33,6 +34,11 @@ class Acteur extends Model
     public function produits(): BelongsToMany
     {
         return $this->belongsToMany(Produit::class)->withTimestamps();
+    }
+
+    public function etapes(): HasMany
+    {
+        return $this->hasMany(Etape::class);
     }
 
     public function hasCoordinates(): bool
