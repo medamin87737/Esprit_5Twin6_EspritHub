@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="robots" content="noindex">
     <meta name="theme-color" content="#064e35">
-    <title>@yield('title', 'Tableau de bord') · NutriTrace Admin</title>
+    <title>@yield('title', 'Tableau de bord') · NutriTrace {{ auth()->user()?->isFournisseur() ? 'Fournisseur' : 'Admin' }}</title>
     <link rel="icon" type="image/svg+xml" href="{{ Vite::asset('resources/assets/front/img/favicon.svg') }}">
     @vite([
         'resources/assets/admin/css/sb-admin-2.css',
@@ -16,7 +16,7 @@
 </head>
 <body id="page-top">
     <div id="wrapper">
-        @include('partials.admin.sidebar')
+        @include(auth()->user()?->isFournisseur() ? 'partials.fournisseur.sidebar' : 'partials.admin.sidebar')
 
         <div id="content-wrapper" class="d-flex flex-column">
             <div id="content">

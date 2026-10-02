@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Categorie;
 use App\Models\Produit;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class Module1Seeder extends Seeder
@@ -46,6 +47,14 @@ class Module1Seeder extends Seeder
             ]],
         ];
 
+        // Les catégories absentes de cette liste restent gérées par l'administration.
+        $fournisseurParType = [
+            'fruits' => User::firstWhere('email', 'capbon@nutritrace.tn'),
+            'legumes' => User::firstWhere('email', 'capbon@nutritrace.tn'),
+            'laitiers' => User::firstWhere('email', 'fournisseur@nutritrace.tn'),
+            'cereales' => User::firstWhere('email', 'fournisseur@nutritrace.tn'),
+        ];
+
         foreach ($catalogue as [$nom, $type, $description, $produits]) {
             $categorie = Categorie::factory()->create([
                 'nom' => $nom,
@@ -55,6 +64,7 @@ class Module1Seeder extends Seeder
 
             foreach ($produits as [$produit, $ville, $composition]) {
                 Produit::factory()->for($categorie)->create([
+                    'fournisseur_id' => $fournisseurParType[$type]?->id ?? null,
                     'nom' => $produit,
                     'origine' => $ville.', Tunisie',
                     'description' => "{$produit} produit à {$ville}.",
