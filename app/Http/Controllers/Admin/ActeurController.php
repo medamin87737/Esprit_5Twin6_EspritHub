@@ -54,7 +54,11 @@ class ActeurController extends Controller
 
     public function show(Acteur $acteur): View
     {
-        $acteur->load(['typeActeur', 'produits.categorie']);
+        $acteur->load([
+            'typeActeur',
+            'produits.categorie',
+            'etapes' => fn ($q) => $q->with('lot.produit')->latest('date_heure'),
+        ]);
 
         return view('pages.admin.acteurs.show', ['acteur' => $acteur]);
     }
@@ -79,6 +83,10 @@ class ActeurController extends Controller
 
     public function destroy(Acteur $acteur): RedirectResponse
     {
+        if ($acteur->etapes()->exists()) {
+            return back()->with('error', "Impossible de supprimer « {$acteur->nom} » : il intervient dans des étapes de traçabilité.");
+        }
+
         $acteur->delete();
 
         return redirect()->route('admin.acteurs.index')

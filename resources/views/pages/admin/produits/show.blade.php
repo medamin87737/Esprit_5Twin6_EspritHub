@@ -40,6 +40,15 @@
                     </div>
                     <div class="nt-role-row"><span class="text-muted">Code-barres</span><strong>{{ $produit->code_barres }}</strong></div>
                     <div class="nt-role-row"><span class="text-muted">Origine</span><strong>{{ $produit->origine }}</strong></div>
+                    <div class="nt-role-row">
+                        <span class="text-muted">Éco-score moyen</span>
+                        @if ($produit->empreintes_avg_co2_total !== null)
+                            @php($scoreMoyen = \App\Models\EmpreinteCarbone::scorePour((float) $produit->empreintes_avg_co2_total))
+                            <span><span class="nt-score nt-score-{{ strtolower($scoreMoyen) }}">{{ $scoreMoyen }}</span> {{ number_format($produit->empreintes_avg_co2_total, 2, ',', ' ') }} kg CO₂e</span>
+                        @else
+                            <span class="text-muted">Non calculé</span>
+                        @endif
+                    </div>
                     <div class="nt-role-row"><span class="text-muted">Ajouté le</span><strong>{{ $produit->created_at?->format('d/m/Y') }}</strong></div>
                 </div>
             </div>
@@ -50,6 +59,42 @@
                     <p class="mb-0 {{ $produit->composition ? '' : 'text-muted' }}">{{ $produit->composition ?: 'Non renseignée.' }}</p>
                 </div>
             </div>
+
+            <x-admin.table-card :items="$produit->lots" :title="'Lots de ce produit · ' . $produit->etapes_count . ' étape(s) tracée(s)'">
+                <x-slot:head>
+                    <th scope="col">Numéro de lot</th>
+                    <th scope="col" class="text-right">Quantité</th>
+                    <th scope="col">Production</th>
+                    <th scope="col">Péremption</th>
+                    <th scope="col" class="text-center">Étapes</th>
+                    <th scope="col" class="text-center">Score</th>
+                    <th scope="col" class="text-right">Fiche</th>
+                </x-slot:head>
+
+                @foreach ($produit->lots as $lot)
+                    <tr>
+                        <td class="nt-cell-title">{{ $lot->numero_lot }}</td>
+                        <td class="text-right">{{ number_format($lot->quantite, 0, ',', ' ') }}</td>
+                        <td class="text-muted">{{ $lot->date_production?->format('d/m/Y') }}</td>
+                        <td class="text-muted">{{ $lot->date_peremption?->format('d/m/Y') }}</td>
+                        <td class="text-center font-weight-600">{{ $lot->etapes_count }}</td>
+                        <td class="text-center">
+                            @if ($lot->empreinteCarbone)
+                                <span class="nt-score nt-score-{{ strtolower($lot->empreinteCarbone->score) }}">{{ $lot->empreinteCarbone->score }}</span>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </td>
+                        <td class="text-right"><x-admin.row-actions :show="route('admin.lots.show', $lot)" /></td>
+                    </tr>
+                @endforeach
+
+                <x-slot:empty>
+                    <x-admin.empty-state icon="bi-upc-scan" title="Aucun lot pour ce produit">
+                        Les lots de production de ce produit (Module 3) apparaîtront ici.
+                    </x-admin.empty-state>
+                </x-slot:empty>
+            </x-admin.table-card>
 
             <x-admin.table-card :items="$produit->acteurs" title="Acteurs qui prennent en charge ce produit">
                 <x-slot:head>
