@@ -50,6 +50,12 @@
                         <div><dt>Quantité</dt><dd>{{ number_format($lot->quantite, 0, ',', ' ') }} unités</dd></div>
                         <div><dt>Production</dt><dd>{{ $lot->date_production?->format('d/m/Y') }}</dd></div>
                         <div><dt>Péremption</dt><dd>{{ $lot->date_peremption?->format('d/m/Y') }}</dd></div>
+                        @if ($lot->empreinteCarbone)
+                            <div>
+                                <dt>Éco-score</dt>
+                                <dd><span class="score-badge eco-{{ strtolower($lot->empreinteCarbone->score) }}">{{ $lot->empreinteCarbone->score }}</span> {{ number_format($lot->empreinteCarbone->co2_total, 2, ',', ' ') }} kg CO₂e</dd>
+                            </div>
+                        @endif
                     </dl>
                 </div>
 

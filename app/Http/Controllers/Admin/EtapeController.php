@@ -44,7 +44,7 @@ class EtapeController extends Controller
 
     public function show(Etape $etape): View
     {
-        $etape->load(['lot.produit', 'acteur.typeActeur']);
+        $etape->load(['lot.produit', 'acteur.typeActeur', 'indicateurs']);
 
         return view('pages.admin.etapes.show', ['etape' => $etape]);
     }

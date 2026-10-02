@@ -23,6 +23,16 @@
                     <div class="nt-role-row"><span class="text-muted">Lieu</span><strong>{{ $etape->lieu }}</strong></div>
                     <div class="nt-role-row"><span class="text-muted">Transport</span><strong>{{ $etape->transportLabel() }}</strong></div>
                     <p class="mt-3 mb-0 {{ $etape->remarques ? '' : 'text-muted' }}">{{ $etape->remarques ?: 'Aucune remarque.' }}</p>
+
+                    <h3 class="h6 mt-4">Indicateurs mesurés sur cette étape (Module 4)</h3>
+                    @forelse ($etape->indicateurs as $indicateur)
+                        <div class="nt-role-row">
+                            <span class="text-muted"><i class="bi {{ $indicateur->icone() }} mr-1" aria-hidden="true"></i>{{ $indicateur->typeLabel() }}</span>
+                            <a href="{{ route('admin.indicateurs.show', $indicateur) }}">{{ number_format($indicateur->valeur, 2, ',', ' ') }} {{ $indicateur->unite }}</a>
+                        </div>
+                    @empty
+                        <p class="text-muted small mb-0">Aucun indicateur rattaché.</p>
+                    @endforelse
                 </div>
             </div>
         </div>
