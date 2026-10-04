@@ -26,6 +26,14 @@
                     </div>
                     <button class="btn btn-primary btn-lg" type="submit"><i class="bi bi-search me-2" aria-hidden="true"></i>Tracer</button>
                 </div>
+                @if (($exemples ?? collect())->isNotEmpty())
+                    <div class="d-flex flex-wrap align-items-center gap-2 mt-3 small text-muted">
+                        <span>Exemples :</span>
+                        @foreach ($exemples as $exemple)
+                            <a href="{{ route('front.lots.search', ['numero' => $exemple]) }}" class="label-chip text-decoration-none">{{ $exemple }}</a>
+                        @endforeach
+                    </div>
+                @endif
             </form>
 
             @if ($lot)
@@ -33,6 +41,9 @@
                     <div>
                         <span class="eyebrow mb-1">Lot trouvé</span>
                         <h2 class="h3 mb-1">{{ $lot->produit?->nom }}</h2>
+                        @if ($lot->produit?->categorie)
+                            <span class="label-chip mb-2">{{ $lot->produit->categorie->nom }}</span>
+                        @endif
                         <div class="text-muted"><i class="bi bi-upc me-1" aria-hidden="true"></i>{{ $lot->numero_lot }}</div>
                     </div>
                     <dl class="lot-facts">
@@ -48,12 +59,12 @@
                     </x-front.empty-state>
                 @else
                     <ol class="timeline mt-5">
-                        @foreach ($lot->etapes->sortBy('date_heure') as $etape)
+                        @foreach ($lot->etapes as $etape)
                             <x-front.timeline-step :number="$loop->iteration" :icon="$icones[$etape->type_etape] ?? 'bi-geo-alt'"
                                                    :title="$types[$etape->type_etape] ?? ucfirst($etape->type_etape)"
                                                    :status="$etape->date_heure?->format('d/m/Y H:i')"
                                                    :meta="$etape->lieu">
-                                {{ $etape->acteur?->nom }}@if ($etape->mode_transport && $etape->mode_transport !== 'aucun') · {{ $transports[$etape->mode_transport] ?? $etape->mode_transport }}@endif
+                                {{ $etape->acteur?->nom }}@if ($etape->acteur?->typeActeur) ({{ $etape->acteur->typeActeur->libelle }})@endif @if ($etape->mode_transport && $etape->mode_transport !== 'aucun') · {{ $transports[$etape->mode_transport] ?? $etape->mode_transport }}@endif
                             </x-front.timeline-step>
                         @endforeach
                     </ol>
