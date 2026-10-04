@@ -1,16 +1,16 @@
 @extends('layouts.admin')
 
-@section('title', 'Nouveau lot')
+@section('title', 'Modifier ' . $lot->numero_lot)
 
 @section('content')
-    <x-admin.page-header title="Nouveau lot" module="Module 3 · Traçabilité des lots"
-                         subtitle="Déclarez un lot de production pour suivre son parcours."
+    <x-admin.page-header :title="$lot->numero_lot" module="Module 3 · Modifier le lot"
+                         subtitle="Mettez à jour le produit, la quantité ou les dates de ce lot."
                          :back="route('admin.lots.index')" />
 
     <div class="row">
         <div class="col-xl-8">
-            <x-admin.form-card title="Informations du lot"
-                               :action="Route::has('admin.lots.store') ? route('admin.lots.store') : null"
+            <x-admin.form-card title="Informations du lot" method="PUT" submit-label="Enregistrer les modifications"
+                               :action="route('admin.lots.update', $lot)"
                                :cancel="route('admin.lots.index')">
                 @include('pages.admin.lots._form')
             </x-admin.form-card>

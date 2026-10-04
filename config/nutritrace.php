@@ -38,7 +38,7 @@ return [
             'numero' => 3,
             'titre' => 'Traçabilité des lots',
             'icone' => 'bi-signpost-split',
-            'responsable' => 'Ghada',
+            'responsable' => 'Ons',
             'entites' => [
                 ['libelle' => 'Lots', 'route' => 'lots', 'table' => 'lots', 'icone' => 'bi-upc-scan'],
                 ['libelle' => 'Étapes', 'route' => 'etapes', 'table' => 'etapes', 'icone' => 'bi-geo-alt'],
@@ -48,7 +48,7 @@ return [
             'numero' => 4,
             'titre' => 'Empreinte environnementale',
             'icone' => 'bi-globe-europe-africa',
-            'responsable' => 'Ons',
+            'responsable' => 'Sahar',
             'entites' => [
                 ['libelle' => 'Empreintes carbone', 'route' => 'empreintes', 'table' => 'empreinte_carbones', 'icone' => 'bi-cloud-haze2'],
                 ['libelle' => 'Indicateurs', 'route' => 'indicateurs', 'table' => 'indicateurs', 'icone' => 'bi-speedometer2'],
