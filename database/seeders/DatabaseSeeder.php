@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             Module2Seeder::class,
             Module3Seeder::class,
             Module4Seeder::class,
+            Module5Seeder::class,
         ]);
     }
 }

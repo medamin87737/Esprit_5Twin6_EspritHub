@@ -1,16 +1,16 @@
 @extends('layouts.admin')
 
-@section('title', 'Nouvelle certification')
+@section('title', 'Modifier ' . $certification->numero)
 
 @section('content')
-    <x-admin.page-header title="Nouvelle certification" module="Module 5 · Certifications"
-                         subtitle="Attribuez un label à un produit, au nom d'un organisme certificateur."
+    <x-admin.page-header :title="$certification->numero" module="Module 5 · Modifier la certification"
+                         subtitle="Renouvelez, suspendez ou corrigez cette certification."
                          :back="route('admin.certifications.index')" />
 
     <div class="row">
         <div class="col-xl-8">
-            <x-admin.form-card title="Détail de la certification"
-                               :action="route('admin.certifications.store')"
+            <x-admin.form-card title="Détail de la certification" method="PUT" submit-label="Enregistrer les modifications"
+                               :action="route('admin.certifications.update', $certification)"
                                :cancel="route('admin.certifications.index')">
                 @include('pages.admin.certifications._form')
             </x-admin.form-card>

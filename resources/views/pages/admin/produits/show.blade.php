@@ -3,10 +3,12 @@
 @section('title', $produit->nom)
 
 @section('content')
-    <x-admin.page-header :title="$produit->nom" module="Module 1 · Produit"
-                         :subtitle="$produit->description" :back="route('admin.produits.index')">
+    @php($estAdmin = $espace === 'admin')
+
+    <x-admin.page-header :title="$produit->nom" :module="$moduleLabel"
+                         :subtitle="$produit->description" :back="route($espace . '.produits.index')">
         <x-slot:actions>
-            <a href="{{ route('admin.produits.edit', $produit) }}" class="btn btn-primary">
+            <a href="{{ route($espace . '.produits.edit', $produit) }}" class="btn btn-primary">
                 <i class="bi bi-pencil mr-1" aria-hidden="true"></i> Modifier
             </a>
         </x-slot:actions>
@@ -34,8 +36,18 @@
                 <div class="card-body">
                     <div class="nt-role-row">
                         <span class="text-muted">Catégorie</span>
-                        @if ($produit->categorie)
+                        @if ($produit->categorie && $estAdmin)
                             <a href="{{ route('admin.categories.show', $produit->categorie) }}" class="nt-badge">{{ $produit->categorie->nom }}</a>
+                        @elseif ($produit->categorie)
+                            <span class="nt-badge">{{ $produit->categorie->nom }}</span>
+                        @endif
+                    </div>
+                    <div class="nt-role-row">
+                        <span class="text-muted">Fournisseur</span>
+                        @if ($produit->fournisseur)
+                            <span><strong>{{ $produit->fournisseur->name }}</strong> <span class="text-muted small">· {{ $produit->fournisseur->email }}</span></span>
+                        @else
+                            <span class="text-muted">Administration</span>
                         @endif
                     </div>
                     <div class="nt-role-row"><span class="text-muted">Code-barres</span><strong>{{ $produit->code_barres }}</strong></div>
@@ -59,6 +71,40 @@
                     <p class="mb-0 {{ $produit->composition ? '' : 'text-muted' }}">{{ $produit->composition ?: 'Non renseignée.' }}</p>
                 </div>
             </div>
+
+            <x-admin.table-card :items="$produit->certifications" title="Labels et certifications de ce produit">
+                <x-slot:head>
+                    <th scope="col">Numéro</th>
+                    <th scope="col">Label</th>
+                    <th scope="col">Organisme</th>
+                    <th scope="col">Expiration</th>
+                    <th scope="col">Statut</th>
+                    <th scope="col" class="text-right">Fiche</th>
+                </x-slot:head>
+
+                @foreach ($produit->certifications as $certification)
+                    <tr>
+                        <td class="nt-cell-title">{{ $certification->numero }}</td>
+                        <td><span class="nt-badge"><i class="bi {{ $certification->icone() }}" aria-hidden="true"></i> {{ $certification->typeLabel() }}</span></td>
+                        <td class="text-muted">{{ $certification->organisme?->nom }}</td>
+                        <td class="text-muted">{{ $certification->date_expiration?->format('d/m/Y') }}</td>
+                        <td>@include('pages.admin.certifications._statut')</td>
+                        <td class="text-right"><x-admin.row-actions :show="$estAdmin ? route('admin.certifications.show', $certification) : null" /></td>
+                    </tr>
+                @endforeach
+
+                <x-slot:empty>
+                    <x-admin.empty-state icon="bi-award" title="Aucun label pour ce produit">
+                        Les certifications bio, locales ou équitables (Module 5) délivrées à ce produit apparaîtront ici.
+                    </x-admin.empty-state>
+                </x-slot:empty>
+            </x-admin.table-card>
+
+            @if ($estAdmin)
+                <a href="{{ route('admin.certifications.create', ['produit' => $produit->id]) }}" class="btn btn-primary mb-4">
+                    <i class="bi bi-plus-lg mr-1" aria-hidden="true"></i> Attribuer un label à ce produit
+                </a>
+            @endif
 
             <x-admin.table-card :items="$produit->lots" :title="'Lots de ce produit · ' . $produit->etapes_count . ' étape(s) tracée(s)'">
                 <x-slot:head>
@@ -85,7 +131,7 @@
                                 <span class="text-muted">—</span>
                             @endif
                         </td>
-                        <td class="text-right"><x-admin.row-actions :show="route('admin.lots.show', $lot)" /></td>
+                        <td class="text-right"><x-admin.row-actions :show="$estAdmin ? route('admin.lots.show', $lot) : null" /></td>
                     </tr>
                 @endforeach
 
@@ -109,7 +155,7 @@
                         <td class="nt-cell-title">{{ $acteur->nom }}</td>
                         <td><span class="nt-badge">{{ $acteur->typeActeur?->libelle }}</span></td>
                         <td>{{ $acteur->pays }}</td>
-                        <td class="text-right"><x-admin.row-actions :show="route('admin.acteurs.show', $acteur)" /></td>
+                        <td class="text-right"><x-admin.row-actions :show="$estAdmin ? route('admin.acteurs.show', $acteur) : null" /></td>
                     </tr>
                 @endforeach
 

@@ -9,12 +9,13 @@
     <div class="form-row">
         <div class="col-md-6">
             <x-admin.form.select name="produit_id" label="Produit certifié" :options="$produits->pluck('nom', 'id')"
-                                 :value="$certification?->produit_id" placeholder="Choisir un produit…" required
+                                 :value="$certification?->produit_id ?? request('produit')" placeholder="Choisir un produit…" required
                                  empty-message="Aucun produit disponible : le module 1 doit d'abord en créer." />
         </div>
         <div class="col-md-6">
-            <x-admin.form.select name="organisme_id" label="Organisme certificateur" :options="$organismes->pluck('nom', 'id')"
-                                 :value="$certification?->organisme_id" placeholder="Choisir un organisme…" required
+            <x-admin.form.select name="organisme_id" label="Organisme certificateur"
+                                 :options="$organismes->mapWithKeys(fn ($o) => [$o->id => $o->nom . ' (' . $o->pays . ')'])"
+                                 :value="$certification?->organisme_id ?? request('organisme')" placeholder="Choisir un organisme…" required
                                  empty-message="Aucun organisme disponible : créez-en un d'abord." />
         </div>
     </div>
@@ -32,7 +33,7 @@
         </div>
         <div class="col-md-4">
             <x-admin.form.select name="statut" label="Statut" :options="config('nutritrace.options.certification_statuts')"
-                                 :value="$certification?->statut" placeholder="Choisir…" required />
+                                 :value="$certification?->statut ?? 'valide'" placeholder="Choisir…" required />
         </div>
     </div>
     <div class="form-row">

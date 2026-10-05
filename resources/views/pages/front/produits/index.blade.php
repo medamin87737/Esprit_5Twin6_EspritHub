@@ -6,7 +6,8 @@
     @php
         $produits = $produits ?? collect();
         $categories = $categories ?? collect();
-        $filtered = request()->filled('q') || request()->filled('categorie');
+        $filtered = request()->filled('q') || request()->filled('categorie') || request()->filled('label');
+        $labels = config('nutritrace.options.certification_types');
         $total = $produits instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator ? $produits->total() : $produits->count();
     @endphp
 
@@ -17,19 +18,28 @@
         <div class="container px-4 px-lg-5">
             <form class="filter-bar" method="GET" action="{{ route('front.produits.index') }}" role="search">
                 <div class="row g-3 align-items-end">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="form-label" for="q">Rechercher un produit</label>
                         <div class="field-icon">
                             <i class="bi bi-search" aria-hidden="true"></i>
                             <input class="form-control" id="q" type="search" name="q" value="{{ request('q') }}" placeholder="Ex. yaourt, huile d'olive…">
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label" for="categorie">Catégorie</label>
                         <select class="form-select" id="categorie" name="categorie">
                             <option value="">Toutes les catégories</option>
                             @foreach ($categories as $categorie)
                                 <option value="{{ $categorie->id }}" @selected((string) request('categorie') === (string) $categorie->id)>{{ $categorie->nom }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="label">Label</label>
+                        <select class="form-select" id="label" name="label">
+                            <option value="">Tous les produits</option>
+                            @foreach ($labels as $valeur => $libelle)
+                                <option value="{{ $valeur }}" @selected(request('label') === $valeur)>{{ $libelle }} (valide)</option>
                             @endforeach
                         </select>
                     </div>
@@ -72,6 +82,13 @@
                                 <div class="product-card-body">
                                     <h2 class="product-card-title">{{ $produit->nom }}</h2>
                                     <p class="product-card-meta"><i class="bi bi-geo-alt me-1" aria-hidden="true"></i>{{ $produit->origine }}</p>
+                                    @if ($produit->certifications->isNotEmpty())
+                                        <div class="product-card-labels">
+                                            @foreach ($produit->certifications as $label)
+                                                <span class="label-chip" title="Certification n° {{ $label->numero }}"><i class="bi {{ $label->icone() }}" aria-hidden="true"></i>{{ $label->typeLabel() }}</span>
+                                            @endforeach
+                                        </div>
+                                    @endif
                                     @if (Route::has('front.produits.show'))
                                         <a href="{{ route('front.produits.show', $produit) }}" class="stretched-link product-card-link">Voir la fiche <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
                                     @endif

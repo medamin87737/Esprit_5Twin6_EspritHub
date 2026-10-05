@@ -33,6 +33,8 @@
                             <li><a class="dropdown-item" href="{{ route('profile.edit') }}"><i class="bi bi-person-gear me-2" aria-hidden="true"></i>Mon compte</a></li>
                             @if (auth()->user()->isAdmin())
                                 <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}"><i class="bi bi-speedometer2 me-2" aria-hidden="true"></i>Espace d'administration</a></li>
+                            @elseif (auth()->user()->isFournisseur())
+                                <li><a class="dropdown-item" href="{{ route('fournisseur.produits.index') }}"><i class="bi bi-box-seam me-2" aria-hidden="true"></i>Espace fournisseur</a></li>
                             @endif
                             <li>
                                 <form method="POST" action="{{ route('logout') }}" class="m-0">

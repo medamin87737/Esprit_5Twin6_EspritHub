@@ -45,7 +45,11 @@ class LoginController extends Controller
         $request->session()->regenerate();
         $user->forceFill(['last_login_at' => now()])->save();
 
-        $default = $user->isAdmin() ? route('admin.dashboard') : route('home');
+        $default = match (true) {
+            $user->isAdmin() => route('admin.dashboard'),
+            $user->isFournisseur() => route('fournisseur.produits.index'),
+            default => route('home'),
+        };
 
         return redirect()->intended($default);
     }

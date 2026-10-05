@@ -13,11 +13,16 @@ class Produit extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['categorie_id', 'nom', 'code_barres', 'origine', 'description', 'composition', 'image'];
+    protected $fillable = ['categorie_id', 'fournisseur_id', 'nom', 'code_barres', 'origine', 'description', 'composition', 'image'];
 
     public function categorie(): BelongsTo
     {
         return $this->belongsTo(Categorie::class);
+    }
+
+    public function fournisseur(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'fournisseur_id');
     }
 
     public function acteurs(): BelongsToMany
@@ -38,5 +43,17 @@ class Produit extends Model
     public function empreintes(): HasManyThrough
     {
         return $this->hasManyThrough(EmpreinteCarbone::class, Lot::class);
+    }
+
+    public function certifications(): HasMany
+    {
+        return $this->hasMany(Certification::class);
+    }
+
+    public function organismes(): BelongsToMany
+    {
+        return $this->belongsToMany(Organisme::class, 'certifications')
+            ->withPivot(['numero', 'type', 'statut', 'date_expiration'])
+            ->withTimestamps();
     }
 }
