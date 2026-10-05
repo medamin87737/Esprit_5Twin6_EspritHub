@@ -4,103 +4,84 @@
 
 @section('content')
     @php
-        $produits = $produits ?? collect();
-        $categories = $categories ?? collect();
-        $filtered = request()->filled('q') || request()->filled('categorie') || request()->filled('label');
-        $labels = config('nutritrace.options.certification_types');
-        $total = $produits instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator ? $produits->total() : $produits->count();
+        $filtre = collect(request()->only(['q', 'categorie', 'score', 'label']))->filter()->isNotEmpty();
+        $total = $produits->total();
     @endphp
 
     <x-front.page-header eyebrow="Catalogue" title="Les produits suivis par NutriTrace" image="marche-fruits-legumes.webp"
-                         subtitle="Origine, composition et catégorie : retrouvez la fiche de chaque produit tracé sur la plateforme." />
+                         subtitle="Origine, score environnemental et labels vérifiés : retrouvez la fiche de chaque produit tracé." />
 
     <section class="page-section pt-0 bg-cream">
         <div class="container px-4 px-lg-5">
             <form class="filter-bar" method="GET" action="{{ route('front.produits.index') }}" role="search">
                 <div class="row g-3 align-items-end">
-                    <div class="col-md-4">
-                        <label class="form-label" for="q">Rechercher un produit</label>
+                    <div class="col-lg-4">
+                        <label class="form-label" for="q">Nom ou code-barres</label>
                         <div class="field-icon">
                             <i class="bi bi-search" aria-hidden="true"></i>
-                            <input class="form-control" id="q" type="search" name="q" value="{{ request('q') }}" placeholder="Ex. yaourt, huile d'olive…">
+                            <input class="form-control" id="q" type="search" name="q" value="{{ request('q') }}" placeholder="Ex. yaourt, 6191234567890">
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-sm-6 col-lg-3">
                         <label class="form-label" for="categorie">Catégorie</label>
                         <select class="form-select" id="categorie" name="categorie">
-                            <option value="">Toutes les catégories</option>
+                            <option value="">Toutes</option>
                             @foreach ($categories as $categorie)
                                 <option value="{{ $categorie->id }}" @selected((string) request('categorie') === (string) $categorie->id)>{{ $categorie->nom }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label" for="label">Label</label>
-                        <select class="form-select" id="label" name="label">
-                            <option value="">Tous les produits</option>
-                            @foreach ($labels as $valeur => $libelle)
-                                <option value="{{ $valeur }}" @selected(request('label') === $valeur)>{{ $libelle }} (valide)</option>
+                    <div class="col-sm-6 col-lg-2">
+                        <label class="form-label" for="score">Score</label>
+                        <select class="form-select" id="score" name="score">
+                            <option value="">Tous</option>
+                            @foreach (config('nutritrace.options.scores') as $score => $seuil)
+                                <option value="{{ $score }}" @selected(request('score') === $score)>{{ $score }} · {{ $seuil }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-2 d-grid">
-                        <button class="btn btn-primary" type="submit">Filtrer</button>
+                    <div class="col-sm-6 col-lg-2">
+                        <label class="form-label" for="label">Certification</label>
+                        <select class="form-select" id="label" name="label">
+                            <option value="">Toutes</option>
+                            @foreach (config('nutritrace.options.certification_types') as $valeur => $libelle)
+                                <option value="{{ $valeur }}" @selected(request('label') === $valeur)>{{ $libelle }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-sm-6 col-lg-1 d-grid">
+                        <button class="btn btn-primary" type="submit" aria-label="Filtrer"><i class="bi bi-funnel" aria-hidden="true"></i></button>
                     </div>
                 </div>
             </form>
 
             <div class="results-bar">
                 <span><strong>{{ $total }}</strong> produit{{ $total > 1 ? 's' : '' }}</span>
-                @if ($filtered)
+                @if ($filtre)
                     <a href="{{ route('front.produits.index') }}" class="small"><i class="bi bi-x-circle me-1" aria-hidden="true"></i>Effacer les filtres</a>
                 @endif
             </div>
 
             @if ($total === 0)
-                @if ($filtered)
+                @if ($filtre)
                     <x-front.empty-state icon="bi-search" title="Aucun produit ne correspond à votre recherche" :reset="route('front.produits.index')">
-                        Essayez un autre mot-clé ou une autre catégorie.
+                        Essayez un autre mot-clé, une autre catégorie ou un autre score.
                     </x-front.empty-state>
                 @else
                     <x-front.empty-state icon="bi-basket2" title="Le catalogue est encore vide">
-                        Les produits apparaîtront ici dès qu'ils auront été enregistrés par l'équipe NutriTrace.
+                        Les produits apparaîtront ici dès leur enregistrement par les producteurs et transformateurs.
                     </x-front.empty-state>
                 @endif
             @else
                 <div class="row g-4">
                     @foreach ($produits as $produit)
                         <div class="col-sm-6 col-lg-4 col-xl-3">
-                            <article class="product-card h-100">
-                                <div class="product-card-media">
-                                    @if ($produit->image)
-                                        <img src="{{ asset('storage/' . $produit->image) }}" alt="{{ $produit->nom }}" loading="lazy">
-                                    @else
-                                        <span class="product-card-placeholder"><i class="bi bi-box-seam" aria-hidden="true"></i></span>
-                                    @endif
-                                    <span class="label-chip product-card-chip">{{ $produit->categorie?->nom }}</span>
-                                </div>
-                                <div class="product-card-body">
-                                    <h2 class="product-card-title">{{ $produit->nom }}</h2>
-                                    <p class="product-card-meta"><i class="bi bi-geo-alt me-1" aria-hidden="true"></i>{{ $produit->origine }}</p>
-                                    @if ($produit->certifications->isNotEmpty())
-                                        <div class="product-card-labels">
-                                            @foreach ($produit->certifications as $label)
-                                                <span class="label-chip" title="Certification n° {{ $label->numero }}"><i class="bi {{ $label->icone() }}" aria-hidden="true"></i>{{ $label->typeLabel() }}</span>
-                                            @endforeach
-                                        </div>
-                                    @endif
-                                    @if (Route::has('front.produits.show'))
-                                        <a href="{{ route('front.produits.show', $produit) }}" class="stretched-link product-card-link">Voir la fiche <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
-                                    @endif
-                                </div>
-                            </article>
+                            <x-front.produit-card :produit="$produit" />
                         </div>
                     @endforeach
                 </div>
 
-                @if ($produits instanceof \Illuminate\Contracts\Pagination\Paginator && $produits->hasPages())
-                    <div class="mt-5 d-flex justify-content-center">{{ $produits->withQueryString()->links('pagination::bootstrap-5') }}</div>
-                @endif
+                <x-front.pagination :items="$produits" />
             @endif
         </div>
     </section>

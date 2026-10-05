@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Middleware\EnsureAccountIsActive;
+use App\Http\Middleware\EnsureProfilSocieteComplet;
 use App\Http\Middleware\EnsureUserIsAdmin;
-use App\Http\Middleware\EnsureUserIsFournisseur;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,7 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
-            'fournisseur' => EnsureUserIsFournisseur::class,
+            'profil-societe' => EnsureProfilSocieteComplet::class,
         ]);
 
         $middleware->web(append: [
@@ -25,11 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->redirectUsersTo(
-            fn (Request $request) => match (true) {
-                (bool) $request->user()?->isAdmin() => route('admin.dashboard'),
-                (bool) $request->user()?->isFournisseur() => route('fournisseur.produits.index'),
-                default => route('home'),
-            }
+            fn (Request $request) => $request->user()?->espaceParDefaut() ?? route('home')
         );
     })
     ->withExceptions(function (Exceptions $exceptions): void {

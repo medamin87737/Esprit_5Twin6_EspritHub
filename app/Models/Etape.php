@@ -11,6 +11,13 @@ class Etape extends Model
 {
     use HasFactory;
 
+    public const ICONES = [
+        'production' => 'bi-flower3',
+        'transformation' => 'bi-gear-wide-connected',
+        'distribution' => 'bi-truck',
+        'vente' => 'bi-shop',
+    ];
+
     protected $fillable = ['lot_id', 'acteur_id', 'type_etape', 'date_heure', 'lieu', 'mode_transport', 'remarques'];
 
     protected function casts(): array
@@ -43,5 +50,18 @@ class Etape extends Model
     public function transportLabel(): string
     {
         return config('nutritrace.options.modes_transport')[$this->mode_transport] ?? $this->mode_transport;
+    }
+
+    public function icone(): string
+    {
+        return self::ICONES[$this->type_etape] ?? 'bi-geo-alt';
+    }
+
+    /**
+     * Une étape n'est plus modifiable dès que son acteur a transféré le lot.
+     */
+    public function estVerrouillee(): bool
+    {
+        return (int) $this->lot?->acteur_courant_id !== (int) $this->acteur_id;
     }
 }

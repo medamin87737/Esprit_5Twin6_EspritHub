@@ -45,13 +45,7 @@ class LoginController extends Controller
         $request->session()->regenerate();
         $user->forceFill(['last_login_at' => now()])->save();
 
-        $default = match (true) {
-            $user->isAdmin() => route('admin.dashboard'),
-            $user->isFournisseur() => route('fournisseur.produits.index'),
-            default => route('home'),
-        };
-
-        return redirect()->intended($default);
+        return redirect()->intended($user->espaceParDefaut());
     }
 
     public function destroy(Request $request): RedirectResponse

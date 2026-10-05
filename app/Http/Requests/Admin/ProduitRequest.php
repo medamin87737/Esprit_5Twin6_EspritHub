@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\Produit;
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -33,7 +34,7 @@ class ProduitRequest extends FormRequest
         ];
 
         if ($this->routeIs('admin.*')) {
-            $rules['fournisseur_id'] = ['nullable', 'integer', Rule::exists('users', 'id')->where('role', 'fournisseur')];
+            $rules['proprietaire_id'] = ['nullable', 'integer', Rule::exists('users', 'id')->whereIn('role', User::rolesGestionnairesProduits())];
         }
 
         return $rules;
@@ -48,7 +49,7 @@ class ProduitRequest extends FormRequest
             'nom' => 'nom du produit',
             'code_barres' => 'code-barres',
             'categorie_id' => 'catégorie',
-            'fournisseur_id' => 'fournisseur',
+            'proprietaire_id' => 'producteur / transformateur',
             'origine' => 'origine',
             'description' => 'description',
             'composition' => 'composition',

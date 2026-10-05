@@ -8,7 +8,7 @@
         $typeActeurs = $typeActeurs ?? collect();
     @endphp
 
-    <x-admin.page-header title="Acteurs" module="Module 2 · Acteurs de la chaîne"
+    <x-admin.page-header title="Acteurs" module="Administration · Acteurs de la chaîne"
                          subtitle="Les exploitations, usines et distributeurs qui interviennent sur les lots.">
         <x-slot:actions>
             <a href="{{ route('admin.acteurs.create') }}" class="btn btn-primary">

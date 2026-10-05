@@ -3,15 +3,15 @@
 @section('title', 'Modifier ' . $produit->nom)
 
 @section('content')
-    <x-admin.page-header :title="$produit->nom" :module="$moduleLabel"
+    <x-admin.page-header :title="$produit->nom" module="Module 1 · Produits & Catégories"
                          subtitle="Mettez à jour la fiche de ce produit."
-                         :back="route($espace . '.produits.index')" />
+                         :back="route('admin.produits.index')" />
 
     <div class="row">
         <div class="col-xl-8">
             <x-admin.form-card title="Fiche produit" files method="PUT" submit-label="Enregistrer les modifications"
-                               :action="route($espace . '.produits.update', $produit)"
-                               :cancel="route($espace . '.produits.index')">
+                               :action="route('admin.produits.update', $produit)"
+                               :cancel="route('admin.produits.index')">
                 @include('pages.admin.produits._form')
             </x-admin.form-card>
         </div>

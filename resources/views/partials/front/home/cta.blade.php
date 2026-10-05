@@ -10,9 +10,12 @@
                 </p>
                 <div class="d-flex flex-wrap gap-3">
                     <a class="btn btn-gold btn-lg" href="#contact">Rejoindre le réseau</a>
-                    @if (Route::has('admin.dashboard'))
-                        <a class="btn btn-outline-light-soft btn-lg" href="{{ route('admin.dashboard') }}">Accéder à l'espace pro</a>
-                    @endif
+                    @guest
+                        <a class="btn btn-outline-light-soft btn-lg" href="{{ route('register') }}">Créer un compte professionnel</a>
+                    @endguest
+                    @can('espace-pro')
+                        <a class="btn btn-outline-light-soft btn-lg" href="{{ route('pro.dashboard') }}">Accéder à mon tableau de bord</a>
+                    @endcan
                 </div>
             </div>
         </div>

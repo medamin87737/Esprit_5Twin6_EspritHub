@@ -29,6 +29,7 @@
     </main>
 
     @include('partials.front.footer')
+    @include('partials.front.scan-modal')
 
     @stack('scripts')
 </body>

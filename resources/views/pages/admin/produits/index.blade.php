@@ -1,28 +1,25 @@
 @extends('layouts.admin')
 
-@section('title', $espace === 'fournisseur' ? 'Mes produits' : 'Produits')
+@section('title', 'Produits')
 
 @section('content')
     @php
         $produits = $produits ?? collect();
         $categories = $categories ?? collect();
-        $fournisseurs = $fournisseurs ?? collect();
-        $estAdmin = $espace === 'admin';
+        $proprietaires = $proprietaires ?? collect();
     @endphp
 
-    <x-admin.page-header :title="$estAdmin ? 'Produits' : 'Mes produits'" :module="$moduleLabel"
-                         :subtitle="$estAdmin
-                             ? 'Le catalogue des produits suivis, avec leur catégorie, leur fournisseur et leur origine.'
-                             : 'Les produits que vous proposez : ajoutez, modifiez ou retirez-les du catalogue.'">
+    <x-admin.page-header title="Produits" module="Module 1 · Produits & Catégories"
+                         subtitle="Le catalogue des produits suivis, avec leur catégorie, leur producteur ou transformateur et leur origine.">
         <x-slot:actions>
-            <a href="{{ route($espace . '.produits.create') }}" class="btn btn-primary">
+            <a href="{{ route('admin.produits.create') }}" class="btn btn-primary">
                 <i class="bi bi-plus-lg mr-1" aria-hidden="true"></i> Nouveau produit
             </a>
         </x-slot:actions>
     </x-admin.page-header>
 
-    <x-admin.table-card :items="$produits" :title="$estAdmin ? 'Liste des produits' : 'Mes produits'" search-placeholder="Nom ou code-barres…"
-                        :filter-keys="['q', 'categorie', 'fournisseur']">
+    <x-admin.table-card :items="$produits" title="Liste des produits" search-placeholder="Nom ou code-barres…"
+                        :filter-keys="['q', 'categorie', 'proprietaire']">
         <x-slot:filters>
             <label for="filter-categorie" class="sr-only">Catégorie</label>
             <select id="filter-categorie" name="categorie" class="custom-select">
@@ -31,23 +28,19 @@
                     <option value="{{ $categorie->id }}" @selected((string) request('categorie') === (string) $categorie->id)>{{ $categorie->nom }}</option>
                 @endforeach
             </select>
-            @if ($estAdmin)
-                <label for="filter-fournisseur" class="sr-only">Fournisseur</label>
-                <select id="filter-fournisseur" name="fournisseur" class="custom-select">
-                    <option value="">Tous les fournisseurs</option>
-                    @foreach ($fournisseurs as $fournisseur)
-                        <option value="{{ $fournisseur->id }}" @selected((string) request('fournisseur') === (string) $fournisseur->id)>{{ $fournisseur->name }}</option>
-                    @endforeach
-                </select>
-            @endif
+            <label for="filter-proprietaire" class="sr-only">Producteur / transformateur</label>
+            <select id="filter-proprietaire" name="proprietaire" class="custom-select">
+                <option value="">Tous les producteurs et transformateurs</option>
+                @foreach ($proprietaires as $proprietaire)
+                    <option value="{{ $proprietaire->id }}" @selected((string) request('proprietaire') === (string) $proprietaire->id)>{{ $proprietaire->name }} ({{ $proprietaire->roleLabel() }})</option>
+                @endforeach
+            </select>
         </x-slot:filters>
 
         <x-slot:head>
             <th scope="col">Produit</th>
             <th scope="col">Catégorie</th>
-            @if ($estAdmin)
-                <th scope="col">Fournisseur</th>
-            @endif
+            <th scope="col">Producteur / transformateur</th>
             <th scope="col">Origine</th>
             <th scope="col">Ajouté le</th>
             <th scope="col" class="text-right">Actions</th>
@@ -69,32 +62,31 @@
                     </div>
                 </td>
                 <td><span class="nt-badge">{{ $produit->categorie?->nom ?? '—' }}</span></td>
-                @if ($estAdmin)
-                    <td>
-                        @if ($produit->fournisseur)
-                            <i class="bi bi-person-badge mr-1 text-muted" aria-hidden="true"></i>{{ $produit->fournisseur->name }}
-                        @else
-                            <span class="text-muted">Administration</span>
-                        @endif
-                    </td>
-                @endif
+                <td>
+                    @if ($produit->proprietaire)
+                        <div>{{ $produit->proprietaire->name }}</div>
+                        <div class="nt-cell-sub">{{ $produit->proprietaire->roleLabel() }}</div>
+                    @else
+                        <span class="text-muted">Administration</span>
+                    @endif
+                </td>
                 <td>{{ $produit->origine }}</td>
                 <td class="text-muted">{{ $produit->created_at?->format('d/m/Y') }}</td>
                 <td class="text-right">
                     <x-admin.row-actions
-                        :show="route($espace . '.produits.show', $produit)"
-                        :edit="route($espace . '.produits.edit', $produit)"
-                        :delete="route($espace . '.produits.destroy', $produit)"
+                        :show="route('admin.produits.show', $produit)"
+                        :edit="route('admin.produits.edit', $produit)"
+                        :delete="route('admin.produits.destroy', $produit)"
                         :confirm="'Supprimer le produit « ' . $produit->nom . ' » ?'" />
                 </td>
             </tr>
         @endforeach
 
         <x-slot:empty>
-            <x-admin.empty-state icon="bi-box-seam" :title="$estAdmin ? 'Aucun produit enregistré' : 'Vous ne proposez encore aucun produit'">
+            <x-admin.empty-state icon="bi-box-seam" title="Aucun produit enregistré">
                 Ajoutez un premier produit et rattachez-le à une catégorie. Il apparaîtra aussi dans le catalogue public.
                 <x-slot:action>
-                    <a href="{{ route($espace . '.produits.create') }}" class="btn btn-primary btn-sm">
+                    <a href="{{ route('admin.produits.create') }}" class="btn btn-primary btn-sm">
                         <i class="bi bi-plus-lg mr-1" aria-hidden="true"></i> Ajouter un produit
                     </a>
                 </x-slot:action>

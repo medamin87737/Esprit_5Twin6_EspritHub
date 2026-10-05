@@ -23,7 +23,7 @@ class Module3Seeder extends Seeder
     ];
 
     /**
-     * Ordre du parcours : type d'acteur (Module 2), décalage en jours et heure.
+     * Ordre du parcours : type d'acteur, décalage en jours et heure.
      */
     private const PARCOURS = [
         'production' => ['Producteur', 0, '06:30'],
@@ -34,7 +34,7 @@ class Module3Seeder extends Seeder
 
     /**
      * Lots et étapes de traçabilité (Module 3 — Ons).
-     * Lancer Module1Seeder et Module2Seeder avant : chaque étape est confiée
+     * Lancer Module1Seeder et ActeurSeeder avant : chaque étape est confiée
      * à un acteur qui prend en charge le produit du lot.
      */
     public function run(): void

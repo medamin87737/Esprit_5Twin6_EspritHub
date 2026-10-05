@@ -1,15 +1,14 @@
-@php($espace = $espace ?? 'admin')
-
-<x-admin.help-card parent="Catégorie" child="Produit" :rules="array_filter([
+<x-admin.help-card parent="Catégorie" child="Produit" :rules="[
     'Nom' => 'obligatoire, 150 caractères max.',
     'Code-barres' => 'exactement 13 chiffres, unique.',
     'Catégorie' => 'doit exister dans la liste.',
-    'Fournisseur' => $espace === 'admin' ? 'facultatif, compte de rôle fournisseur.' : null,
+    'Propriétaire' => 'facultatif, compte producteur ou transformateur.',
     'Origine' => 'obligatoire.',
     'Image' => 'facultative, image de 2 Mo max.',
-])" />
+]" />
 
-<x-admin.help-card title="Qui gère ce produit ?" icon="bi-people" parent="Fournisseur" child="Produit" :rules="[
-    'Fournisseur' => 'ajoute, modifie et supprime uniquement ses propres produits.',
-    'Administrateur' => 'gère tout le catalogue et peut attribuer un produit à un fournisseur.',
+<x-admin.help-card title="Qui gère ce produit ?" icon="bi-people" parent="Producteur / transformateur" child="Produit" :rules="[
+    'Producteur' => 'gère uniquement ses propres produits et crée les lots.',
+    'Transformateur' => 'gère uniquement ses propres produits transformés.',
+    'Administrateur' => 'gère tout le catalogue et attribue un produit à son propriétaire.',
 ]" />

@@ -24,10 +24,10 @@ class ProduitFactory extends Factory
         ];
     }
 
-    public function pourFournisseur(?User $fournisseur = null): static
+    public function pourProprietaire(?User $proprietaire = null): static
     {
         return $this->state(fn (array $attributes) => [
-            'fournisseur_id' => $fournisseur?->id ?? User::factory()->fournisseur(),
+            'proprietaire_id' => $proprietaire?->id ?? User::factory()->professionnel(),
         ]);
     }
 }

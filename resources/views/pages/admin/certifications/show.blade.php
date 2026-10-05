@@ -72,7 +72,7 @@
                                 </div>
                                 <div class="nt-role-row"><span class="text-muted">Catégorie</span><strong>{{ $certification->produit->categorie?->nom ?? '—' }}</strong></div>
                                 <div class="nt-role-row"><span class="text-muted">Origine</span><strong>{{ $certification->produit->origine }}</strong></div>
-                                <div class="nt-role-row"><span class="text-muted">Fournisseur</span><strong>{{ $certification->produit->fournisseur?->name ?? 'Administration' }}</strong></div>
+                                <div class="nt-role-row"><span class="text-muted">Producteur / transformateur</span><strong>{{ $certification->produit->proprietaire?->name ?? 'Administration' }}</strong></div>
                             @endif
                         </div>
                     </div>

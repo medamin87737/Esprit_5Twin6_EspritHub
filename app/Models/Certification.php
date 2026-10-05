@@ -59,6 +59,19 @@ class Certification extends Model
         return config('nutritrace.options.certification_statuts')[$this->statutEffectif()] ?? $this->statutEffectif();
     }
 
+    /**
+     * Classe de la pastille de statut (status-pill du Front Office).
+     */
+    public function statutClasse(): string
+    {
+        return match ($this->statutEffectif()) {
+            'valide' => 'status-valid',
+            'suspendue' => 'status-suspended',
+            'expiree' => 'status-expired',
+            default => 'status-pending',
+        };
+    }
+
     public function typeLabel(): string
     {
         return config('nutritrace.options.certification_types')[$this->type] ?? ucfirst($this->type);

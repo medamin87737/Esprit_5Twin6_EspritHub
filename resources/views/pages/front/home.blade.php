@@ -4,6 +4,7 @@
 
 @section('content')
     @include('partials.front.home.hero')
+    @include('partials.front.home.produits-recents')
     @include('partials.front.home.galerie')
     @include('partials.front.home.mission')
     @include('partials.front.home.parcours')

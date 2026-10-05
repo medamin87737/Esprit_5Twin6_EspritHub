@@ -8,7 +8,7 @@
             <div style="position: relative; z-index: 1;">
                 <span class="nt-eyebrow">Back Office</span>
                 <h1>Bonjour {{ \Illuminate\Support\Str::of(auth()->user()->name)->explode(' ')->first() }}</h1>
-                <p class="mb-0">Pilotez les cinq modules de NutriTrace : catalogue, acteurs, lots, empreinte et certifications.</p>
+                <p class="mb-0">Pilotez les cinq modules de NutriTrace : catalogue, analyses qualité, lots, empreinte et certifications.</p>
             </div>
             <div class="nt-welcome-actions">
                 <a href="{{ route('home') }}" class="btn nt-btn-glass" target="_blank" rel="noopener">

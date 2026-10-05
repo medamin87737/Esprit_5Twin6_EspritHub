@@ -63,6 +63,26 @@
                     @endif
                 </div>
             </div>
+
+            <div class="card mt-4">
+                <div class="card-header"><h2 class="nt-card-title">Analyses qualité</h2></div>
+                <div class="card-body">
+                    @forelse ($lot->analyses as $analyse)
+                        <div class="nt-role-row">
+                            <a href="{{ route('admin.analyses.show', $analyse) }}">
+                                <i class="bi {{ $analyse->icone() }} mr-1" aria-hidden="true"></i>{{ $analyse->typeLabel() }}
+                                <span class="nt-cell-sub d-block">{{ $analyse->laboratoire?->nom }} · {{ $analyse->date_prelevement?->format('d/m/Y') }}</span>
+                            </a>
+                            @include('pages.admin.analyses._resultat')
+                        </div>
+                    @empty
+                        <p class="text-muted">Aucune analyse enregistrée pour ce lot.</p>
+                    @endforelse
+                    <a href="{{ route('admin.analyses.create', ['lot' => $lot->id]) }}" class="btn btn-primary btn-sm mt-2">
+                        <i class="bi bi-plus-lg mr-1" aria-hidden="true"></i> Enregistrer une analyse
+                    </a>
+                </div>
+            </div>
         </div>
 
         <div class="col-xl-8">

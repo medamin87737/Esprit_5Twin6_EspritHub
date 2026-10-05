@@ -17,10 +17,12 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
             Module1Seeder::class,
-            Module2Seeder::class,
+            ActeurSeeder::class,
             Module3Seeder::class,
+            Module2Seeder::class,
             Module4Seeder::class,
             Module5Seeder::class,
+            FrontOfficeSeeder::class,
         ]);
     }
 }

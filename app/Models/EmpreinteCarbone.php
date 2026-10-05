@@ -42,6 +42,25 @@ class EmpreinteCarbone extends Model
         return 'E';
     }
 
+    /**
+     * Intervalle [min, max[ en kg CO₂e d'un score (max null pour E).
+     *
+     * @return array{0: float, 1: ?float}
+     */
+    public static function bornes(string $score): array
+    {
+        $min = 0.0;
+
+        foreach (self::SEUILS as $lettre => $seuil) {
+            if ($lettre === $score) {
+                return [$min, (float) $seuil];
+            }
+            $min = (float) $seuil;
+        }
+
+        return [$min, null];
+    }
+
     public function lot(): BelongsTo
     {
         return $this->belongsTo(Lot::class);

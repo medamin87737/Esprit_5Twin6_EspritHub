@@ -31,6 +31,14 @@ class Acteur extends Model
         return $this->belongsTo(TypeActeur::class);
     }
 
+    /**
+     * Compte professionnel qui gère cette fiche dans l'espace /pro.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function produits(): BelongsToMany
     {
         return $this->belongsToMany(Produit::class)->withTimestamps();

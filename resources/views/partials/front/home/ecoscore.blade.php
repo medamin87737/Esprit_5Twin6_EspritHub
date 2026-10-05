@@ -11,6 +11,16 @@
                     <li><i class="bi bi-check-circle-fill"></i><span><strong>Quatre postes d'impact :</strong> production, transformation, transport et emballage.</span></li>
                     <li><i class="bi bi-check-circle-fill"></i><span><strong>Comparable :</strong> le même barème pour tous les produits d'une catégorie.</span></li>
                 </ul>
+
+                <h3 class="h6 mt-4 mb-3">Le barème, en kg de CO₂e par unité de produit</h3>
+                <div class="score-legend">
+                    @foreach (config('nutritrace.options.scores') as $score => $seuil)
+                        <div class="score-legend-item">
+                            <span class="score-badge eco-{{ strtolower($score) }}">{{ $score }}</span>
+                            <span>{{ $seuil }}</span>
+                        </div>
+                    @endforeach
+                </div>
             </div>
 
             <div class="col-lg-6 reveal reveal-delay-1">

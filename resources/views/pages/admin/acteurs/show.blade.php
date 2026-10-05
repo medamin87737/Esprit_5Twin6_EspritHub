@@ -3,7 +3,7 @@
 @section('title', $acteur->nom)
 
 @section('content')
-    <x-admin.page-header :title="$acteur->nom" module="Module 2 · Acteur"
+    <x-admin.page-header :title="$acteur->nom" module="Administration · Acteur"
                          :subtitle="$acteur->typeActeur?->role_chaine" :back="route('admin.acteurs.index')">
         <x-slot:actions>
             <a href="{{ route('admin.acteurs.edit', $acteur) }}" class="btn btn-primary">

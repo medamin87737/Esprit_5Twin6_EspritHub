@@ -717,11 +717,11 @@ hr.divider.divider-light {
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
 }
 
-.eco-a { background: #1e8f4e; }
-.eco-b { background: #5fa832; }
-.eco-c { background: #d9a400; }
-.eco-d { background: #e07b1f; }
-.eco-e { background: #d63c24; }
+.eco-a { background: var(--nt-score-a, #1e7b3c); }
+.eco-b { background: var(--nt-score-b, #7ac143); }
+.eco-c { background: var(--nt-score-c, #f2c500); color: #3d3200 !important; }
+.eco-d { background: var(--nt-score-d, #ef8a17); }
+.eco-e { background: var(--nt-score-e, #d6342c); }
 
 .eco-kpis {
   display: grid;
@@ -1679,4 +1679,514 @@ hr.divider.divider-light {
   color: var(--nt-primary);
   font-size: 1.1rem;
   line-height: 1.3;
+}
+
+.flash-error {
+  border-left-color: #c93a22;
+}
+
+.flash-error .flash-icon {
+  color: #c93a22;
+}
+
+/* ---------- Score A-E (couleurs officielles) ---------- */
+
+:root {
+  --nt-score-a: #1e7b3c;
+  --nt-score-b: #7ac143;
+  --nt-score-c: #f2c500;
+  --nt-score-d: #ef8a17;
+  --nt-score-e: #d6342c;
+}
+
+/* ---------- Navigation selon le rôle ---------- */
+
+@media (min-width: 992px) {
+  #mainNav:not(.navbar-shrink) .btn-nav-outline {
+    border-color: rgba(255, 255, 255, 0.7);
+    color: #fff;
+  }
+
+  #mainNav:not(.navbar-shrink) .btn-nav-outline:hover {
+    background: #fff;
+    color: var(--nt-forest);
+  }
+}
+
+/* ---------- Espace professionnel (/pro) ---------- */
+
+.page-header-pro {
+  padding: clamp(7rem, 6rem + 3vw, 8.5rem) 0 clamp(2.5rem, 2rem + 2vw, 3.5rem);
+}
+
+.page-header-pro h1 {
+  font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem);
+}
+
+.label-chip-light {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.pro-section {
+  padding: clamp(1.5rem, 1rem + 2vw, 3rem) 0 var(--nt-section-y);
+}
+
+/* ---------- Pages d'erreur ---------- */
+
+.error-panel {
+  max-width: 36rem;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 2rem + 3vw, 4rem) 1.5rem;
+  border: 1px solid var(--nt-border);
+  border-radius: var(--nt-radius-lg);
+  background: var(--nt-white);
+  box-shadow: var(--nt-shadow-sm);
+  text-align: center;
+}
+
+.error-panel p {
+  margin: 0.5rem auto 1.5rem;
+  color: var(--nt-muted);
+}
+
+/* ---------- Badges score et certification ---------- */
+
+.score-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.score-badge.score-sm { width: 1.9rem; height: 1.9rem; font-size: 0.9rem; border-radius: 0.5rem; }
+.score-badge.score-md { width: 2.5rem; height: 2.5rem; font-size: 1.1rem; }
+.score-badge.score-lg { width: 4rem; height: 4rem; font-size: 2rem; border-radius: 1rem; box-shadow: var(--nt-shadow-sm); }
+
+.score-co2 {
+  color: var(--nt-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.score-none {
+  background: #f1f3f1;
+  color: var(--nt-muted);
+}
+
+.product-card-score {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+}
+
+.cert-badge i { font-size: 0.9em; }
+
+/* ---------- Recherche de lot (saisie ou scan) ---------- */
+
+.lot-search-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.lot-search .form-label { font-weight: 600; }
+
+.hero .lot-search {
+  max-width: 40rem;
+  margin: 2rem auto 0;
+  padding: 1rem;
+  border-radius: var(--nt-radius-lg);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--nt-shadow);
+  text-align: left;
+}
+
+.scan-modal .modal-body { text-align: center; }
+
+.scan-video {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--nt-radius);
+  background: #0b1f14;
+  aspect-ratio: 4 / 3;
+}
+
+.scan-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scan-viseur {
+  position: absolute;
+  inset: 22% 15%;
+  border: 3px solid var(--nt-gold);
+  border-radius: var(--nt-radius);
+  box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.35);
+}
+
+/* ---------- Carte GPS ---------- */
+
+.map-card {
+  overflow: hidden;
+  border: 1px solid var(--nt-border);
+  border-radius: var(--nt-radius-lg);
+  background: #fff;
+  box-shadow: var(--nt-shadow-sm);
+}
+
+.map-canvas {
+  height: clamp(18rem, 40vh, 26rem);
+  z-index: 0;
+}
+
+.map-card-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 8rem;
+  color: var(--nt-muted);
+}
+
+.map-marker span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: var(--nt-primary);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* ---------- Parcours d'un lot ---------- */
+
+.parcours-infos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.25rem;
+  margin: 0.75rem 0 0.5rem;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+}
+
+.parcours-infos i {
+  margin-right: 0.35rem;
+  color: var(--nt-primary);
+}
+
+.parcours-indicateurs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.indicateur-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--nt-border);
+  border-radius: 10rem;
+  background: #fbfcfb;
+  font-size: 0.8rem;
+}
+
+.indicateur-chip i { color: var(--nt-primary); }
+
+.parcours-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--nt-border);
+}
+
+.notice-panel {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid #f0dfb0;
+  border-radius: var(--nt-radius);
+  background: #fffaf0;
+  font-size: 0.9rem;
+}
+
+.notice-panel > i {
+  color: #a87400;
+  font-size: 1.2rem;
+}
+
+/* ---------- Fiche produit ---------- */
+
+.panel {
+  padding: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+  border: 1px solid var(--nt-border);
+  border-radius: var(--nt-radius-lg);
+  background: #fff;
+  box-shadow: var(--nt-shadow-sm);
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.panel-title i { color: var(--nt-primary); }
+
+.produit-visuel {
+  overflow: hidden;
+  border-radius: var(--nt-radius-lg);
+  background: var(--nt-mint);
+  aspect-ratio: 4 / 3;
+}
+
+.produit-visuel img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.produit-visuel .product-card-placeholder {
+  height: 100%;
+  font-size: 4rem;
+}
+
+.produit-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.produit-facts div {
+  padding: 0.75rem 1rem;
+  border-radius: var(--nt-radius-sm);
+  background: var(--nt-bg);
+}
+
+.produit-facts dt {
+  color: var(--nt-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.produit-facts dd {
+  margin: 0.2rem 0 0;
+  font-weight: 600;
+}
+
+.avis-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--nt-border);
+}
+
+.avis-item:last-child { border-bottom: 0; padding-bottom: 0; }
+
+/* ---------- Comparaison ---------- */
+
+.compare-picker {
+  max-height: 22rem;
+  overflow-y: auto;
+}
+
+.compare-picker .form-check {
+  padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+  border-radius: var(--nt-radius-sm);
+}
+
+.compare-picker .form-check:hover { background: var(--nt-bg); }
+
+.compare-chart {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.compare-metric h3 {
+  margin-bottom: 0.6rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.compare-row {
+  display: grid;
+  grid-template-columns: minmax(7rem, 12rem) 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.compare-track {
+  height: 0.85rem;
+  overflow: hidden;
+  border-radius: 10rem;
+  background: #eef2ef;
+}
+
+.compare-fill {
+  width: var(--value, 0%);
+  height: 100%;
+  border-radius: inherit;
+  background: var(--couleur, var(--nt-primary));
+}
+
+@media (max-width: 575.98px) {
+  .compare-row { grid-template-columns: 1fr auto; }
+  .compare-row .compare-track { grid-column: 1 / -1; grid-row: 2; }
+}
+
+/* ---------- Espace professionnel : tableaux de bord et formulaires ---------- */
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 1rem;
+}
+
+.kpi-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--nt-border);
+  border-radius: var(--nt-radius-lg);
+  background: #fff;
+  box-shadow: var(--nt-shadow-sm);
+  color: inherit;
+  text-decoration: none;
+}
+
+a.kpi-card:hover { border-color: var(--nt-primary); }
+
+.kpi-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--nt-radius);
+  background: var(--nt-mint);
+  color: var(--nt-primary);
+  font-size: 1.35rem;
+}
+
+.kpi-icon.is-alert { background: #fde6e1; color: #b3361f; }
+
+.kpi-value {
+  display: block;
+  font-family: "Poppins", sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.kpi-label {
+  color: var(--nt-muted);
+  font-size: 0.85rem;
+}
+
+.pro-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.pro-toolbar h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.data-card .table { margin-bottom: 0; }
+
+.data-table .cell-title { font-weight: 600; }
+
+.data-table .cell-sub {
+  color: var(--nt-muted);
+  font-size: 0.8rem;
+}
+
+.data-table .cell-actions {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.thumb {
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  border-radius: var(--nt-radius-sm);
+  background: var(--nt-mint);
+  object-fit: cover;
+}
+
+.thumb-placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--nt-primary);
+}
+
+.form-field { margin-bottom: 1rem; }
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--nt-border);
+}
+
+.tabs-pro .nav-link {
+  border-radius: 10rem;
+  color: var(--nt-muted);
+  font-weight: 600;
+}
+
+.tabs-pro .nav-link.active {
+  background: var(--nt-primary);
+  color: #fff;
+}
+
+.alert-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.alert-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--nt-border);
+  font-size: 0.9rem;
+}
+
+.alert-list li:last-child { border-bottom: 0; }
+
+@media (max-width: 575.98px) {
+  .lot-search-row .btn-lg { padding-inline: 0.9rem; }
+  .data-table td, .data-table thead th { padding: 0.75rem; }
 }

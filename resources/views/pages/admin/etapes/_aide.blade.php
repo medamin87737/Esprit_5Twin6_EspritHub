@@ -9,5 +9,5 @@
 
 <x-admin.help-card title="Relations de l'étape" icon="bi-diagram-2" :rules="[
     'Lot → Étapes' => 'chaque étape appartient à un lot (Module 3).',
-    'Acteur → Étapes' => 'chaque étape est réalisée par un acteur (Module 2), qui ne peut plus être supprimé tant qu\'il a des étapes.',
+    'Acteur → Étapes' => 'chaque étape est réalisée par un acteur de la chaîne, qui ne peut plus être supprimé tant qu\'il a des étapes.',
 ]" />

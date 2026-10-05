@@ -8,16 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('produits', function (Blueprint $table) {
-            $table->foreignId('fournisseur_id')->nullable()->after('categorie_id')
+        Schema::table('acteurs', function (Blueprint $table) {
+            $table->foreignId('user_id')->nullable()->unique()->after('type_acteur_id')
                 ->constrained('users')->nullOnDelete();
         });
     }
 
     public function down(): void
     {
-        Schema::table('produits', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('fournisseur_id');
+        Schema::table('acteurs', function (Blueprint $table) {
+            $table->dropConstrainedForeignId('user_id');
         });
     }
 };

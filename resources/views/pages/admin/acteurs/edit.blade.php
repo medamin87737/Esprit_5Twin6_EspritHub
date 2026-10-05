@@ -3,7 +3,7 @@
 @section('title', 'Modifier ' . $acteur->nom)
 
 @section('content')
-    <x-admin.page-header :title="$acteur->nom" module="Module 2 · Modifier l'acteur"
+    <x-admin.page-header :title="$acteur->nom" module="Administration · Modifier l'acteur"
                          subtitle="Mettez à jour la fiche de cet intervenant et les produits qu'il prend en charge."
                          :back="route('admin.acteurs.index')" />
 

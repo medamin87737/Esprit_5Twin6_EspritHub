@@ -31,19 +31,21 @@ class UserSeeder extends Seeder
             ],
         );
 
-        $fournisseurs = [
-            'fournisseur@nutritrace.tn' => 'Délices du Sahel',
-            'capbon@nutritrace.tn' => 'Coopérative du Cap Bon',
+        // Comptes professionnels, rattachés à leur fiche acteur par ActeurSeeder.
+        $professionnels = [
+            'producteur@nutritrace.tn' => ['Ferme El Baraka', 'producteur'],
+            'transformateur@nutritrace.tn' => ['Laiterie du Nord', 'transformateur'],
+            'distributeur@nutritrace.tn' => ['Carthage Frais Distribution', 'distributeur'],
         ];
 
-        foreach ($fournisseurs as $email => $nom) {
+        foreach ($professionnels as $email => [$nom, $role]) {
             User::updateOrCreate(
                 ['email' => $email],
                 [
                     'name' => $nom,
-                    'role' => 'fournisseur',
+                    'role' => $role,
                     'active' => true,
-                    'password' => 'Fournisseur@NutriTrace2026',
+                    'password' => 'Pro@NutriTrace2026',
                     'email_verified_at' => now(),
                 ],
             );

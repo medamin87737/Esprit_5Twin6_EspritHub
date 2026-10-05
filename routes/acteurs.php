@@ -2,8 +2,12 @@
 
 /*
 |--------------------------------------------------------------------------
-| Module 2 — Acteurs de la chaîne (Amin)
+| Acteurs de la chaîne
 |--------------------------------------------------------------------------
+|
+| Fiche société des comptes professionnels : annuaire public et gestion
+| par l'administrateur (section Administration du Back Office).
+|
 */
 
 use App\Http\Controllers\Admin\ActeurController;

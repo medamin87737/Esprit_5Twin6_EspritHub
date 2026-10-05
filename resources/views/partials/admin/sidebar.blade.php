@@ -56,6 +56,18 @@
             <span>Utilisateurs</span>
         </a>
     </li>
+    <li class="nav-item {{ request()->routeIs('admin.acteurs.*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('admin.acteurs.index') }}">
+            <i class="bi bi-person-badge" aria-hidden="true"></i>
+            <span>Acteurs (fiches société)</span>
+        </a>
+    </li>
+    <li class="nav-item {{ request()->routeIs('admin.type-acteurs.*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('admin.type-acteurs.index') }}">
+            <i class="bi bi-diagram-3" aria-hidden="true"></i>
+            <span>Types d'acteurs</span>
+        </a>
+    </li>
     <li class="nav-item {{ request()->routeIs('admin.profile') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('admin.profile') }}">
             <i class="bi bi-person-circle" aria-hidden="true"></i>

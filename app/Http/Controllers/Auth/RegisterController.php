@@ -15,7 +15,6 @@ class RegisterController extends Controller
 {
     public const PROFILS = [
         'consommateur' => ['libelle' => 'Consommateur', 'icone' => 'bi-person-heart'],
-        'fournisseur' => ['libelle' => 'Fournisseur', 'icone' => 'bi-box-seam'],
         'producteur' => ['libelle' => 'Producteur', 'icone' => 'bi-flower3'],
         'transformateur' => ['libelle' => 'Transformateur', 'icone' => 'bi-gear-wide-connected'],
         'distributeur' => ['libelle' => 'Distributeur', 'icone' => 'bi-truck'],
@@ -54,9 +53,9 @@ class RegisterController extends Controller
         $request->session()->regenerate();
         $user->forceFill(['last_login_at' => now()])->save();
 
-        if ($user->isFournisseur()) {
-            return redirect()->route('fournisseur.produits.index')
-                ->with('success', "Bienvenue sur NutriTrace, {$user->name} ! Ajoutez maintenant vos produits.");
+        if ($user->isPro()) {
+            return redirect()->route('pro.dashboard')
+                ->with('status', "Bienvenue sur NutriTrace, {$user->name} ! Complétez votre profil société pour commencer.");
         }
 
         return redirect()->route('home')->with('status', "Bienvenue sur NutriTrace, {$user->name} ! Votre compte a été créé.");

@@ -3,7 +3,7 @@
 @section('title', 'Nouveau type d\'acteur')
 
 @section('content')
-    <x-admin.page-header title="Nouveau type d'acteur" module="Module 2 · Acteurs de la chaîne"
+    <x-admin.page-header title="Nouveau type d'acteur" module="Administration · Acteurs de la chaîne"
                          subtitle="Ajoutez un rôle de la chaîne d'approvisionnement."
                          :back="route('admin.type-acteurs.index')" />
 

@@ -3,10 +3,11 @@
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\Front\AccueilController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'pages.front.home')->name('home');
+Route::get('/', AccueilController::class)->name('home');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 
 require __DIR__.'/auth.php';
@@ -28,8 +29,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         ->except('show');
 });
 
+require __DIR__.'/acteurs.php';
+
 require __DIR__.'/modules/m1-produits.php';
-require __DIR__.'/modules/m2-acteurs.php';
+require __DIR__.'/modules/m2-analyses.php';
 require __DIR__.'/modules/m3-lots.php';
 require __DIR__.'/modules/m4-empreintes.php';
 require __DIR__.'/modules/m5-certifications.php';
+
+require __DIR__.'/consommateur.php';
+require __DIR__.'/pro.php';

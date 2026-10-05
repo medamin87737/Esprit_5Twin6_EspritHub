@@ -50,6 +50,7 @@ class LotController extends Controller
             'produit.categorie',
             'etapes' => fn ($q) => $q->with('acteur.typeActeur')->withCount('indicateurs')->orderBy('date_heure'),
             'empreinteCarbone' => fn ($q) => $q->withCount('indicateurs'),
+            'analyses' => fn ($q) => $q->with('laboratoire:id,nom')->latest('date_prelevement'),
         ]);
 
         return view('pages.admin.lots.show', ['lot' => $lot]);

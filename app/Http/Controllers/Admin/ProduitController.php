@@ -7,17 +7,13 @@ use App\Http\Requests\Admin\ProduitRequest;
 use App\Models\Categorie;
 use App\Models\Produit;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
-/**
- * Partagé par l'espace administrateur (admin.produits.*) et l'espace
- * fournisseur (fournisseur.produits.*) : un fournisseur ne voit et ne
- * modifie que ses propres produits (voir ProduitPolicy).
- */
 class ProduitController extends Controller
 {
     public function index(Request $request): View
@@ -25,13 +21,12 @@ class ProduitController extends Controller
         Gate::authorize('viewAny', Produit::class);
 
         $produits = Produit::query()
-            ->with(['categorie', 'fournisseur:id,name'])
-            ->when($this->estFournisseur(), fn ($q) => $q->where('fournisseur_id', $request->user()->id))
+            ->with(['categorie', 'proprietaire:id,name,role'])
             ->when($request->filled('q'), fn ($q) => $q->where(fn ($sub) => $sub
                 ->where('nom', 'like', '%'.$request->input('q').'%')
                 ->orWhere('code_barres', 'like', '%'.$request->input('q').'%')))
             ->when($request->filled('categorie'), fn ($q) => $q->where('categorie_id', $request->input('categorie')))
-            ->when(! $this->estFournisseur() && $request->filled('fournisseur'), fn ($q) => $q->where('fournisseur_id', $request->input('fournisseur')))
+            ->when($request->filled('proprietaire'), fn ($q) => $q->where('proprietaire_id', $request->input('proprietaire')))
             ->latest()
             ->paginate(10)
             ->withQueryString();
@@ -39,8 +34,8 @@ class ProduitController extends Controller
         return view('pages.admin.produits.index', [
             'produits' => $produits,
             'categories' => Categorie::orderBy('nom')->get(),
-            'fournisseurs' => $this->estFournisseur() ? collect() : User::fournisseurs()->orderBy('name')->get(['id', 'name']),
-        ] + $this->espace());
+            'proprietaires' => $this->proprietaires(),
+        ]);
     }
 
     public function create(): View
@@ -54,17 +49,13 @@ class ProduitController extends Controller
     {
         $data = $request->validated();
 
-        if ($this->estFournisseur()) {
-            $data['fournisseur_id'] = $request->user()->id;
-        }
-
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('produits', 'public');
         }
 
         $produit = Produit::create($data);
 
-        return redirect()->route($this->prefixe().'.produits.index')
+        return redirect()->route('admin.produits.index')
             ->with('success', "Le produit « {$produit->nom} » a été créé.");
     }
 
@@ -74,13 +65,13 @@ class ProduitController extends Controller
 
         $produit->load([
             'categorie',
-            'fournisseur',
+            'proprietaire',
             'acteurs.typeActeur',
             'certifications' => fn ($q) => $q->with('organisme:id,nom')->orderBy('type'),
             'lots' => fn ($q) => $q->with('empreinteCarbone:id,lot_id,score,co2_total')->withCount('etapes')->latest('date_production'),
         ])->loadCount('etapes')->loadAvg('empreintes', 'co2_total');
 
-        return view('pages.admin.produits.show', ['produit' => $produit] + $this->espace());
+        return view('pages.admin.produits.show', ['produit' => $produit]);
     }
 
     public function edit(Produit $produit): View
@@ -105,7 +96,7 @@ class ProduitController extends Controller
 
         $produit->update($data);
 
-        return redirect()->route($this->prefixe().'.produits.index')
+        return redirect()->route('admin.produits.index')
             ->with('success', "Le produit « {$produit->nom} » a été mis à jour.");
     }
 
@@ -123,29 +114,16 @@ class ProduitController extends Controller
 
         $produit->delete();
 
-        return redirect()->route($this->prefixe().'.produits.index')
+        return redirect()->route('admin.produits.index')
             ->with('success', "Le produit « {$produit->nom} » a été supprimé.");
     }
 
-    private function estFournisseur(): bool
-    {
-        return request()->routeIs('fournisseur.*');
-    }
-
-    private function prefixe(): string
-    {
-        return $this->estFournisseur() ? 'fournisseur' : 'admin';
-    }
-
     /**
-     * @return array<string, string>
+     * @return Collection<int, User>
      */
-    private function espace(): array
+    private function proprietaires(): Collection
     {
-        return [
-            'espace' => $this->prefixe(),
-            'moduleLabel' => $this->estFournisseur() ? 'Espace fournisseur' : 'Module 1 · Produits & Catégories',
-        ];
+        return User::gestionnairesProduits()->orderBy('name')->get(['id', 'name', 'role']);
     }
 
     /**
@@ -155,7 +133,7 @@ class ProduitController extends Controller
     {
         return [
             'categories' => Categorie::orderBy('nom')->get(),
-            'fournisseurs' => $this->estFournisseur() ? collect() : User::fournisseurs()->orderBy('name')->get(['id', 'name']),
-        ] + $this->espace();
+            'proprietaires' => $this->proprietaires(),
+        ];
     }
 }

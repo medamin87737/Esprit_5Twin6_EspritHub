@@ -67,6 +67,15 @@
                     </x-front.empty-state>
                 @endif
             @else
+                <x-front.carte :points="$points" titre="Carte des acteurs de la chaîne" class="mb-4" />
+
+                @cannot('voir-contacts-acteurs')
+                    <div class="notice-panel mb-4">
+                        <i class="bi bi-lock" aria-hidden="true"></i>
+                        <div>Les coordonnées de contact des acteurs sont réservées aux membres. <a href="{{ route('login') }}">Connectez-vous</a> pour les afficher.</div>
+                    </div>
+                @endcannot
+
                 <div class="row g-4">
                     @foreach ($acteurs as $acteur)
                         <div class="col-md-6 col-xl-4">
@@ -80,8 +89,10 @@
                                 </div>
                                 <ul class="actor-card-info">
                                     <li><i class="bi bi-geo-alt" aria-hidden="true"></i>{{ $acteur->adresse }}, {{ $acteur->pays }}</li>
-                                    <li><i class="bi bi-telephone" aria-hidden="true"></i><a href="tel:{{ preg_replace('/\s+/', '', $acteur->telephone) }}">{{ $acteur->telephone }}</a></li>
-                                    <li><i class="bi bi-envelope" aria-hidden="true"></i><a href="mailto:{{ $acteur->email }}">{{ $acteur->email }}</a></li>
+                                    @can('voir-contacts-acteurs')
+                                        <li><i class="bi bi-telephone" aria-hidden="true"></i><a href="tel:{{ preg_replace('/\s+/', '', $acteur->telephone) }}">{{ $acteur->telephone }}</a></li>
+                                        <li><i class="bi bi-envelope" aria-hidden="true"></i><a href="mailto:{{ $acteur->email }}">{{ $acteur->email }}</a></li>
+                                    @endcan
                                 </ul>
                                 @if ($acteur->relationLoaded('produits') && $acteur->produits->isNotEmpty())
                                     <div class="actor-card-products">
@@ -101,9 +112,7 @@
                     @endforeach
                 </div>
 
-                @if ($acteurs instanceof \Illuminate\Contracts\Pagination\Paginator && $acteurs->hasPages())
-                    <div class="mt-5 d-flex justify-content-center">{{ $acteurs->withQueryString()->links('pagination::bootstrap-5') }}</div>
-                @endif
+                <x-front.pagination :items="$acteurs" />
             @endif
         </div>
     </section>

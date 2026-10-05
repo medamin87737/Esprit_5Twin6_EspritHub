@@ -2,61 +2,68 @@
 
 namespace Database\Seeders;
 
-use App\Models\Acteur;
-use App\Models\Categorie;
-use App\Models\TypeActeur;
+use App\Models\Analyse;
+use App\Models\Laboratoire;
+use App\Models\Lot;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class Module2Seeder extends Seeder
 {
     /**
-     * Types d'acteurs, acteurs et produits pris en charge (Module 2 — Amin).
-     * Les produits viennent du Module 1 : lancer Module1Seeder avant.
+     * Laboratoires et analyses qualité des lots (Module 2 — Amin).
+     * Les lots viennent du Module 3 : lancer Module3Seeder avant.
      */
     public function run(): void
     {
-        $types = collect([
-            'Producteur' => ['Cultive ou élève les matières premières agricoles.', 'Exploitations agricoles, vergers, oasis et coopératives.'],
-            'Transformateur' => ['Transforme les matières premières en produits finis.', 'Laiteries, semouleries, huileries et conserveries.'],
-            'Distributeur' => ['Achemine et stocke les produits jusqu\'aux points de vente.', 'Grossistes, centrales d\'achat et logisticiens.'],
-            'Détaillant' => ['Vend les produits au consommateur final.', 'Épiceries, marchés et magasins spécialisés.'],
-        ])->map(fn ($infos, $libelle) => TypeActeur::factory()->create([
-            'libelle' => $libelle,
-            'role_chaine' => $infos[0],
-            'description' => $infos[1],
+        $laboratoires = collect([
+            ['Laboratoire Central d\'Analyses et d\'Essais', 'Tunis', 'TUNAC ISO/IEC 17025 n° 1-0012', 'contact@lcae.tn', '+216 71 236 100'],
+            ['Institut Pasteur de Tunis — Hygiène alimentaire', 'Tunis', 'TUNAC ISO/IEC 17025 n° 1-0004', 'hygiene@pasteur.tn', '+216 71 783 022'],
+            ['Laboratoire Régional d\'Hygiène de Sfax', 'Sfax', 'TUNAC ISO/IEC 17025 n° 1-0057', 'lrh.sfax@sante.tn', '+216 74 241 511'],
+            ['Agrolab Sahel', 'Sousse', 'TUNAC ISO/IEC 17025 n° 1-0089', 'analyses@agrolab-sahel.tn', '+216 73 225 940'],
+        ])->map(fn (array $l) => Laboratoire::factory()->create([
+            'nom' => $l[0],
+            'ville' => $l[1],
+            'pays' => 'Tunisie',
+            'accreditation' => $l[2],
+            'email' => $l[3],
+            'telephone' => $l[4],
         ]));
 
-        $acteurs = [
-            ['Ferme El Baraka', 'Producteur', 'Route de Téboursouk, Béja', 'Tunisie', 36.7256, 9.1817, ['Légumes frais', 'Céréales et dérivés']],
-            ['Domaine des Oasis', 'Producteur', 'Zone des palmeraies, Tozeur', 'Tunisie', 33.9197, 8.1335, ['Fruits de saison']],
-            ['Coopérative oléicole du Sahel', 'Producteur', 'Route de Gabès km 4, Sfax', 'Tunisie', 34.7406, 10.7603, ['Huiles et condiments']],
-            ['Vergers du Cap Bon', 'Producteur', 'Avenue Habib Bourguiba, Nabeul', 'Tunisie', 36.4561, 10.7376, ['Fruits de saison']],
-            ['Laiterie du Nord', 'Transformateur', 'Zone industrielle, Mateur', 'Tunisie', 37.0400, 9.6650, ['Produits laitiers']],
-            ['Semoulerie du Sahel', 'Transformateur', 'Zone industrielle Sidi Abdelhamid, Sousse', 'Tunisie', 35.8256, 10.6360, ['Céréales et dérivés']],
-            ['Conserverie Dar Nabeul', 'Transformateur', 'Rue des Potiers, Nabeul', 'Tunisie', 36.4513, 10.7357, ['Huiles et condiments']],
-            ['Carthage Frais Distribution', 'Distributeur', 'Marché de gros, Bir El Kassaa', 'Tunisie', 36.7530, 10.2280, ['Fruits de saison', 'Légumes frais', 'Produits laitiers']],
-            ['Sahel Logistique Alimentaire', 'Distributeur', 'Route de Monastir, Sousse', 'Tunisie', 35.8300, 10.5900, ['Céréales et dérivés', 'Boissons']],
-            ['Fresh Med Import', 'Distributeur', 'Marché d\'intérêt national, Marseille', 'France', 43.3460, 5.3850, ['Fruits de saison', 'Huiles et condiments']],
-            ['Épicerie fine Sidi Bou', 'Détaillant', 'Rue Habib Thameur, Sidi Bou Saïd', 'Tunisie', 36.8687, 10.3416, ['Huiles et condiments', 'Boissons']],
-            ['Marché Bio de La Marsa', 'Détaillant', 'Place du Saf-Saf, La Marsa', 'Tunisie', 36.8782, 10.3247, ['Fruits de saison', 'Légumes frais']],
+        [$lcae, $pasteur, $sfax, $agrolab] = $laboratoires->all();
+        $admin = User::firstWhere('role', 'admin');
+
+        // [lot, laboratoire, type, jours après production, résultat, commentaire]
+        $analyses = [
+            ['LOT-2026-0001', $pasteur, 'microbiologique', 1, 'conforme', 'Listeria et Salmonella non détectées dans 25 g.'],
+            ['LOT-2026-0001', $lcae, 'pesticides', 2, 'conforme', 'Résidus inférieurs aux limites maximales.'],
+            ['LOT-2026-0002', $sfax, 'pesticides', 2, 'conforme', 'Aucun résidu quantifiable.'],
+            ['LOT-2026-0001', $sfax, 'metaux_lourds', 3, 'conforme', 'Plomb et cadmium sous les seuils réglementaires.'],
+            ['LOT-2026-0003', $pasteur, 'microbiologique', 1, 'conforme', 'Flore totale conforme.'],
+            ['LOT-2026-0004', $agrolab, 'mycotoxines', 3, 'non_conforme', 'Aflatoxine B1 mesurée à 2,6 µg/kg pour une limite de 2 µg/kg.'],
+            ['LOT-2026-0005', $lcae, 'pesticides', 2, 'conforme', null],
+            ['LOT-2026-0006', $agrolab, 'pesticides', 2, 'en_attente', null],
         ];
 
-        $produitsParCategorie = Categorie::with('produits:id,categorie_id')->get()
-            ->mapWithKeys(fn ($categorie) => [$categorie->nom => $categorie->produits->pluck('id')]);
+        foreach ($analyses as $index => [$numeroLot, $laboratoire, $type, $jours, $resultat, $commentaire]) {
+            $lot = Lot::firstWhere('numero_lot', $numeroLot);
 
-        foreach ($acteurs as [$nom, $type, $adresse, $pays, $latitude, $longitude, $categories]) {
-            $acteur = Acteur::factory()->for($types[$type])->create([
-                'nom' => $nom,
-                'email' => 'contact@'.str($nom)->ascii()->slug().'.'.($pays === 'France' ? 'fr' : 'tn'),
-                'adresse' => $adresse,
-                'pays' => $pays,
-                'latitude' => $latitude,
-                'longitude' => $longitude,
+            if (! $lot) {
+                continue;
+            }
+
+            $prelevement = $lot->date_production->copy()->addDays($jours)->min(today());
+
+            $analyse = Analyse::factory()->for($lot)->for($laboratoire)->make([
+                'numero' => 'ANA-'.now()->year.'-'.str_pad((string) ($index + 1), 4, '0', STR_PAD_LEFT),
+                'type' => $type,
+                'date_prelevement' => $prelevement,
+                'date_resultat' => $resultat === 'en_attente' ? null : $prelevement->copy()->addDays(3)->min(today()),
+                'resultat' => $resultat,
+                'commentaire' => $commentaire,
             ]);
-
-            $acteur->produits()->sync(
-                collect($categories)->flatMap(fn ($categorie) => $produitsParCategorie[$categorie] ?? [])->all()
-            );
+            $analyse->declarant()->associate($admin);
+            $analyse->save();
         }
     }
 }

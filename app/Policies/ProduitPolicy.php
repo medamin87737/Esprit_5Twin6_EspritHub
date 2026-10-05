@@ -9,12 +9,12 @@ class ProduitPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin() || $user->isFournisseur();
+        return $user->isAdmin() || $this->gereProduits($user);
     }
 
     public function create(User $user): bool
     {
-        return $user->isAdmin() || $user->isFournisseur();
+        return $user->isAdmin() || $this->gereProduits($user);
     }
 
     public function view(User $user, Produit $produit): bool
@@ -33,10 +33,17 @@ class ProduitPolicy
     }
 
     /**
-     * L'administrateur gère tout le catalogue, un fournisseur uniquement ses produits.
+     * L'administrateur gère tout le catalogue ; un producteur ou un
+     * transformateur uniquement les produits dont il est propriétaire.
      */
     private function gere(User $user, Produit $produit): bool
     {
-        return $user->isAdmin() || ($user->isFournisseur() && (int) $produit->fournisseur_id === (int) $user->id);
+        return $user->isAdmin()
+            || ($this->gereProduits($user) && (int) $produit->proprietaire_id === (int) $user->id);
+    }
+
+    private function gereProduits(User $user): bool
+    {
+        return (bool) $user->droitPro('gere_produits');
     }
 }

@@ -5,7 +5,7 @@
 @section('content')
     @php($typeActeurs = $typeActeurs ?? collect())
 
-    <x-admin.page-header title="Types d'acteurs" module="Module 2 · Acteurs de la chaîne"
+    <x-admin.page-header title="Types d'acteurs" module="Administration · Acteurs de la chaîne"
                          subtitle="Les rôles de la chaîne d'approvisionnement : producteur, transformateur, distributeur…">
         <x-slot:actions>
             <a href="{{ route('admin.type-acteurs.create') }}" class="btn btn-primary">

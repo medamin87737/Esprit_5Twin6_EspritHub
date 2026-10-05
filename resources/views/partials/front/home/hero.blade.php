@@ -21,14 +21,8 @@
                     <a class="btn btn-outline-light-soft btn-lg" href="#mission">Découvrir la plateforme</a>
                 </div>
 
-                @if (Route::has('front.lots.search'))
-                    <form class="hero-search" action="{{ route('front.lots.search') }}" method="GET" role="search">
-                        <label for="hero-lot" class="visually-hidden">Numéro de lot</label>
-                        <span class="input-icon" aria-hidden="true"><i class="bi bi-upc-scan"></i></span>
-                        <input class="form-control" id="hero-lot" type="search" name="numero" placeholder="Rechercher un numéro de lot…">
-                        <button class="btn btn-primary" type="submit">Tracer</button>
-                    </form>
-                @endif
+                <x-front.recherche-lot />
+
 
                 <ul class="hero-points">
                     <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Parcours des lots de bout en bout</li>

@@ -53,7 +53,7 @@ class CertificationController extends Controller
 
     public function show(Certification $certification): View
     {
-        $certification->load(['organisme', 'produit.categorie', 'produit.fournisseur:id,name']);
+        $certification->load(['organisme', 'produit.categorie', 'produit.proprietaire:id,name']);
 
         return view('pages.admin.certifications.show', [
             'certification' => $certification,

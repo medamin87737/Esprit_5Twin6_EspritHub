@@ -25,9 +25,13 @@
                             <a href="{{ route('admin.dashboard') }}" class="btn btn-primary w-100 mt-3">
                                 <i class="bi bi-speedometer2 me-1" aria-hidden="true"></i> Espace d'administration
                             </a>
-                        @elseif ($user->isFournisseur())
-                            <a href="{{ route('fournisseur.produits.index') }}" class="btn btn-primary w-100 mt-3">
-                                <i class="bi bi-box-seam me-1" aria-hidden="true"></i> Espace fournisseur · Mes produits
+                        @elseif ($user->isPro())
+                            <a href="{{ route('pro.dashboard') }}" class="btn btn-primary w-100 mt-3">
+                                <i class="bi bi-speedometer2 me-1" aria-hidden="true"></i> Mon tableau de bord
+                            </a>
+                        @elseif ($user->isConsommateur())
+                            <a href="{{ route('consommateur.signalements.index') }}" class="btn btn-outline-primary w-100 mt-3">
+                                <i class="bi bi-flag me-1" aria-hidden="true"></i> Mes signalements
                             </a>
                         @endif
                     </aside>
