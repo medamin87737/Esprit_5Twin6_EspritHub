@@ -1,5 +1,5 @@
 // L'ordre compte : jQuery doit exister sur window avant Bootstrap 4 et SB Admin 2.
-import '../vendor/jquery/jquery.min.js';
+import './jquery-global.js';
 import '../vendor/bootstrap/bootstrap.bundle.min.js';
 import '../vendor/jquery-easing/jquery.easing.min.js';
 import './sb-admin-2.js';

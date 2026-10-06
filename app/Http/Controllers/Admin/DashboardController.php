@@ -3,50 +3,43 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
+use App\Support\Periode;
+use App\Support\TableauDeBord;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Throwable;
 
 class DashboardController extends Controller
 {
-    public function __invoke(): View
+    public function __invoke(Request $request): View
     {
-        $modules = collect(config('nutritrace.modules'))->map(function (array $module) {
-            $module['entites'] = collect($module['entites'])->map(function (array $entite) {
-                $entite['total'] = $this->count($entite['table']);
+        $periode = Periode::depuisRequete($request);
+        $tableau = new TableauDeBord($periode);
 
-                return $entite;
-            })->all();
-
-            return $module;
-        });
-
-        $tablesPretes = $modules->flatMap(fn (array $m) => $m['entites'])
-            ->filter(fn (array $e) => $e['total'] !== null)
-            ->count();
-
-        $roles = DB::table('users')
-            ->select('role', DB::raw('count(*) as total'))
-            ->groupBy('role')
-            ->pluck('total', 'role');
+        $tendances = $tableau->tendances();
+        $repartition = $tableau->repartitionLots();
+        $certifications = $tableau->certifications();
+        $environnement = $tableau->environnement();
 
         return view('pages.admin.dashboard', [
-            'modules' => $modules,
-            'tablesPretes' => $tablesPretes,
-            'totalEntites' => $modules->sum(fn (array $m) => count($m['entites'])),
-            'utilisateurs' => $roles->sum(),
-            'administrateurs' => (int) ($roles['admin'] ?? 0),
-            'roles' => $roles,
+            'periode' => $periode,
+            'precedente' => $tableau->precedente(),
+            'kpis' => $tableau->kpis(),
+            'tendances' => $tendances,
+            'repartition' => $repartition,
+            'certifications' => $certifications,
+            'environnement' => $environnement,
+            'activite' => $tableau->activite(10),
+            'alertes' => $tableau->alertes(),
+            'indice' => $tableau->indice(),
+            'graphiques' => [
+                'libelles' => $tableau->libelles(),
+                'libellesLongs' => $tableau->libelles(true),
+                'libellesPrecedents' => $tableau->libelles(true, $tableau->precedente()),
+                'tendances' => $tendances,
+                'repartition' => $repartition,
+                'certifications' => $certifications,
+                'co2' => $environnement['serie'],
+            ],
         ]);
-    }
-
-    private function count(string $table): ?int
-    {
-        try {
-            return Schema::hasTable($table) ? DB::table($table)->count() : null;
-        } catch (Throwable) {
-            return null;
-        }
     }
 }
