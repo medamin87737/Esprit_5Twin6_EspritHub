@@ -66,4 +66,16 @@ class Indicateur extends Model
     {
         return self::ICONES[$this->type] ?? 'bi-speedometer2';
     }
+
+    public function sourceClimatiq(): string
+    {
+        $facteurs = app(\App\Services\ClimatiqService::class)->obtenirFacteurs();
+
+        return $facteurs[$this->type]['source'] ?? 'Climatiq API';
+    }
+
+    public function facteurValeur(): float
+    {
+        return app(\App\Services\ClimatiqService::class)->obtenirFacteur($this->type);
+    }
 }

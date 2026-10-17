@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\EmpreinteCarbone;
 use App\Models\Indicateur;
 use App\Models\Lot;
+use App\Services\ClimatiqService;
 use Illuminate\Support\Collection;
 
 class CalculEmpreinte
@@ -14,7 +15,7 @@ class CalculEmpreinte
      */
     public static function contributionCo2(Indicateur $indicateur, Lot $lot): float
     {
-        $facteur = (float) config("nutritrace.facteurs_co2.{$indicateur->type}", 0);
+        $facteur = app(ClimatiqService::class)->obtenirFacteur($indicateur->type);
 
         return $indicateur->valeur * $facteur / max($lot->quantite, 1);
     }
