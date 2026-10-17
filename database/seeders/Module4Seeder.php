@@ -6,23 +6,21 @@ use App\Models\Acteur;
 use App\Models\EmpreinteCarbone;
 use App\Models\Indicateur;
 use App\Models\Lot;
+use App\Support\CalculEmpreinte;
 use Illuminate\Database\Seeder;
 
 class Module4Seeder extends Seeder
 {
-    /**
-     * kg CO₂e par kg de produit, inspirés des ordres de grandeur Agribalyse.
-     */
-    private const CO2 = [
-        'Huile d\'olive extra vierge 1 L' => 4.60,
-        'Dattes Deglet Nour' => 0.95,
-        'Yaourt nature' => 1.65,
-        'Couscous moyen 1 kg' => 1.30,
-        'Harissa traditionnelle' => 2.40,
-        'Oranges Maltaises' => 0.48,
-        'Lait demi-écrémé UHT 1 L' => 1.38,
-        'Tomates de plein champ' => 0.72,
-        'Pâtes spaghetti 500 g' => 1.52,
+    private const PRODUITS = [
+        'Huile d\'olive extra vierge 1 L',
+        'Dattes Deglet Nour',
+        'Yaourt nature',
+        'Couscous moyen 1 kg',
+        'Harissa traditionnelle',
+        'Oranges Maltaises',
+        'Lait demi-écrémé UHT 1 L',
+        'Tomates de plein champ',
+        'Pâtes spaghetti 500 g',
     ];
 
     /**
@@ -42,39 +40,41 @@ class Module4Seeder extends Seeder
             ->get();
 
         foreach ($lots as $index => $lot) {
-            $co2 = self::CO2[$lot->produit?->nom] ?? null;
-
-            if ($co2 === null) {
+            if (! in_array($lot->produit?->nom, self::PRODUITS, true)) {
                 continue;
             }
 
             $empreinte = EmpreinteCarbone::factory()->for($lot)->create([
-                'co2_total' => $co2,
+                'co2_total' => 0,
                 'methode' => $index % 3 === 0 ? 'ACV' : 'Agribalyse',
                 'date_calcul' => min($lot->etapes->last()->date_heure->copy()->addDay()->startOfDay(), today()),
             ]);
 
             $precedent = null;
 
-            foreach ($lot->etapes as $etape) {
-                [$type, $valeur] = match ($etape->type_etape) {
-                    'production' => ['eau', $lot->quantite * (self::EAU[$lot->produit->categorie?->type] ?? 1)],
-                    'transformation' => ['energie', $lot->quantite * 0.15],
-                    default => ['transport', $precedent ? $this->distanceRoute($precedent->acteur, $etape->acteur) : 0],
-                };
+            Indicateur::withoutEvents(function () use ($lot, $empreinte, &$precedent) {
+                foreach ($lot->etapes as $etape) {
+                    [$type, $valeur] = match ($etape->type_etape) {
+                        'production' => ['eau', $lot->quantite * (self::EAU[$lot->produit->categorie?->type] ?? 1)],
+                        'transformation' => ['energie', $lot->quantite * 0.15],
+                        default => ['transport', $precedent ? $this->distanceRoute($precedent->acteur, $etape->acteur) : 0],
+                    };
 
-                if ($etape->type_etape === 'transformation' && $precedent) {
-                    $this->indicateur($empreinte, $etape->id, 'transport', $this->distanceRoute($precedent->acteur, $etape->acteur));
+                    if ($etape->type_etape === 'transformation' && $precedent) {
+                        $this->indicateur($empreinte, $etape->id, 'transport', $this->distanceRoute($precedent->acteur, $etape->acteur));
+                    }
+
+                    if ($valeur > 0) {
+                        $this->indicateur($empreinte, $etape->id, $type, $valeur);
+                    }
+
+                    $precedent = $etape;
                 }
 
-                if ($valeur > 0) {
-                    $this->indicateur($empreinte, $etape->id, $type, $valeur);
-                }
+                $this->indicateur($empreinte, null, 'emballage', $lot->quantite * 0.04);
+            });
 
-                $precedent = $etape;
-            }
-
-            $this->indicateur($empreinte, null, 'emballage', $lot->quantite * 0.04);
+            CalculEmpreinte::synchroniser($empreinte);
         }
     }
 

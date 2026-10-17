@@ -103,16 +103,18 @@ class Lot extends Model
     public function enregistrerIndicateur(Etape $etape, string $type, float $valeur): EmpreinteCarbone
     {
         return DB::transaction(function () use ($etape, $type, $valeur) {
-            $empreinte = $this->empreinteCarbone()->firstOrNew([], [
-                'co2_total' => 0,
-                'methode' => 'Déclaration des acteurs',
-            ]);
+            $empreinte = $this->empreinteCarbone()->firstOrNew([]);
 
-            $facteur = (float) config("nutritrace.facteurs_co2.{$type}", 0);
-            $empreinte->co2_total = round((float) $empreinte->co2_total + $valeur * $facteur / max($this->quantite, 1), 2);
-            $empreinte->score = EmpreinteCarbone::scorePour($empreinte->co2_total);
-            $empreinte->date_calcul = today();
-            $empreinte->save();
+            if (! $empreinte->exists) {
+                $empreinte->fill([
+                    'co2_total' => 0,
+                    'score' => EmpreinteCarbone::scorePour(0),
+                    'methode' => 'Déclaration des acteurs',
+                    'date_calcul' => today(),
+                ]);
+                $empreinte->score = EmpreinteCarbone::scorePour(0);
+                $empreinte->save();
+            }
 
             $empreinte->indicateurs()->create([
                 'etape_id' => $etape->id,
@@ -121,7 +123,7 @@ class Lot extends Model
                 'unite' => Indicateur::UNITES[$type],
             ]);
 
-            return $empreinte;
+            return $empreinte->fresh();
         });
     }
 
@@ -131,21 +133,6 @@ class Lot extends Model
     public function supprimerEtape(Etape $etape): void
     {
         DB::transaction(function () use ($etape) {
-            $empreinte = $this->empreinteCarbone;
-
-            if ($empreinte) {
-                $retrait = $etape->indicateurs->sum(
-                    fn (Indicateur $i) => $i->valeur * (float) config("nutritrace.facteurs_co2.{$i->type}", 0) / max($this->quantite, 1)
-                );
-
-                if ($retrait > 0) {
-                    $empreinte->co2_total = max(round($empreinte->co2_total - $retrait, 2), 0);
-                    $empreinte->score = EmpreinteCarbone::scorePour($empreinte->co2_total);
-                    $empreinte->date_calcul = today();
-                    $empreinte->save();
-                }
-            }
-
             $etape->indicateurs()->delete();
             $etape->delete();
         });
