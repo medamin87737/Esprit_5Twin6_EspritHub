@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/acteurs', AnnuaireController::class)->name('front.acteurs.index');
 
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('type-acteurs', TypeActeurController::class);
     Route::resource('acteurs', ActeurController::class);
 });

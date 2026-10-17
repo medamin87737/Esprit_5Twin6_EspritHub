@@ -52,12 +52,9 @@ class RegisterController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
         $user->forceFill(['last_login_at' => now()])->save();
+        $user->sendEmailVerificationNotification();
 
-        if ($user->isPro()) {
-            return redirect()->route('pro.dashboard')
-                ->with('status', "Bienvenue sur NutriTrace, {$user->name} ! Complétez votre profil société pour commencer.");
-        }
-
-        return redirect()->route('home')->with('status', "Bienvenue sur NutriTrace, {$user->name} ! Votre compte a été créé.");
+        return redirect()->route('verification.notice')
+            ->with('status', "Bienvenue {$user->name} ! Vérifiez votre e-mail pour activer votre compte.");
     }
 }

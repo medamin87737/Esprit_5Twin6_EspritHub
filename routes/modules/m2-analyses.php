@@ -17,7 +17,7 @@ Route::get('/analyses/{analyse}/rapport', RapportAnalyseController::class)
     ->middleware(['auth', 'can:telechargerRapport,analyse'])
     ->name('front.analyses.rapport');
 
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('laboratoires', LaboratoireController::class);
 
     Route::get('analyses/export', AnalyseExportController::class)->name('analyses.export');

@@ -21,7 +21,11 @@ class LoginController extends Controller
         $credentials = $request->validate([
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
-        ], [], [
+        ], [
+            'email.required' => 'L\'adresse e-mail est obligatoire.',
+            'email.email' => 'Indiquez une adresse e-mail valide.',
+            'password.required' => 'Le mot de passe est obligatoire.',
+        ], [
             'email' => 'adresse e-mail',
             'password' => 'mot de passe',
         ]);
@@ -40,6 +44,14 @@ class LoginController extends Controller
             throw ValidationException::withMessages([
                 'email' => 'Ce compte est suspendu. Contactez un administrateur NutriTrace.',
             ]);
+        }
+
+        if ($user->hasTwoFactorEnabled()) {
+            Auth::logout();
+            $request->session()->put('login.id', $user->id);
+            $request->session()->put('login.remember', $request->boolean('remember'));
+
+            return redirect()->route('two-factor.challenge');
         }
 
         $request->session()->regenerate();

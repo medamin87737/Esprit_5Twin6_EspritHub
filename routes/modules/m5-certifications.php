@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/certifications', LabelController::class)->name('front.certifications.index');
 
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('organismes', OrganismeController::class);
     Route::resource('certifications', CertificationController::class);
 });

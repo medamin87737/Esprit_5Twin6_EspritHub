@@ -22,7 +22,7 @@ use App\Http\Controllers\Pro\ProfilController;
 use App\Http\Controllers\Pro\SignalementController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'can:espace-pro'])->prefix('pro')->name('pro.')->group(function () {
+Route::middleware(['auth', 'verified', 'can:espace-pro'])->prefix('pro')->name('pro.')->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
 
     Route::get('/profil', [ProfilController::class, 'edit'])->name('profil.edit');

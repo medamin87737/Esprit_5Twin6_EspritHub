@@ -46,12 +46,17 @@
             @enderror
         </div>
 
-        <div class="form-group">
-            <div class="custom-control custom-checkbox">
+        <div class="form-group d-flex justify-content-between align-items-center flex-wrap" style="gap: 0.5rem;">
+            <div class="custom-control custom-checkbox mb-0">
                 <input type="checkbox" class="custom-control-input" id="remember" name="remember" value="1" @checked(old('remember'))>
                 <label class="custom-control-label font-weight-normal text-muted" for="remember">Rester connecté</label>
             </div>
+            <a href="{{ route('password.request') }}" class="small">Mot de passe oublié ?</a>
         </div>
+
+        @if (session('status'))
+            <div class="alert alert-success" role="status">{{ session('status') }}</div>
+        @endif
 
         <button type="submit" class="btn btn-primary btn-lg btn-block mt-4">
             Se connecter <i class="bi bi-arrow-right ml-1" aria-hidden="true"></i>

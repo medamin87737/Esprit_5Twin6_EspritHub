@@ -62,7 +62,7 @@ Route::middleware(['auth', 'throttle:20,1'])->group(function () {
 });
 
 // ── Administration (auth + admin) ─────────────────────────────────────────────
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     // Sans parameters(), Laravel nommerait le paramètre {category} et la liaison avec $categorie échouerait.
     Route::resource('categories', CategorieController::class)->parameters(['categories' => 'categorie']);
     Route::resource('produits', ProduitController::class);

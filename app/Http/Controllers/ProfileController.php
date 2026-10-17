@@ -25,12 +25,36 @@ class ProfileController extends Controller
         $data = $request->validateWithBag('profile', [
             'name' => ['required', 'string', 'min:2', 'max:100'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user)],
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ], [], [
             'name' => 'nom complet',
             'email' => 'adresse e-mail',
+            'avatar' => 'photo de profil',
         ]);
 
-        $user->update($data);
+        $emailChange = $data['email'] !== $user->email;
+
+        if ($request->hasFile('avatar')) {
+            $user->supprimerAvatar();
+            $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
+        } else {
+            unset($data['avatar']);
+        }
+
+        $user->fill($data);
+
+        if ($emailChange) {
+            $user->email_verified_at = null;
+        }
+
+        $user->save();
+
+        if ($emailChange) {
+            $user->sendEmailVerificationNotification();
+
+            return redirect()->route('verification.notice')
+                ->with('status', 'Profil mis à jour. Vérifiez votre nouvelle adresse e-mail.');
+        }
 
         return back()->with('status', 'Vos informations ont été mises à jour.');
     }
@@ -53,6 +77,13 @@ class ProfileController extends Controller
         return back()->with('status', 'Votre mot de passe a été modifié.');
     }
 
+    public function destroyAvatar(Request $request): RedirectResponse
+    {
+        $request->user()->supprimerAvatar();
+
+        return back()->with('status', 'Photo de profil supprimée.');
+    }
+
     public function destroy(Request $request): RedirectResponse
     {
         $user = $request->user();
@@ -69,6 +100,7 @@ class ProfileController extends Controller
             return back()->withErrors(['delete_password' => 'Vous êtes le dernier administrateur actif : votre compte ne peut pas être supprimé.'], 'deletion');
         }
 
+        $user->supprimerAvatar();
         Auth::logout();
         $user->delete();
         $request->session()->invalidate();

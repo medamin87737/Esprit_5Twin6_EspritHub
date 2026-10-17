@@ -11,10 +11,23 @@
             <div class="row g-4 account-grid">
                 <div class="col-lg-4">
                     <aside class="account-card account-summary">
-                        <span class="account-avatar">{{ $user->initials() }}</span>
+                        @if ($user->avatarUrl())
+                            <img src="{{ $user->avatarUrl() }}" alt="" class="account-avatar-img rounded-circle mb-2" width="72" height="72" style="object-fit: cover;">
+                        @else
+                            <span class="account-avatar">{{ $user->initials() }}</span>
+                        @endif
                         <h2 class="h5 mb-1">{{ $user->name }}</h2>
-                        <p class="text-muted small mb-3">{{ $user->email }}</p>
+                        <p class="text-muted small mb-1">{{ $user->email }}</p>
+                        @if ($user->hasVerifiedEmail())
+                            <span class="status-pill status-valid mb-2">E-mail vérifié</span>
+                        @else
+                            <span class="status-pill status-pending mb-2">E-mail non vérifié</span>
+                        @endif
                         <span class="label-chip"><i class="bi bi-person-badge" aria-hidden="true"></i> {{ $user->roleLabel() }}</span>
+                        @if ($user->hasTwoFactorEnabled())
+                            <span class="label-chip ms-1"><i class="bi bi-shield-check" aria-hidden="true"></i> 2FA</span>
+                        @endif
+
 
                         <dl class="account-facts">
                             <div><dt>Membre depuis</dt><dd>{{ $user->created_at?->translatedFormat('j F Y') }}</dd></div>
@@ -44,7 +57,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('profile.update') }}" class="account-card mb-4" novalidate>
+                    <form method="POST" action="{{ route('profile.update') }}" class="account-card mb-4" enctype="multipart/form-data" novalidate>
                         @csrf
                         @method('PUT')
                         <h2 class="account-card-title"><i class="bi bi-person-vcard" aria-hidden="true"></i> Informations personnelles</h2>
@@ -59,11 +72,38 @@
                                 <input class="form-control @error('email', 'profile') is-invalid @enderror" id="email" name="email" type="email" value="{{ old('email', $user->email) }}" autocomplete="email" required>
                                 @error('email', 'profile') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
+                            <div class="col-12">
+                                <label class="form-label" for="avatar">Photo de profil</label>
+                                <input class="form-control @error('avatar', 'profile') is-invalid @enderror" id="avatar" name="avatar" type="file" accept="image/jpeg,image/png,image/webp">
+                                @error('avatar', 'profile') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                <div class="form-text">JPG, PNG ou WebP · 2 Mo max.</div>
+                            </div>
                         </div>
-                        <div class="account-card-footer">
+                        <div class="account-card-footer d-flex flex-wrap gap-2">
                             <button class="btn btn-primary" type="submit">Enregistrer</button>
+                            @if ($user->avatar)
+                                <button form="form-avatar-destroy" class="btn btn-outline-secondary" type="submit">Supprimer la photo</button>
+                            @endif
                         </div>
                     </form>
+                    @if ($user->avatar)
+                        <form id="form-avatar-destroy" method="POST" action="{{ route('profile.avatar.destroy') }}" class="d-none">
+                            @csrf
+                            @method('DELETE')
+                        </form>
+                    @endif
+
+                    <div class="account-card mb-4">
+                        <h2 class="account-card-title"><i class="bi bi-shield-lock" aria-hidden="true"></i> Double authentification (2FA)</h2>
+                        <p class="text-muted small mb-3">
+                            @if ($user->hasTwoFactorEnabled())
+                                Activée — un code TOTP est demandé à chaque connexion.
+                            @else
+                                Non activée — recommande pour sécuriser votre compte.
+                            @endif
+                        </p>
+                        <a href="{{ route('two-factor.show') }}" class="btn btn-outline-primary">Gérer la 2FA</a>
+                    </div>
 
                     <form method="POST" action="{{ route('profile.password') }}" class="account-card mb-4" novalidate>
                         @csrf

@@ -14,7 +14,7 @@ use App\Http\Controllers\Consommateur\ScanController;
 use App\Http\Controllers\Consommateur\SignalementController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'can:espace-consommateur'])->prefix('mon-espace')->name('consommateur.')->group(function () {
+Route::middleware(['auth', 'verified', 'can:espace-consommateur'])->prefix('mon-espace')->name('consommateur.')->group(function () {
     Route::get('/signalements', [SignalementController::class, 'index'])->name('signalements.index');
     Route::get('/signalements/{signalement}/modifier', [SignalementController::class, 'edit'])->name('signalements.edit')->can('update', 'signalement');
     Route::put('/signalements/{signalement}', [SignalementController::class, 'update'])->name('signalements.update')->can('update', 'signalement');

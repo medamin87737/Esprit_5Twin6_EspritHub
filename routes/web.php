@@ -12,14 +12,15 @@ Route::post('/contact', [ContactController::class, 'store'])->name('contact.stor
 
 require __DIR__.'/auth.php';
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/mon-compte', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/mon-compte', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/mon-compte/mot-de-passe', [ProfileController::class, 'password'])->name('profile.password');
+    Route::delete('/mon-compte/avatar', [ProfileController::class, 'destroyAvatar'])->name('profile.avatar.destroy');
     Route::delete('/mon-compte', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
     Route::get('/profil', [ProfileController::class, 'edit'])->name('profile');
 

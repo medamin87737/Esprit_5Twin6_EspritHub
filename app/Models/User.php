@@ -2,16 +2,20 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Notifications\ResetPasswordNotification;
+use App\Notifications\VerifyEmailNotification;
+use App\Support\Totp;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -32,6 +36,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'avatar',
         'role',
         'active',
         'password',
@@ -45,6 +50,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     /**
@@ -57,9 +64,89 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
+            'two_factor_confirmed_at' => 'datetime',
             'active' => 'boolean',
             'password' => 'hashed',
         ];
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyEmailNotification);
+    }
+
+    public function hasTwoFactorEnabled(): bool
+    {
+        return filled($this->two_factor_secret) && $this->two_factor_confirmed_at !== null;
+    }
+
+    public function twoFactorSecret(): ?string
+    {
+        if (! $this->two_factor_secret) {
+            return null;
+        }
+
+        try {
+            return decrypt($this->two_factor_secret);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    public function validerCodeDeuxFacteurs(string $code): bool
+    {
+        $secret = $this->twoFactorSecret();
+
+        if ($secret && Totp::verifier($secret, $code)) {
+            return true;
+        }
+
+        return $this->consommerCodeRecuperation($code);
+    }
+
+    public function consommerCodeRecuperation(string $code): bool
+    {
+        if (! $this->two_factor_recovery_codes) {
+            return false;
+        }
+
+        try {
+            /** @var list<string> $hashes */
+            $hashes = json_decode(decrypt($this->two_factor_recovery_codes), true, 512, JSON_THROW_ON_ERROR);
+        } catch (\Throwable) {
+            return false;
+        }
+
+        foreach ($hashes as $index => $hash) {
+            if (password_verify(strtoupper(trim($code)), $hash) || password_verify(trim($code), $hash)) {
+                unset($hashes[$index]);
+                $this->forceFill([
+                    'two_factor_recovery_codes' => encrypt(json_encode(array_values($hashes))),
+                ])->save();
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function avatarUrl(): ?string
+    {
+        return $this->avatar ? asset('storage/'.$this->avatar) : null;
+    }
+
+    public function supprimerAvatar(): void
+    {
+        if ($this->avatar) {
+            Storage::disk('public')->delete($this->avatar);
+            $this->forceFill(['avatar' => null])->save();
+        }
     }
 
     public function scopeAdmins(Builder $query): void
