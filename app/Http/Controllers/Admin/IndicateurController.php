@@ -37,7 +37,7 @@ class IndicateurController extends Controller
         $indicateur = Indicateur::create($request->validated());
 
         return redirect()->route('admin.empreintes.show', $indicateur->empreinte_carbone_id)
-            ->with('success', "L'indicateur « {$indicateur->typeLabel()} » a été ajouté.");
+            ->with('success', "L'indicateur « {$indicateur->typeLabel()} » a été ajouté. CO₂ et score recalculés.");
     }
 
     public function show(Indicateur $indicateur): View
@@ -57,14 +57,17 @@ class IndicateurController extends Controller
         $indicateur->update($request->validated());
 
         return redirect()->route('admin.empreintes.show', $indicateur->empreinte_carbone_id)
-            ->with('success', "L'indicateur « {$indicateur->typeLabel()} » a été mis à jour.");
+            ->with('success', "L'indicateur « {$indicateur->typeLabel()} » a été mis à jour. CO₂ et score recalculés.");
     }
 
     public function destroy(Indicateur $indicateur): RedirectResponse
     {
+        $empreinteId = $indicateur->empreinte_carbone_id;
+        $libelle = $indicateur->typeLabel();
         $indicateur->delete();
 
-        return back()->with('success', "L'indicateur « {$indicateur->typeLabel()} » a été supprimé.");
+        return redirect()->route('admin.empreintes.show', $empreinteId)
+            ->with('success', "L'indicateur « {$libelle} » a été supprimé. CO₂ et score recalculés.");
     }
 
     /**
