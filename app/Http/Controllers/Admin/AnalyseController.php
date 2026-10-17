@@ -25,6 +25,8 @@ class AnalyseController extends Controller
             ->when($request->filled('type'), fn ($q) => $q->where('type', $request->input('type')))
             ->when($request->filled('laboratoire'), fn ($q) => $q->where('laboratoire_id', $request->input('laboratoire')))
             ->when($request->filled('lot'), fn ($q) => $q->where('lot_id', $request->input('lot')))
+            ->when($request->filled('du'), fn ($q) => $q->whereDate('date_prelevement', '>=', $request->input('du')))
+            ->when($request->filled('au'), fn ($q) => $q->whereDate('date_prelevement', '<=', $request->input('au')))
             ->latest('date_prelevement')
             ->paginate(10)
             ->withQueryString();
@@ -32,6 +34,9 @@ class AnalyseController extends Controller
         return view('pages.admin.analyses.index', [
             'analyses' => $analyses,
             'laboratoires' => Laboratoire::orderBy('nom')->get(['id', 'nom']),
+            'nbEnRetard' => Analyse::resultat('en_attente')
+                ->whereDate('date_prelevement', '<=', today()->subDays((int) config('openrouter.alerte_en_attente_jours', 7)))
+                ->count(),
         ]);
     }
 

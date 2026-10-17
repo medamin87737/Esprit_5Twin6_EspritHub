@@ -71,6 +71,36 @@
                 </div>
             @endcan
 
+            @php($synthese = app(\App\Services\Analyses\AnalyseSynthese::class)->pourLot($lot))
+            <div class="panel mb-4">
+                <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+                    <h2 class="panel-title mb-0"><i class="bi bi-shield-check" aria-hidden="true"></i>Synthèse conformité</h2>
+                    <form method="POST" action="{{ route('pro.lots.ia.risque', $lot) }}">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-outline-success">Score de risque IA</button>
+                    </form>
+                </div>
+                <p class="mb-2">
+                    <span class="status-pill {{ $synthese['statut'] === 'non_conforme' ? 'status-expired' : ($synthese['statut'] === 'conforme' ? 'status-valid' : 'status-pending') }}">
+                        {{ $synthese['libelle'] }}
+                    </span>
+                    <span class="small text-muted ms-2">{{ $synthese['total'] }} analyse(s) · {{ $synthese['en_attente_anciennes'] }} en retard</span>
+                </p>
+                @foreach ($synthese['alertes'] as $alerte)
+                    <p class="small mb-1 text-muted"><i class="bi bi-exclamation-circle me-1" aria-hidden="true"></i>{{ $alerte }}</p>
+                @endforeach
+                @if (session('risque_ia'))
+                    @php($risque = session('risque_ia'))
+                    <div class="notice-panel mt-3">
+                        <i class="bi bi-stars" aria-hidden="true"></i>
+                        <div>
+                            <strong>{{ $risque['libelle'] }} ({{ $risque['score'] }}/100)</strong>
+                            <p class="mb-0 mt-1">{{ $risque['justification'] }}</p>
+                        </div>
+                    </div>
+                @endif
+            </div>
+
             <div class="panel mb-4">
                 <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
                     <h2 class="panel-title mb-0"><i class="bi bi-clipboard2-pulse" aria-hidden="true"></i>Analyses qualité</h2>
@@ -87,6 +117,9 @@
                                 <span>
                                     <i class="bi {{ $analyse->icone() }} me-2 text-success" aria-hidden="true"></i>{{ $analyse->typeLabel() }}
                                     <span class="d-block small text-muted">{{ $analyse->numero }} · {{ $analyse->laboratoire?->nom }} · {{ $analyse->date_prelevement?->format('d/m/Y') }}</span>
+                                    @if ($analyse->resume_ia)
+                                        <span class="d-block small">{{ \Illuminate\Support\Str::limit($analyse->resume_ia, 120) }}</span>
+                                    @endif
                                     @if ($analyse->rapport)
                                         <a href="{{ route('front.analyses.rapport', $analyse) }}" class="small"><i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>Rapport</a>
                                     @endif
@@ -101,7 +134,12 @@
                                         </span>
                                     @endcan
                                 </span>
-                                <span class="status-pill {{ $analyse->resultatClasse() }}">{{ $analyse->resultatLabel() }}</span>
+                                <span>
+                                    <span class="status-pill {{ $analyse->resultatClasse() }}">{{ $analyse->resultatLabel() }}</span>
+                                    @if ($analyse->estEnRetard())
+                                        <span class="status-pill status-expired d-block mt-1">Retard</span>
+                                    @endif
+                                </span>
                             </li>
                         @endforeach
                     </ul>

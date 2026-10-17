@@ -27,7 +27,10 @@ class Analyse extends Model
 
     protected $table = 'analyses';
 
-    protected $fillable = ['lot_id', 'laboratoire_id', 'numero', 'type', 'date_prelevement', 'date_resultat', 'resultat', 'commentaire'];
+    protected $fillable = [
+        'lot_id', 'laboratoire_id', 'numero', 'type', 'date_prelevement', 'date_resultat',
+        'resultat', 'commentaire', 'resume_ia', 'ia_genere_at',
+    ];
 
     protected $attributes = ['resultat' => 'en_attente'];
 
@@ -36,7 +39,20 @@ class Analyse extends Model
         return [
             'date_prelevement' => 'date',
             'date_resultat' => 'date',
+            'ia_genere_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Analyse en attente depuis trop longtemps (alerte avancée module 2).
+     */
+    public function estEnRetard(?int $jours = null): bool
+    {
+        if (! $this->estEnAttente() || ! $this->date_prelevement) {
+            return false;
+        }
+
+        return $this->date_prelevement->diffInDays(today()) >= ($jours ?? (int) config('openrouter.alerte_en_attente_jours', 7));
     }
 
     public function lot(): BelongsTo

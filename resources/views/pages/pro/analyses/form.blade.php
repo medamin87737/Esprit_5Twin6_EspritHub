@@ -46,6 +46,33 @@
                 <x-front.champ name="rapport" label="Rapport PDF" type="file" accept="application/pdf"
                                :help="$analyse->rapport ? 'Un rapport est déjà joint : un nouveau fichier le remplacera.' : 'Facultatif · PDF, 5 Mo maximum. Téléchargeable par les membres connectés.'" />
 
+                <div class="nt-ia-box mb-3">
+                    <button type="button" class="btn btn-outline-success btn-sm" data-ia-prefill="{{ route('pro.analyses.ia.prefill', $lot) }}">
+                        <i class="bi bi-stars me-1" aria-hidden="true"></i> Lire le PDF avec l'IA
+                    </button>
+                    <p class="nt-ia-status small mt-2 mb-0" data-ia-status hidden></p>
+                </div>
+
+                @if ($edition && $analyse->rapport)
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <form method="POST" action="{{ route('pro.analyses.ia.extraire', $analyse) }}">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">Extraire depuis le PDF enregistré</button>
+                        </form>
+                        <form method="POST" action="{{ route('pro.analyses.ia.resumer', $analyse) }}">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">Générer le résumé IA</button>
+                        </form>
+                    </div>
+                @endif
+
+                @if ($analyse->resume_ia)
+                    <div class="notice-panel mb-3">
+                        <i class="bi bi-stars" aria-hidden="true"></i>
+                        <div><strong>Résumé IA</strong><br>{{ $analyse->resume_ia }}</div>
+                    </div>
+                @endif
+
                 <div class="form-actions">
                     <a href="{{ route('pro.lots.show', $lot) }}" class="btn btn-outline-secondary">Annuler</a>
                     <button type="submit" class="btn btn-primary">{{ $edition ? 'Enregistrer' : 'Déclarer l\'analyse' }}</button>
@@ -54,3 +81,7 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    @vite('resources/assets/admin/js/analyse-ia.js')
+@endpush

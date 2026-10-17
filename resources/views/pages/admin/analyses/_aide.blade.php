@@ -7,6 +7,14 @@
     'Rapport' => 'PDF de 5 Mo maximum, téléchargeable par les membres connectés.',
 ]" />
 
+<x-admin.help-card title="Fonctions avancées & IA" icon="bi-stars" :rules="[
+    'Lire le PDF avec l\'IA' => 'OpenRouter lit le rapport et propose type, résultat, dates et commentaire.',
+    'Résumé IA' => 'disponible sur la fiche analyse après enregistrement.',
+    'Score de risque' => 'sur la fiche lot : faible / moyen / élevé selon l\'historique des analyses.',
+    'Export CSV' => 'télécharge les analyses filtrées depuis la liste.',
+    'Clé API' => 'OPENROUTER_API_KEY dans le fichier .env.',
+]" />
+
 <x-admin.help-card title="Relations" icon="bi-diagram-3" :rules="[
     'Laboratoire → Analyses' => 'chaque analyse est réalisée par un laboratoire.',
     'Lot → Analyses' => 'un lot (Module 3) peut recevoir plusieurs analyses ; supprimer le lot supprime ses analyses.',

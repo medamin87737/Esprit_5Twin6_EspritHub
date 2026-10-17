@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="@yield('meta_description', 'NutriTrace suit le parcours de vos aliments de la ferme à l\'assiette : traçabilité des lots, empreinte environnementale et certifications vérifiées.')">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#0b3d24">
     <title>
         @hasSection('title')

@@ -405,6 +405,21 @@ final class TableauDeBord
             ];
         }
 
+        $seuilRetard = (int) config('openrouter.alerte_en_attente_jours', 7);
+        $analysesRetard = Analyse::resultat('en_attente')
+            ->whereDate('date_prelevement', '<=', $aujourdhui->copy()->subDays($seuilRetard));
+        if ($n = $analysesRetard->count()) {
+            $alertes[] = [
+                'niveau' => 'critique',
+                'icone' => 'bi-alarm',
+                'titre' => $n.' analyse'.($n > 1 ? 's' : '').' en retard (> '.$seuilRetard.' j)',
+                'description' => 'Résultat laboratoire attendu depuis trop longtemps.',
+                'date' => self::date($analysesRetard->min('date_prelevement')),
+                'dateLibelle' => 'Plus ancien prélèvement',
+                'action' => ['libelle' => 'Traiter', 'url' => route('admin.analyses.index', ['resultat' => 'en_attente'])],
+            ];
+        }
+
         $signalements = Signalement::where('statut', 'en_attente');
         if ($n = $signalements->count()) {
             $alertes[] = [

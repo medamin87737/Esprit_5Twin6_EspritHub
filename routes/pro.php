@@ -61,5 +61,10 @@ Route::middleware(['auth', 'can:espace-pro'])->prefix('pro')->name('pro.')->grou
         Route::get('/analyses/{analyse}/edit', [AnalyseController::class, 'edit'])->name('analyses.edit')->can('update', 'analyse');
         Route::put('/analyses/{analyse}', [AnalyseController::class, 'update'])->name('analyses.update')->can('update', 'analyse');
         Route::delete('/analyses/{analyse}', [AnalyseController::class, 'destroy'])->name('analyses.destroy')->can('delete', 'analyse');
+
+        Route::post('/lots/{lot}/analyses/ia/prefill', [\App\Http\Controllers\Pro\AnalyseIaController::class, 'prefill'])->name('analyses.ia.prefill')->can('ajouterAnalyse', 'lot');
+        Route::post('/analyses/{analyse}/ia/extraire', [\App\Http\Controllers\Pro\AnalyseIaController::class, 'extraire'])->name('analyses.ia.extraire')->can('update', 'analyse');
+        Route::post('/analyses/{analyse}/ia/resumer', [\App\Http\Controllers\Pro\AnalyseIaController::class, 'resumer'])->name('analyses.ia.resumer')->can('update', 'analyse');
+        Route::post('/lots/{lot}/ia/risque', [\App\Http\Controllers\Pro\AnalyseIaController::class, 'risque'])->name('lots.ia.risque')->can('view', 'lot');
     });
 });

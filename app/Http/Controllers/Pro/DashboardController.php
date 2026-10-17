@@ -31,6 +31,7 @@ class DashboardController extends Controller
             'nbLotsTraites' => $acteur ? Lot::concernant($acteur)->count() : 0,
             'nbAnalysesEnAttente' => $acteur ? $this->analysesDeMesLots($acteur->id, 'en_attente') : 0,
             'nbAnalysesNonConformes' => $acteur ? $this->analysesDeMesLots($acteur->id, 'non_conforme') : 0,
+            'nbAnalysesEnRetard' => $acteur ? $this->analysesEnRetard($acteur->id) : 0,
         ];
 
         if ($gereProduits) {
@@ -57,5 +58,15 @@ class DashboardController extends Controller
     private function analysesDeMesLots(int $acteurId, string $resultat): int
     {
         return Analyse::resultat($resultat)->whereHas('lot', fn ($q) => $q->where('acteur_courant_id', $acteurId))->count();
+    }
+
+    private function analysesEnRetard(int $acteurId): int
+    {
+        $seuil = (int) config('openrouter.alerte_en_attente_jours', 7);
+
+        return Analyse::resultat('en_attente')
+            ->whereDate('date_prelevement', '<=', today()->subDays($seuil))
+            ->whereHas('lot', fn ($q) => $q->where('acteur_courant_id', $acteurId))
+            ->count();
     }
 }

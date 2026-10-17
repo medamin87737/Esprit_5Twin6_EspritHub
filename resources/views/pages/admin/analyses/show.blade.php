@@ -11,6 +11,20 @@
                     <i class="bi bi-box-arrow-up-right mr-1" aria-hidden="true"></i> Vue publique
                 </a>
             @endif
+            <form method="POST" action="{{ route('admin.analyses.ia.resumer', $analyse) }}" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-light" @disabled(! config('openrouter.api_key'))>
+                    <i class="bi bi-stars mr-1" aria-hidden="true"></i> Résumé IA
+                </button>
+            </form>
+            @if ($analyse->rapport)
+                <form method="POST" action="{{ route('admin.analyses.ia.extraire', $analyse) }}" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-light" @disabled(! config('openrouter.api_key'))>
+                        <i class="bi bi-magic mr-1" aria-hidden="true"></i> Extraire le PDF
+                    </button>
+                </form>
+            @endif
             <a href="{{ route('admin.analyses.edit', $analyse) }}" class="btn btn-primary">
                 <i class="bi bi-pencil mr-1" aria-hidden="true"></i> Modifier
             </a>
@@ -46,6 +60,25 @@
                     @if ($analyse->commentaire)
                         <p class="mt-3 mb-0 small {{ $analyse->resultat === 'non_conforme' ? 'text-danger' : 'text-muted' }}">{{ $analyse->commentaire }}</p>
                     @endif
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h2 class="nt-card-title mb-0"><i class="bi bi-stars mr-1" aria-hidden="true"></i> Résumé IA</h2>
+                    @if ($analyse->ia_genere_at)
+                        <span class="small text-muted">{{ $analyse->ia_genere_at->format('d/m/Y H:i') }}</span>
+                    @endif
+                </div>
+                <div class="card-body">
+                    @if ($analyse->resume_ia)
+                        <p class="mb-0">{{ $analyse->resume_ia }}</p>
+                    @else
+                        <p class="text-muted mb-0">Aucun résumé pour l'instant. Cliquez sur « Résumé IA » pour le générer via OpenRouter.</p>
+                    @endif
+                    @unless (config('openrouter.api_key'))
+                        <p class="small text-warning mb-0 mt-2"><i class="bi bi-key mr-1" aria-hidden="true"></i>Ajoutez <code>OPENROUTER_API_KEY</code> dans <code>.env</code>.</p>
+                    @endunless
                 </div>
             </div>
         </div>

@@ -20,3 +20,7 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    @vite('resources/assets/admin/js/analyse-ia.js')
+@endpush

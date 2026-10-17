@@ -24,7 +24,7 @@
         </a>
         <a href="{{ route('pro.lots.index') }}" class="kpi-card">
             <span @class(['kpi-icon', 'is-alert' => $nbAnalysesNonConformes > 0])><i class="bi bi-clipboard2-pulse" aria-hidden="true"></i></span>
-            <span><span class="kpi-value">{{ $nbAnalysesEnAttente }}</span><span class="kpi-label">analyse(s) en attente @if ($nbAnalysesNonConformes) · {{ $nbAnalysesNonConformes }} non conforme(s) @endif</span></span>
+            <span><span class="kpi-value">{{ $nbAnalysesEnAttente }}</span><span class="kpi-label">analyse(s) en attente@if ($nbAnalysesEnRetard) · {{ $nbAnalysesEnRetard }} en retard@endif @if ($nbAnalysesNonConformes) · {{ $nbAnalysesNonConformes }} non conforme(s) @endif</span></span>
         </a>
         @if ($gereProduits)
             <a href="{{ route('pro.produits.index') }}" class="kpi-card">

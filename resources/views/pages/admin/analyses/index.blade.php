@@ -8,9 +8,20 @@
         $resultats = config('nutritrace.options.analyse_resultats');
     @endphp
 
+    @if (($nbEnRetard ?? 0) > 0)
+        <div class="alert alert-warning" role="status">
+            <i class="bi bi-alarm mr-1" aria-hidden="true"></i>
+            <strong>{{ $nbEnRetard }}</strong> analyse{{ $nbEnRetard > 1 ? 's' : '' }} en attente depuis plus de {{ config('openrouter.alerte_en_attente_jours', 7) }} jours.
+            <a href="{{ route('admin.analyses.index', ['resultat' => 'en_attente']) }}" class="alert-link">Voir les analyses en attente</a>
+        </div>
+    @endif
+
     <x-admin.page-header title="Analyses qualité" module="Module 2 · Analyses qualité"
                          subtitle="Les contrôles sanitaires des lots, le laboratoire qui les réalise et leur résultat.">
         <x-slot:actions>
+            <a href="{{ route('admin.analyses.export', request()->query()) }}" class="btn btn-light">
+                <i class="bi bi-download mr-1" aria-hidden="true"></i> Export CSV
+            </a>
             <a href="{{ route('admin.analyses.create', request()->only('lot')) }}" class="btn btn-primary">
                 <i class="bi bi-plus-lg mr-1" aria-hidden="true"></i> Nouvelle analyse
             </a>
@@ -18,7 +29,7 @@
     </x-admin.page-header>
 
     <x-admin.table-card :items="$analyses" title="Liste des analyses" search-placeholder="Numéro, lot ou produit…"
-                        :filter-keys="['q', 'resultat', 'type', 'laboratoire', 'lot']">
+                        :filter-keys="['q', 'resultat', 'type', 'laboratoire', 'lot', 'du', 'au']">
         <x-slot:filters>
             <label for="filter-type" class="sr-only">Type</label>
             <select id="filter-type" name="type" class="custom-select">
@@ -41,6 +52,10 @@
                     <option value="{{ $laboratoire->id }}" @selected((string) request('laboratoire') === (string) $laboratoire->id)>{{ $laboratoire->nom }}</option>
                 @endforeach
             </select>
+            <label for="filter-du" class="sr-only">Du</label>
+            <input id="filter-du" type="date" name="du" class="form-control" value="{{ request('du') }}" title="Prélèvement du">
+            <label for="filter-au" class="sr-only">Au</label>
+            <input id="filter-au" type="date" name="au" class="form-control" value="{{ request('au') }}" title="Prélèvement au">
             @if (request()->filled('lot'))
                 <input type="hidden" name="lot" value="{{ request('lot') }}">
             @endif
@@ -62,6 +77,9 @@
                     {{ $analyse->numero }}
                     @if ($analyse->rapport)
                         <i class="bi bi-file-earmark-pdf text-danger ml-1" title="Rapport PDF joint" aria-label="Rapport PDF joint"></i>
+                    @endif
+                    @if ($analyse->estEnRetard())
+                        <span class="nt-badge nt-badge-danger ml-1" title="En attente trop longtemps">Retard</span>
                     @endif
                 </td>
                 <td><span class="nt-badge"><i class="bi {{ $analyse->icone() }}" aria-hidden="true"></i> {{ $analyse->typeLabel() }}</span></td>

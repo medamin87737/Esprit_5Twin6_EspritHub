@@ -2551,3 +2551,47 @@ textarea.form-control {
     transition: none;
   }
 }
+
+/* ---------- Module 2 · IA analyses ---------- */
+
+.nt-ia-box {
+  padding: 0.85rem 1rem;
+  border: 1px dashed var(--nt-mint-200, #b7dcc8);
+  border-radius: 0.65rem;
+  background: var(--nt-mint, #eaf5ee);
+}
+
+.nt-ia-status.is-ok {
+  color: var(--nt-forest, #064e35);
+}
+
+.nt-ia-status.is-error {
+  color: #9b2f1c;
+}
+
+.nt-risque {
+  padding: 0.85rem 1rem;
+  border-radius: 0.65rem;
+  border: 1px solid var(--nt-border, #d7e0d9);
+}
+
+.nt-risque-score {
+  display: inline-block;
+  margin-left: 0.5rem;
+  font-weight: 700;
+}
+
+.nt-risque-faible {
+  background: #eaf5ee;
+  border-color: #b7dcc8;
+}
+
+.nt-risque-moyen {
+  background: #fff8e8;
+  border-color: #f0d48a;
+}
+
+.nt-risque-eleve {
+  background: #fde8e3;
+  border-color: #f0b4a6;
+}

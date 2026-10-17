@@ -51,4 +51,14 @@
                            help="Obligatoire si le résultat est non conforme." />
     <x-admin.form.file name="rapport" label="Rapport PDF" accept="application/pdf"
                        :help="$analyse?->rapport ? 'Un rapport est déjà joint : un nouveau fichier le remplacera.' : 'PDF, 5 Mo maximum.'" />
+
+    <div class="nt-ia-box mt-3">
+        <div class="d-flex flex-wrap align-items-center" style="gap: 0.75rem;">
+            <button type="button" class="btn btn-outline-primary btn-sm" data-ia-prefill="{{ route('admin.analyses.ia.prefill') }}">
+                <i class="bi bi-stars mr-1" aria-hidden="true"></i> Lire le PDF avec l'IA
+            </button>
+            <span class="small text-muted">OpenRouter extrait type, résultat, dates et commentaire. Vérifiez avant d'enregistrer.</span>
+        </div>
+        <p class="nt-ia-status mt-2 mb-0" data-ia-status hidden></p>
+    </div>
 </div>

@@ -64,6 +64,8 @@
                 </div>
             </div>
 
+            @include('pages.admin.analyses._synthese-lot', ['lot' => $lot])
+
             <div class="card mt-4">
                 <div class="card-header"><h2 class="nt-card-title">Analyses qualité</h2></div>
                 <div class="card-body">
@@ -72,8 +74,16 @@
                             <a href="{{ route('admin.analyses.show', $analyse) }}">
                                 <i class="bi {{ $analyse->icone() }} mr-1" aria-hidden="true"></i>{{ $analyse->typeLabel() }}
                                 <span class="nt-cell-sub d-block">{{ $analyse->laboratoire?->nom }} · {{ $analyse->date_prelevement?->format('d/m/Y') }}</span>
+                                @if ($analyse->resume_ia)
+                                    <span class="nt-cell-sub d-block text-muted">{{ \Illuminate\Support\Str::limit($analyse->resume_ia, 90) }}</span>
+                                @endif
                             </a>
-                            @include('pages.admin.analyses._resultat')
+                            <span>
+                                @include('pages.admin.analyses._resultat')
+                                @if ($analyse->estEnRetard())
+                                    <span class="nt-badge nt-badge-danger d-block mt-1">Retard</span>
+                                @endif
+                            </span>
                         </div>
                     @empty
                         <p class="text-muted">Aucune analyse enregistrée pour ce lot.</p>
