@@ -1,0 +1,429 @@
+/*
+ * module1.css — Module 1 Produits & Catégories (Ghada)
+ * Importé par resources/assets/front/js/module1.js via :
+ *   import '../css/module1.css';
+ *
+ * RÈGLE : ce fichier ne contient QUE les styles absents de nutritrace.css.
+ * Toutes les classes du template (panel, filter-bar, results-bar, label-chip,
+ * status-pill, eco-a…eco-e, score-badge, product-card, data-card, etc.)
+ * sont réutilisées directement sans redéfinition.
+ *
+ * Variables CSS avec repli vers les valeurs du thème.
+ * Classes préfixées m1- pour éviter tout conflit.
+ */
+
+/* ── Barre de répartition des scores (cliquable, A→E) ─────────────────────── */
+
+.m1-score-bar {
+    display: flex;
+    gap: 3px;
+    height: 2rem;
+    border-radius: var(--nt-radius, 1rem);
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+}
+
+.m1-score-bar__segment {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 2.5rem;
+    text-decoration: none;
+    color: #fff;
+    font-size: .72rem;
+    font-weight: 700;
+    transition: filter 180ms ease, transform 180ms ease;
+    border: none;
+}
+
+.m1-score-bar__segment:hover,
+.m1-score-bar__segment:focus-visible {
+    filter: brightness(1.15);
+    transform: scaleY(1.06);
+    color: #fff;
+    outline: 2px solid rgba(255, 255, 255, .6);
+    outline-offset: -2px;
+}
+
+.m1-score-bar__segment--actif {
+    outline: 3px solid #fff;
+    outline-offset: -3px;
+    filter: brightness(1.1);
+}
+
+/* Les couleurs réutilisent les variables éco du thème */
+.m1-score-bar__segment--a { background: var(--nt-score-a, #1e7b3c); }
+.m1-score-bar__segment--b { background: var(--nt-score-b, #7ac143); }
+.m1-score-bar__segment--c { background: var(--nt-score-c, #f2c500); color: #3d3200; }
+.m1-score-bar__segment--c:hover,
+.m1-score-bar__segment--c:focus-visible { color: #3d3200; }
+.m1-score-bar__segment--d { background: var(--nt-score-d, #ef8a17); }
+.m1-score-bar__segment--e { background: var(--nt-score-e, #d6342c); }
+.m1-score-bar__segment--sans {
+    background: #c8d5cb;
+    color: #4a5a4e;
+    cursor: default;
+}
+
+.m1-score-bar__lettre { font-size: .75rem; }
+.m1-score-bar__nb     { font-size: .62rem; opacity: .85; }
+
+/* ── Pastilles filtres actifs ──────────────────────────────────────────────── */
+
+/* La barre résultats réutilise .results-bar du template ; on ajoute seulement
+   les pastilles individuelles et le bouton « Tout effacer ». */
+
+.m1-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+}
+
+.m1-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .2rem .65rem;
+    border-radius: 999px;
+    background: var(--nt-primary, #087443);
+    color: #fff;
+    font-size: .75rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 180ms ease;
+}
+
+.m1-chip:hover { background: var(--nt-primary-600, #065f37); color: #fff; }
+
+.m1-chip--reset {
+    background: transparent;
+    color: var(--nt-primary, #087443);
+    border: 1.5px solid var(--nt-primary, #087443);
+}
+
+.m1-chip--reset:hover {
+    background: var(--nt-primary, #087443);
+    color: #fff;
+}
+
+/* ── Labels multi-checkboxes (ligne secondaire du filtre) ─────────────────── */
+
+.m1-label-check {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .3rem .7rem;
+    border-radius: 999px;
+    border: 1.5px solid var(--nt-border, #e1e9e3);
+    background: #fff;
+    font-size: .82rem;
+    cursor: pointer;
+    transition: border-color 180ms ease, background 180ms ease;
+    user-select: none;
+}
+
+/* :has() est supporté par tous les navigateurs modernes */
+.m1-label-check:has(input:checked) {
+    border-color: var(--nt-primary, #087443);
+    background: var(--nt-mint, #eaf5ee);
+    color: var(--nt-forest, #064e35);
+    font-weight: 600;
+}
+
+/* Fallback sans :has() : la classe est gérée par le JS module1.js */
+.m1-label-check.is-checked {
+    border-color: var(--nt-primary, #087443);
+    background: var(--nt-mint, #eaf5ee);
+    color: var(--nt-forest, #064e35);
+    font-weight: 600;
+}
+
+/* ── Carte produit enrichie (bouton Comparer) ─────────────────────────────── */
+
+/* La carte réutilise .product-card du template.
+   On ajoute seulement l'état « sélectionné » et le z-index du bouton. */
+
+.m1-carte-produit--selectionnee {
+    box-shadow: 0 0 0 3px var(--nt-primary, #087443), var(--nt-shadow, 0 2px 8px rgba(0,0,0,.08));
+}
+
+.m1-carte-comparer {
+    position: relative;
+    z-index: 2; /* au-dessus du stretched-link */
+}
+
+/* ── Barre flottante comparaison ──────────────────────────────────────────── */
+
+.m1-barre-comparaison {
+    position: fixed;
+    bottom: -80px;
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    background: var(--nt-primary, #087443);
+    color: #fff;
+    padding: .75rem 0;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, .2);
+    transition: bottom 280ms cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.m1-barre-comparaison--visible { bottom: 0; }
+
+.m1-barre-comparaison__label {
+    font-size: .95rem;
+    font-weight: 600;
+}
+
+/* ── Onglets lots (fiche produit A3) ──────────────────────────────────────── */
+
+.m1-onglets-lots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    margin-bottom: 1rem;
+}
+
+/* Les onglets réutilisent les classes btn du template.
+   On ajoute seulement l'état actif distinct du btn-primary. */
+.m1-onglet-lot {
+    padding: .3rem .8rem;
+    border-radius: var(--nt-radius-sm, .625rem);
+    border: 1.5px solid var(--nt-border, #e1e9e3);
+    background: #fff;
+    font-size: .82rem;
+    cursor: pointer;
+    transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.m1-onglet-lot:hover,
+.m1-onglet-lot:focus-visible {
+    border-color: var(--nt-primary, #087443);
+    color: var(--nt-primary, #087443);
+}
+
+.m1-onglet-lot--actif {
+    background: var(--nt-primary, #087443);
+    border-color: var(--nt-primary, #087443);
+    color: #fff;
+    font-weight: 600;
+}
+
+.m1-lot-detail-loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
+    color: var(--nt-muted, #65756a);
+    gap: .5rem;
+    font-size: .9rem;
+}
+
+/* ── Courbe SVG CO₂ ───────────────────────────────────────────────────────── */
+
+/* Le conteneur réutilise .panel du template */
+.m1-courbe-svg {
+    width: 100%;
+    height: auto;
+    min-width: 280px;
+    overflow: visible;
+}
+
+.m1-courbe-bande-label {
+    font-size: 11px;
+    font-weight: 700;
+    fill: #fff;
+    dominant-baseline: middle;
+}
+
+/* Tendance du dernier lot */
+.m1-tendance {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    font-size: .82rem;
+    font-weight: 600;
+    padding: .2rem .65rem;
+    border-radius: 999px;
+    margin-top: .5rem;
+}
+
+.m1-tendance--amelioration { background: var(--nt-mint, #eaf5ee); color: var(--nt-forest, #064e35); }
+.m1-tendance--degradation  { background: #fde8e8; color: #9b2f1c; }
+.m1-tendance--stable       { background: #f1f3f1; color: var(--nt-muted, #65756a); }
+
+/* ── Recommandations IA ────────────────────────────────────────────────────── */
+
+.m1-recommandations__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: .75rem;
+}
+
+/* Les cartes recommandations réutilisent .product-card du template */
+
+/* ── Assistant IA (formulaires admin/pro) ─────────────────────────────────── */
+
+.m1-assistant-ia {
+    border: 1.5px dashed var(--nt-primary, #087443);
+    border-radius: var(--nt-radius, 1rem);
+    padding: 1rem 1.25rem;
+    background: var(--nt-mint, #eaf5ee);
+    margin-top: 1rem;
+}
+
+.m1-assistant-ia__titre {
+    font-size: .9rem;
+    font-weight: 700;
+    color: var(--nt-forest, #064e35);
+    margin-bottom: .75rem;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+}
+
+.m1-assistant-ia__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-bottom: .75rem;
+}
+
+/* Le résultat réutilise .notice-panel du template */
+.m1-ia-resultat {
+    display: none;
+    margin-top: .75rem;
+}
+
+.m1-ia-resultat--visible { display: block; }
+
+.m1-ia-champ-ligne {
+    display: flex;
+    align-items: baseline;
+    gap: .5rem;
+    margin-bottom: .4rem;
+    flex-wrap: wrap;
+    font-size: .85rem;
+}
+
+.m1-ia-champ-ligne__label {
+    font-weight: 600;
+    min-width: 110px;
+    color: var(--nt-muted, #65756a);
+    font-size: .8rem;
+}
+
+.m1-ia-champ-ligne__valeur { flex: 1; }
+
+/* ── Pastilles ingrédients ─────────────────────────────────────────────────── */
+
+.m1-ingredients {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .3rem;
+    margin-top: .5rem;
+}
+
+/* Réutilise .label-chip du template avec couleur légèrement différente */
+.m1-ingredient-chip {
+    display: inline-block;
+    padding: .15rem .55rem;
+    border-radius: 999px;
+    background: var(--nt-bg, #f7f9f6);
+    color: var(--nt-forest, #064e35);
+    font-size: .75rem;
+    font-weight: 500;
+    border: 1px solid var(--nt-border, #e1e9e3);
+}
+
+/* ── Barre de validité certification ──────────────────────────────────────── */
+
+/* Le conteneur réutilise .panel + .alert-list du template */
+.m1-validite-bar {
+    height: 5px;
+    border-radius: 999px;
+    background: var(--nt-border, #e1e9e3);
+    overflow: hidden;
+    margin-top: .3rem;
+}
+
+.m1-validite-bar__fill {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--nt-primary, #087443);
+    transition: width .5s ease;
+}
+
+.m1-validite-bar__fill--alerte { background: var(--nt-score-e, #d6342c); }
+
+/* ── Spinner générique module1 ────────────────────────────────────────────── */
+
+.m1-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgba(8, 116, 67, .2);
+    border-top-color: var(--nt-primary, #087443);
+    border-radius: 50%;
+    animation: m1-spin .6s linear infinite;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+@keyframes m1-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── KPIs fiche produit (réutilise .eco-kpi ; on ajoute la grille) ──────────── */
+
+/* .eco-kpis existe déjà dans le template (grid auto-fit).
+   On crée une variante à 4 colonnes pour la fiche produit. */
+.m1-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: .75rem;
+    margin-bottom: 1.25rem;
+}
+
+/* ── Page comparateur ─────────────────────────────────────────────────────── */
+
+/* Réutilise .data-card + .data-table + .panel du template.
+   On ajoute seulement la mise en évidence de la meilleure valeur. */
+.m1-comparer-meilleur {
+    background: var(--nt-mint, #eaf5ee);
+    font-weight: 700;
+    color: var(--nt-forest, #064e35);
+}
+
+.m1-verdict {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: 1rem 1.25rem;
+    background: var(--nt-mint, #eaf5ee);
+    border-left: 4px solid var(--nt-primary, #087443);
+    border-radius: 0 var(--nt-radius-sm, .625rem) var(--nt-radius-sm, .625rem) 0;
+    font-weight: 600;
+    margin-top: 1.5rem;
+}
+
+.m1-verdict i {
+    color: var(--nt-primary, #087443);
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+/* ── Accessibilité ────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+    .m1-barre-comparaison,
+    .m1-onglet-lot,
+    .m1-chip,
+    .m1-score-bar__segment,
+    .m1-label-check { transition: none; }
+
+    .m1-spinner { animation: none; opacity: .6; }
+}

@@ -21,6 +21,7 @@ export default defineConfig({
                 'resources/assets/admin/css/admin.css',
                 'resources/assets/admin/js/admin.js',
                 'resources/assets/admin/js/dashboard.js',
+                'resources/assets/front/js/module1.js',
             ],
             refresh: true,
         }),
