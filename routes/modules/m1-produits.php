@@ -48,6 +48,7 @@ Route::get('/produits/{produit}/lots/{lot}', [FrontProduitController::class, 'lo
 
 // ── Recommandations IA (A3/IA3) — JSON différé ───────────────────────────────
 Route::get('/produits/{produit}/recommandations', [IaRecommandationsController::class, 'index'])
+    ->middleware('throttle:60,1')
     ->name('front.produits.recommandations')
     ->whereNumber('produit');
 

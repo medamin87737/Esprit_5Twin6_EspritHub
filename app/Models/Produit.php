@@ -22,6 +22,52 @@ class Produit extends Model
 
     protected $fillable = ['categorie_id', 'proprietaire_id', 'nom', 'code_barres', 'origine', 'description', 'composition', 'image'];
 
+    /**
+     * embedding : cast en array, jamais exposé en JSON.
+     * embedding_hash : SHA-256 du modèle + texte, pour recalculer si changement.
+     */
+    protected function casts(): array
+    {
+        return [
+            'embedding' => 'array',
+        ];
+    }
+
+    protected $hidden = ['embedding'];
+
+    /**
+     * Texte concaténé utilisé pour calculer l'embedding IA3.
+     * Inclut nom, catégorie, description, composition et origine.
+     */
+    public function texteEmbedding(): string
+    {
+        return implode(' ', array_filter([
+            $this->nom,
+            $this->categorie?->nom,
+            $this->description,
+            $this->composition,
+            $this->origine,
+        ]));
+    }
+
+    /**
+     * Hash du texte d'embedding + nom du modèle, pour savoir si le
+     * vecteur doit être recalculé (texte modifié ou modèle changé).
+     */
+    public function hashEmbeddingAttendu(): string
+    {
+        return hash('sha256', config('ia.modeles.embeddings', '').'|'.$this->texteEmbedding());
+    }
+
+    /**
+     * Indique si l'embedding en cache est à jour.
+     */
+    public function embeddingEstAJour(): bool
+    {
+        return $this->embedding_hash === $this->hashEmbeddingAttendu()
+            && ! empty($this->embedding);
+    }
+
     public function categorie(): BelongsTo
     {
         return $this->belongsTo(Categorie::class);
