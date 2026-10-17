@@ -8,6 +8,9 @@
         $scores = config('nutritrace.options.scores');
         $filtered = request()->filled('q') || request()->filled('score');
         $total = $empreintes instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator ? $empreintes->total() : $empreintes->count();
+        $co2Max = $co2Max ?? 0;
+        $couleurs = \App\Http\Controllers\Front\ComparaisonController::couleurs();
+        $rangDebut = $empreintes instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator ? ($empreintes->firstItem() ?? 1) : 1;
     @endphp
 
     <x-front.page-header eyebrow="Éco-score" title="Comparer l'impact des produits" image="serre-plants.webp"
@@ -65,11 +68,38 @@
                     </x-front.empty-state>
                 @endif
             @else
+                <div class="panel mb-4">
+                    <h2 class="panel-title"><i class="bi bi-trophy" aria-hidden="true"></i>Classement visuel</h2>
+                    <p class="small text-muted">Du plus faible au plus fort impact (kg CO₂e par unité). Comparez aussi les produits sur la page <a href="{{ route('front.comparaison') }}">Comparer</a>.</p>
+                    <div class="compare-chart">
+                        <div class="compare-metric">
+                            <h3><i class="bi bi-cloud-haze2 me-1 text-success" aria-hidden="true"></i>Empreinte carbone <span class="small text-muted fw-normal">(kg CO₂e / unité)</span></h3>
+                            @foreach ($empreintes as $empreinte)
+                                @php($pourcentage = $co2Max > 0 ? round($empreinte->co2_total / $co2Max * 100) : 0)
+                                <div class="compare-row">
+                                    <span class="text-truncate" title="{{ $empreinte->lot?->produit?->nom }}">
+                                        <span class="text-muted me-1">#{{ $rangDebut + $loop->index }}</span>
+                                        {{ $empreinte->lot?->produit?->nom }}
+                                    </span>
+                                    <div class="compare-track" role="img" aria-label="{{ $empreinte->lot?->produit?->nom }} : {{ number_format($empreinte->co2_total, 2, ',', ' ') }} kg CO₂e">
+                                        <div class="compare-fill" style="--value: {{ $pourcentage }}%; --couleur: {{ $couleurs[$loop->index % $couleurs->count()] }}"></div>
+                                    </div>
+                                    <span class="d-flex align-items-center gap-2 flex-shrink-0">
+                                        <span class="score-badge eco-{{ strtolower($empreinte->score) }}">{{ $empreinte->score }}</span>
+                                        <strong>{{ number_format($empreinte->co2_total, 2, ',', ' ') }}</strong>
+                                    </span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
                 <div class="data-card">
                     <div class="table-responsive">
                         <table class="table data-table mb-0">
                             <thead>
                                 <tr>
+                                    <th scope="col" class="text-center" style="width: 3rem;">#</th>
                                     <th scope="col">Produit</th>
                                     <th scope="col">Lot</th>
                                     <th scope="col" class="text-end">CO₂ total</th>
@@ -81,6 +111,7 @@
                             <tbody>
                                 @foreach ($empreintes as $empreinte)
                                     <tr>
+                                        <td class="text-center text-muted fw-semibold">{{ $rangDebut + $loop->index }}</td>
                                         <td class="fw-semibold">{{ $empreinte->lot?->produit?->nom }}</td>
                                         <td><a href="{{ route('front.lots.search', ['numero' => $empreinte->lot?->numero_lot]) }}" class="text-muted">{{ $empreinte->lot?->numero_lot }}</a></td>
                                         <td class="text-end">{{ number_format($empreinte->co2_total, 2, ',', ' ') }} kg</td>
