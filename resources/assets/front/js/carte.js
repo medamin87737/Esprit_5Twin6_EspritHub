@@ -42,6 +42,14 @@ export async function initCartes() {
                 contenu.appendChild(texte);
             }
 
+            const lienMaps = document.createElement('a');
+            lienMaps.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.lat + ',' + p.lng)}`;
+            lienMaps.target = '_blank';
+            lienMaps.rel = 'noopener noreferrer';
+            lienMaps.className = 'd-inline-flex align-items-center mt-2 small text-success text-decoration-none fw-semibold';
+            lienMaps.innerHTML = '<i class="bi bi-geo-alt-fill me-1" aria-hidden="true"></i> Ouvrir dans Google Maps <i class="bi bi-box-arrow-up-right ms-1" style="font-size:0.75rem" aria-hidden="true"></i>';
+            contenu.appendChild(lienMaps);
+
             L.marker([p.lat, p.lng], { icon: icone, title: p.titre }).bindPopup(contenu).addTo(carte);
         });
 

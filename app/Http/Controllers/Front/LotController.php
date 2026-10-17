@@ -23,10 +23,10 @@ class LotController extends Controller
         $this->enregistrerScan($request, $lot);
 
         $points = $lot->etapes
-            ->filter(fn ($etape) => $etape->acteur?->hasCoordinates())
+            ->filter(fn ($etape) => $etape->hasCoordinates() || $etape->acteur?->hasCoordinates())
             ->map(fn ($etape) => [
-                'lat' => $etape->acteur->latitude,
-                'lng' => $etape->acteur->longitude,
+                'lat' => $etape->hasCoordinates() ? (float) $etape->latitude : (float) $etape->acteur->latitude,
+                'lng' => $etape->hasCoordinates() ? (float) $etape->longitude : (float) $etape->acteur->longitude,
                 'titre' => $etape->typeLabel().' · '.$etape->acteur->nom,
                 'texte' => $etape->lieu.' · '.$etape->date_heure?->format('d/m/Y'),
             ])

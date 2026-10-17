@@ -259,4 +259,178 @@ class LotModule3Test extends TestCase
         $responseJ7->assertSee('LOT-VIEW-J7');
         $responseJ7->assertDontSee('LOT-VIEW-J30');
     }
+
+    public function test_page_tracabilite_publique_et_recherche_de_lot(): void
+    {
+        $produit = Produit::factory()->create(['nom' => 'Dattes Deglet Nour']);
+        $lot = Lot::factory()->create([
+            'produit_id' => $produit->id,
+            'numero_lot' => 'LOT-DATTES-001',
+        ]);
+
+        // 1. Accès à la page de recherche publique
+        $response = $this->get(route('front.lots.search'));
+        $response->assertOk();
+        $response->assertSee('Tracer un lot');
+
+        // 2. Recherche avec numéro existant : redirection vers la fiche du lot
+        $searchResponse = $this->get(route('front.lots.search', ['numero' => 'LOT-DATTES-001']));
+        $searchResponse->assertRedirect(route('front.lots.show', $lot));
+    }
+
+    public function test_fiche_lot_affiche_timeline_parcours_et_carte_leaflet(): void
+    {
+        $produit = Produit::factory()->create(['nom' => 'Huile d\'olive Extra Vierge']);
+        $lot = Lot::factory()->create([
+            'produit_id' => $produit->id,
+            'numero_lot' => 'LOT-HUILE-777',
+        ]);
+
+        $typeActeur = TypeActeur::factory()->create(['libelle' => 'Producteur', 'role_chaine' => 'producteur']);
+        $acteur1 = Acteur::factory()->create([
+            'type_acteur_id' => $typeActeur->id,
+            'nom' => 'Oliveraie El Baraka',
+            'latitude' => 36.4,
+            'longitude' => 10.1,
+            'adresse' => 'Zaghouan',
+        ]);
+
+        $acteur2 = Acteur::factory()->create([
+            'type_acteur_id' => $typeActeur->id,
+            'nom' => 'Moulin du Nord',
+            'latitude' => 36.8,
+            'longitude' => 10.2,
+            'adresse' => 'Tunis',
+        ]);
+
+        Etape::factory()->create([
+            'lot_id' => $lot->id,
+            'acteur_id' => $acteur1->id,
+            'type_etape' => 'production',
+            'lieu' => 'Zaghouan',
+            'date_heure' => today()->subDays(3)->setTime(7, 30),
+        ]);
+
+        Etape::factory()->create([
+            'lot_id' => $lot->id,
+            'acteur_id' => $acteur2->id,
+            'type_etape' => 'transformation',
+            'lieu' => 'Tunis',
+            'date_heure' => today()->subDays(2)->setTime(10, 0),
+        ]);
+
+        $response = $this->get(route('front.lots.show', $lot));
+        $response->assertOk();
+
+        // Vérification de la Timeline complète
+        $response->assertSee('Les étapes du parcours');
+        $response->assertSee('Oliveraie El Baraka');
+        $response->assertSee('Moulin du Nord');
+        $response->assertSee('Zaghouan');
+        $response->assertSee('Tunis');
+
+        // Vérification de la Carte Leaflet GPS avec les coordonnées
+        $response->assertSee('Sur la carte');
+        $response->assertSee('map-canvas');
+        $response->assertSee('data-carte');
+        $response->assertSee('36.4');
+        $response->assertSee('10.1');
+        $response->assertSee('data-trace="1"', false);
+    }
+
+    public function test_admin_peut_acceder_au_formulaire_etape_avec_selecteur_carte_leaflet(): void
+    {
+        $produit = Produit::factory()->create();
+        $lot = Lot::factory()->create(['produit_id' => $produit->id]);
+        $typeActeur = TypeActeur::factory()->create();
+        Acteur::factory()->create([
+            'type_acteur_id' => $typeActeur->id,
+            'nom' => 'Station Sousse',
+            'latitude' => 35.8256,
+            'longitude' => 10.6369,
+            'adresse' => 'Zone Portuaire, Sousse',
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('admin.etapes.create', ['lot' => $lot->id]));
+
+        $response->assertOk();
+        // Vérification des éléments du sélecteur de carte Leaflet
+        $response->assertSee('etape-map-picker');
+        $response->assertSee('map-search-input');
+        $response->assertSee('btn-map-search');
+        $response->assertSee('map-picker-status');
+        $response->assertSee('leaflet.js');
+        $response->assertSee('leaflet.css');
+        $response->assertSee('Station Sousse');
+    }
+
+    public function test_admin_peut_creer_une_etape_avec_lieu_geolocalise(): void
+    {
+        $produit = Produit::factory()->create();
+        $lot = Lot::factory()->create([
+            'produit_id' => $produit->id,
+            'date_production' => today()->subDays(10),
+        ]);
+        $typeActeur = TypeActeur::factory()->create();
+        $acteur = Acteur::factory()->create(['type_acteur_id' => $typeActeur->id]);
+
+        $postData = [
+            'lot_id' => $lot->id,
+            'acteur_id' => $acteur->id,
+            'type_etape' => 'transformation',
+            'date_heure' => today()->subDays(5)->format('Y-m-d\TH:i'),
+            'lieu' => 'Avenue Habib Bourguiba, Tunis, Tunisie',
+            'latitude' => 36.80000000,
+            'longitude' => 10.18000000,
+            'mode_transport' => 'camion_frigorifique',
+            'remarques' => 'Conditionnement sous température dirigée.',
+        ];
+
+        $response = $this->actingAs($this->admin)->post(route('admin.etapes.store'), $postData);
+
+        $response->assertRedirect(route('admin.lots.show', $lot));
+        $this->assertDatabaseHas('etapes', [
+            'lot_id' => $lot->id,
+            'acteur_id' => $acteur->id,
+            'lieu' => 'Avenue Habib Bourguiba, Tunis, Tunisie',
+            'latitude' => 36.80000000,
+            'longitude' => 10.18000000,
+            'mode_transport' => 'camion_frigorifique',
+        ]);
+    }
+
+    public function test_carte_publique_utilise_coordonnees_propres_de_letape(): void
+    {
+        $produit = Produit::factory()->create();
+        $lot = Lot::factory()->create(['produit_id' => $produit->id, 'numero_lot' => 'LOT-GPS-PROPRE']);
+
+        $typeActeur = TypeActeur::factory()->create();
+        // Acteur avec des coordonnées à Sfax
+        $acteur = Acteur::factory()->create([
+            'type_acteur_id' => $typeActeur->id,
+            'nom' => 'Société Centrale',
+            'latitude' => 34.7400,
+            'longitude' => 10.7600,
+        ]);
+
+        // Étape avec son vrai lieu physique à Bizerte (coordonnées propres)
+        Etape::factory()->create([
+            'lot_id' => $lot->id,
+            'acteur_id' => $acteur->id,
+            'type_etape' => 'production',
+            'lieu' => 'Champ de Bizerte',
+            'latitude' => 37.2744,
+            'longitude' => 9.8739,
+            'date_heure' => today()->subDays(2),
+        ]);
+
+        $response = $this->get(route('front.lots.show', $lot));
+
+        $response->assertOk();
+        // La carte publique doit afficher les coordonnées réelles de l'étape (Bizerte: 37.2744, 9.8739)
+        $response->assertSee('37.2744');
+        $response->assertSee('9.8739');
+        $response->assertSee('Champ de Bizerte');
+    }
 }
+

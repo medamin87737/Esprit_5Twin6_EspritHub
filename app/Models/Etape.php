@@ -18,12 +18,14 @@ class Etape extends Model
         'vente' => 'bi-shop',
     ];
 
-    protected $fillable = ['lot_id', 'acteur_id', 'type_etape', 'date_heure', 'lieu', 'mode_transport', 'remarques'];
+    protected $fillable = ['lot_id', 'acteur_id', 'type_etape', 'date_heure', 'lieu', 'latitude', 'longitude', 'mode_transport', 'remarques'];
 
     protected function casts(): array
     {
         return [
             'date_heure' => 'datetime',
+            'latitude' => 'float',
+            'longitude' => 'float',
         ];
     }
 
@@ -63,5 +65,10 @@ class Etape extends Model
     public function estVerrouillee(): bool
     {
         return (int) $this->lot?->acteur_courant_id !== (int) $this->acteur_id;
+    }
+
+    public function hasCoordinates(): bool
+    {
+        return $this->latitude !== null && $this->longitude !== null;
     }
 }

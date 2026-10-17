@@ -26,6 +26,8 @@ class EtapeRequest extends FormRequest
             'type_etape' => ['required', Rule::in(array_keys(config('nutritrace.options.etape_types')))],
             'date_heure' => ['bail', 'required', 'date', $this->pasAvantLaProduction(...)],
             'lieu' => ['required', 'string', 'min:2', 'max:150'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'mode_transport' => ['required', Rule::in(array_keys(config('nutritrace.options.modes_transport')))],
             'remarques' => ['nullable', 'string', 'max:1000'],
         ];
