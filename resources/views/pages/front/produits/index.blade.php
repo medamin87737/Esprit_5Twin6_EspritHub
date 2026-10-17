@@ -3,7 +3,7 @@
 @section('title', 'Catalogue des produits')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('module1/module1.css') }}">
+    {{-- module1.css est bundlé dans module1.js (import CSS via Vite) --}}
 @endpush
 
 @section('content')
@@ -159,5 +159,5 @@
 @endsection
 
 @push('scripts')
-    <script src="{{ asset('module1/module1.js') }}" defer></script>
+    @vite('resources/assets/front/js/module1.js')
 @endpush
