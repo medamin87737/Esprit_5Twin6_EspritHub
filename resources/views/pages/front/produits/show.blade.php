@@ -2,15 +2,61 @@
 
 @section('title', $produit->nom)
 
+@push('scripts')
+    @vite('resources/assets/front/js/module1.js')
+@endpush
+
 @section('content')
     <x-front.page-header :eyebrow="$produit->categorie?->nom ?? 'Produit'" :title="$produit->nom" image="marche-fruits-legumes.webp"
                          :subtitle="'Origine : ' . $produit->origine" />
 
     <section class="page-section pt-0 bg-cream">
         <div class="container px-4 px-lg-5">
-            <nav aria-label="Fil d'Ariane" class="mb-4">
-                <a href="{{ route('front.produits.index') }}" class="small"><i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Retour au catalogue</a>
-            </nav>
+
+            {{-- Fil d'Ariane + bouton Comparer --}}
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+                <nav aria-label="Fil d'Ariane">
+                    <a href="{{ route('front.produits.index') }}" class="small">
+                        <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Retour au catalogue
+                    </a>
+                </nav>
+
+                @php
+                    $selectionComparer = session('m1_comparaison', []);
+                    $dejaSelectionne   = in_array($produit->id, $selectionComparer, true);
+                    $maxComp = auth()->check() && auth()->user()->can('comparer-sans-limite')
+                        ? (int) config('nutritrace.comparaison.connecte')
+                        : (int) config('nutritrace.comparaison.visiteur');
+                    $limitePleine = count($selectionComparer) >= $maxComp && ! $dejaSelectionne;
+                @endphp
+
+                @if ($dejaSelectionne)
+                    <form method="POST"
+                          action="{{ route('front.produits.comparaison.retirer', $produit->id) }}"
+                          class="m1-form-comparer" data-ajax="true">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-success m1-btn-comparer">
+                            <i class="bi bi-check2-circle me-1" aria-hidden="true"></i>Dans la comparaison
+                        </button>
+                    </form>
+                @elseif (! $limitePleine)
+                    <form method="POST"
+                          action="{{ route('front.produits.comparaison.ajouter') }}"
+                          class="m1-form-comparer m1-carte-produit" data-produit-id="{{ $produit->id }}" data-ajax="true">
+                        @csrf
+                        <input type="hidden" name="produit_id" value="{{ $produit->id }}">
+                        <button type="submit" class="btn btn-sm btn-outline-primary m1-btn-comparer">
+                            <i class="bi bi-bar-chart-steps me-1" aria-hidden="true"></i>Comparer
+                        </button>
+                    </form>
+                @else
+                    <button type="button" class="btn btn-sm btn-outline-secondary" disabled
+                            title="Limite de {{ $maxComp }} produits atteinte">
+                        <i class="bi bi-lock me-1" aria-hidden="true"></i>Limite atteinte
+                    </button>
+                @endif
+            </div>
 
             <div class="row g-4">
                 <div class="col-lg-5">
@@ -71,7 +117,14 @@
                             <div class="table-responsive">
                                 <table class="table data-table align-middle mb-0">
                                     <thead>
-                                        <tr><th scope="col">Lot</th><th scope="col">Production</th><th scope="col">Étapes</th><th scope="col">Score</th><th scope="col">Analyses</th><th scope="col"><span class="visually-hidden">Parcours</span></th></tr>
+                                        <tr>
+                                            <th scope="col">Lot</th>
+                                            <th scope="col">Production</th>
+                                            <th scope="col">Étapes</th>
+                                            <th scope="col">Score</th>
+                                            <th scope="col">Analyses</th>
+                                            <th scope="col"><span class="visually-hidden">Parcours</span></th>
+                                        </tr>
                                     </thead>
                                     <tbody>
                                         @foreach ($produit->lots as $lot)
@@ -81,7 +134,9 @@
                                                 <td>{{ $lot->etapes_count }}</td>
                                                 <td><x-front.score-badge :score="$lot->empreinteCarbone?->score" taille="sm" /></td>
                                                 <td><x-front.analyses-badge :synthese="$lot->syntheseAnalyses()" /></td>
-                                                <td class="cell-actions"><a href="{{ route('front.lots.show', $lot) }}" class="btn btn-sm btn-outline-primary">Parcours</a></td>
+                                                <td class="cell-actions">
+                                                    <a href="{{ route('front.lots.show', $lot) }}" class="btn btn-sm btn-outline-primary">Parcours</a>
+                                                </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -119,4 +174,8 @@
             </div>
         </div>
     </section>
+
+    {{-- Barre flottante comparaison --}}
+    @include('pages.front.produits._barre_comparaison')
+
 @endsection
