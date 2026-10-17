@@ -11,20 +11,32 @@
     <x-admin.page-header title="Lots" module="Module 3 · Traçabilité des lots"
                          subtitle="Chaque lot de production, son produit et ses dates clés.">
         <x-slot:actions>
+            <a href="{{ route('admin.lots.export', request()->query()) }}" class="btn btn-outline-success mr-2" title="Exporter la liste filtrée au format CSV / Excel">
+                <i class="bi bi-file-earmark-spreadsheet mr-1" aria-hidden="true"></i> Exporter CSV / Excel
+            </a>
             <a href="{{ route('admin.lots.create') }}" class="btn btn-primary">
                 <i class="bi bi-plus-lg mr-1" aria-hidden="true"></i> Nouveau lot
             </a>
         </x-slot:actions>
     </x-admin.page-header>
 
-    <x-admin.table-card :items="$lots" title="Liste des lots" search-placeholder="Numéro de lot ou produit…" :filter-keys="['q', 'produit']">
+    <x-admin.table-card :items="$lots" title="Liste des lots" search-placeholder="Numéro de lot ou produit…" :filter-keys="['q', 'produit', 'peremption']">
         <x-slot:filters>
             <label for="filter-produit" class="sr-only">Produit</label>
-            <select id="filter-produit" name="produit" class="custom-select">
+            <select id="filter-produit" name="produit" class="custom-select mr-2">
                 <option value="">Tous les produits</option>
                 @foreach ($produits as $produit)
                     <option value="{{ $produit->id }}" @selected((string) request('produit') === (string) $produit->id)>{{ $produit->nom }}</option>
                 @endforeach
+            </select>
+
+            <label for="filter-peremption" class="sr-only">Péremption</label>
+            <select id="filter-peremption" name="peremption" class="custom-select">
+                <option value="">Toutes les dates</option>
+                <option value="j7" @selected(request('peremption') === 'j7')>Urgence J-7 (≤ 7 jours)</option>
+                <option value="j30" @selected(request('peremption') === 'j30')>Vigilance J-30 (≤ 30 jours)</option>
+                <option value="expire" @selected(request('peremption') === 'expire')>Déjà périmés</option>
+                <option value="valide" @selected(request('peremption') === 'valide')>Valides (&gt; 30 jours)</option>
             </select>
         </x-slot:filters>
 
@@ -52,10 +64,24 @@
                 <td class="text-right font-weight-600">{{ number_format($lot->quantite, 0, ',', ' ') }}</td>
                 <td class="text-muted">{{ $lot->date_production?->format('d/m/Y') }}</td>
                 <td>
-                    @if ($lot->date_peremption?->isPast())
-                        <span class="nt-badge nt-badge-danger">{{ $lot->date_peremption->format('d/m/Y') }}</span>
+                    @php($alerte = $lot->alertePeremption())
+                    @php($jours = $lot->joursAvantPeremption())
+                    @if ($alerte === 'expire')
+                        <span class="nt-badge nt-badge-danger" title="Périmé depuis {{ abs((int)$jours) }} jour(s)">
+                            <i class="bi bi-x-circle mr-1" aria-hidden="true"></i>Périmé ({{ $lot->date_peremption->format('d/m/Y') }})
+                        </span>
+                    @elseif ($alerte === 'j7')
+                        <span class="nt-badge nt-badge-danger" title="Expire dans {{ $jours }} jour(s)">
+                            <i class="bi bi-exclamation-triangle-fill mr-1" aria-hidden="true"></i>J-{{ $jours }} ({{ $lot->date_peremption->format('d/m/Y') }})
+                        </span>
+                    @elseif ($alerte === 'j30')
+                        <span class="nt-badge nt-badge-gold" title="Expire dans {{ $jours }} jour(s)">
+                            <i class="bi bi-hourglass-split mr-1" aria-hidden="true"></i>J-{{ $jours }} ({{ $lot->date_peremption->format('d/m/Y') }})
+                        </span>
+                    @elseif ($lot->date_peremption)
+                        <span class="text-muted">{{ $lot->date_peremption->format('d/m/Y') }}</span>
                     @else
-                        <span class="text-muted">{{ $lot->date_peremption?->format('d/m/Y') }}</span>
+                        <span class="text-muted">—</span>
                     @endif
                 </td>
                 <td class="text-center font-weight-600">{{ $lot->etapes_count ?? $lot->etapes->count() }}</td>

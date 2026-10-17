@@ -96,6 +96,69 @@ class Lot extends Model
         return (bool) $this->date_peremption?->isPast();
     }
 
+    public function joursAvantPeremption(): ?int
+    {
+        if ($this->date_peremption === null) {
+            return null;
+        }
+
+        return (int) today()->diffInDays($this->date_peremption, false);
+    }
+
+    /**
+     * Niveau d'alerte de péremption du lot :
+     * - 'expire' : date dépassée
+     * - 'j7'     : expire sous 7 jours (critique)
+     * - 'j30'    : expire sous 30 jours (attention)
+     * - 'valide' : expire dans plus de 30 jours
+     */
+    public function alertePeremption(): ?string
+    {
+        $jours = $this->joursAvantPeremption();
+
+        if ($jours === null) {
+            return null;
+        }
+
+        if ($jours < 0) {
+            return 'expire';
+        }
+
+        if ($jours <= 7) {
+            return 'j7';
+        }
+
+        if ($jours <= 30) {
+            return 'j30';
+        }
+
+        return 'valide';
+    }
+
+    /**
+     * Filtre les lots selon leur échéance de péremption.
+     */
+    public function scopePeremption(Builder $query, ?string $filtre): void
+    {
+        if (blank($filtre)) {
+            return;
+        }
+
+        $aujourdhui = today();
+
+        match ($filtre) {
+            'j7' => $query->whereNotNull('date_peremption')
+                ->whereBetween('date_peremption', [$aujourdhui, $aujourdhui->copy()->addDays(7)]),
+            'j30' => $query->whereNotNull('date_peremption')
+                ->whereBetween('date_peremption', [$aujourdhui, $aujourdhui->copy()->addDays(30)]),
+            'expire' => $query->whereNotNull('date_peremption')
+                ->whereDate('date_peremption', '<', $aujourdhui),
+            'valide' => $query->whereNotNull('date_peremption')
+                ->whereDate('date_peremption', '>', $aujourdhui->copy()->addDays(30)),
+            default => null,
+        };
+    }
+
     /**
      * Ajoute un indicateur à une étape et recalcule l'empreinte du lot
      * (créée si elle n'existe pas encore) : CO₂ par unité += valeur × facteur / quantité.
