@@ -52,6 +52,7 @@ return [
             'entites' => [
                 ['libelle' => 'Empreintes carbone', 'route' => 'empreintes', 'table' => 'empreinte_carbones', 'icone' => 'bi-cloud-haze2'],
                 ['libelle' => 'Indicateurs', 'route' => 'indicateurs', 'table' => 'indicateurs', 'icone' => 'bi-speedometer2'],
+                ['libelle' => 'Facteurs Climatiq API', 'route' => 'facteurs-climatiq', 'table' => 'facteurs_climatiq', 'icone' => 'bi-cpu'],
             ],
         ],
         [

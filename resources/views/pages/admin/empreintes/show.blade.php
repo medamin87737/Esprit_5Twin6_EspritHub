@@ -31,6 +31,12 @@
                     </div>
                     <div class="nt-role-row"><span class="text-muted">Méthode</span><strong>{{ $empreinte->methode }}</strong></div>
                     <div class="nt-role-row"><span class="text-muted">Calculée le</span><strong>{{ $empreinte->date_calcul?->format('d/m/Y') }}</strong></div>
+                    <div class="nt-role-row">
+                        <span class="text-muted">Facteurs d'émission</span>
+                        <a href="{{ route('admin.facteurs-climatiq.index') }}" class="badge badge-success px-2 py-1">
+                            <i class="bi bi-cloud-check mr-1" aria-hidden="true"></i> Certifiés Climatiq API
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -76,6 +82,7 @@
                 <x-slot:head>
                     <th scope="col">Type</th>
                     <th scope="col" class="text-right">Valeur</th>
+                    <th scope="col">Source Climatiq API</th>
                     <th scope="col">Étape liée</th>
                     <th scope="col" class="text-right">Actions</th>
                 </x-slot:head>
@@ -84,6 +91,10 @@
                     <tr>
                         <td><span class="nt-badge"><i class="bi {{ $indicateur->icone() }}" aria-hidden="true"></i> {{ $indicateur->typeLabel() }}</span></td>
                         <td class="text-right font-weight-600">{{ number_format($indicateur->valeur, 2, ',', ' ') }} {{ $indicateur->unite }}</td>
+                        <td>
+                            <div class="small font-weight-600 text-dark">{{ $indicateur->sourceClimatiq() }}</div>
+                            <span class="badge badge-light border text-muted">{{ number_format($indicateur->facteurValeur(), 4, ',', ' ') }} kg CO₂e / {{ $indicateur->unite }}</span>
+                        </td>
                         <td class="text-muted">
                             @if ($indicateur->etape)
                                 <a href="{{ route('admin.etapes.show', $indicateur->etape) }}">{{ $indicateur->etape->typeLabel() }} · {{ $indicateur->etape->lieu }}</a>
