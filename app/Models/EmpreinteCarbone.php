@@ -16,7 +16,7 @@ class EmpreinteCarbone extends Model
      */
     private const SEUILS = ['A' => 1, 'B' => 2, 'C' => 4, 'D' => 7];
 
-    protected $fillable = ['lot_id', 'co2_total', 'methode', 'date_calcul'];
+    protected $fillable = ['lot_id', 'co2_total', 'score', 'methode', 'date_calcul'];
 
     protected function casts(): array
     {

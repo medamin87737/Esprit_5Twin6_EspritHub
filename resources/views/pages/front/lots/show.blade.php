@@ -73,6 +73,10 @@
                                 </ul>
                                 @if ($lot->empreinteCarbone)
                                     <p class="small text-muted mt-3 mb-0">Méthode : {{ $lot->empreinteCarbone->methode }} · calculé le {{ $lot->empreinteCarbone->date_calcul?->format('d/m/Y') }}</p>
+                                    <div class="mt-2 pt-2 border-top small text-muted d-flex align-items-center gap-1">
+                                        <i class="bi bi-shield-check text-success" aria-hidden="true"></i>
+                                        <span>Facteurs d'émission officiels certifiés via <strong>Climatiq API</strong> (Normes ADEME / DEFRA).</span>
+                                    </div>
                                 @endif
                             @endif
                         @else

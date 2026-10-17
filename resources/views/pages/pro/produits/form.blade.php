@@ -30,6 +30,9 @@
                 <x-front.champ name="image" label="Image" type="file" accept="image/*"
                                :help="$edition && $produit->image ? 'Une image est déjà enregistrée : choisissez un fichier pour la remplacer. JPG, PNG ou WebP, 2 Mo max.' : 'Facultative : JPG, PNG ou WebP, 2 Mo max.'" />
 
+                {{-- Assistant IA — Module 1 --}}
+                @include('pages.front.produits._assistant_ia')
+
                 <div class="form-actions">
                     <a href="{{ route('pro.produits.index') }}" class="btn btn-outline-secondary">Annuler</a>
                     <button type="submit" class="btn btn-primary">{{ $edition ? 'Enregistrer les modifications' : 'Ajouter le produit' }}</button>

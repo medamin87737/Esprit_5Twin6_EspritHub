@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'climatiq' => [
+        'key' => env('CLIMATIQ_API_KEY'),
+        'url' => env('CLIMATIQ_API_URL', 'https://api.climatiq.io'),
+    ],
+
 ];

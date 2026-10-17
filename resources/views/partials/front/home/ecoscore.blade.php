@@ -21,6 +21,15 @@
                         </div>
                     @endforeach
                 </div>
+
+                <div class="mt-4 d-flex flex-wrap gap-2">
+                    <a href="{{ route('front.empreintes.index') }}" class="btn btn-primary">
+                        <i class="bi bi-trophy me-1" aria-hidden="true"></i> Voir le classement des éco-scores
+                    </a>
+                    <a href="{{ route('front.comparaison') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-bar-chart me-1" aria-hidden="true"></i> Comparer des produits
+                    </a>
+                </div>
             </div>
 
             <div class="col-lg-6 reveal reveal-delay-1">

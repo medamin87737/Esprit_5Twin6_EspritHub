@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\CalculEmpreinte;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,6 +27,26 @@ class Indicateur extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        $recalculer = function (Indicateur $indicateur): void {
+            $empreinteId = $indicateur->empreinte_carbone_id;
+
+            if ($empreinteId === null) {
+                return;
+            }
+
+            $empreinte = EmpreinteCarbone::find($empreinteId);
+
+            if ($empreinte !== null) {
+                CalculEmpreinte::synchroniser($empreinte);
+            }
+        };
+
+        static::saved($recalculer);
+        static::deleted($recalculer);
+    }
+
     public function empreinteCarbone(): BelongsTo
     {
         return $this->belongsTo(EmpreinteCarbone::class);
@@ -44,5 +65,17 @@ class Indicateur extends Model
     public function icone(): string
     {
         return self::ICONES[$this->type] ?? 'bi-speedometer2';
+    }
+
+    public function sourceClimatiq(): string
+    {
+        $facteurs = app(\App\Services\ClimatiqService::class)->obtenirFacteurs();
+
+        return $facteurs[$this->type]['source'] ?? 'Climatiq API';
+    }
+
+    public function facteurValeur(): float
+    {
+        return app(\App\Services\ClimatiqService::class)->obtenirFacteur($this->type);
     }
 }

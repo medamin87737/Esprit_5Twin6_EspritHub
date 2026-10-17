@@ -22,6 +22,8 @@
                 <div class="card-body">
                     <div class="nt-role-row"><span class="text-muted">Type</span><span class="nt-badge"><i class="bi {{ $indicateur->icone() }}" aria-hidden="true"></i> {{ $indicateur->typeLabel() }}</span></div>
                     <div class="nt-role-row"><span class="text-muted">Valeur</span><strong>{{ number_format($indicateur->valeur, 2, ',', ' ') }} {{ $indicateur->unite }}</strong></div>
+                    <div class="nt-role-row"><span class="text-muted">Source Climatiq</span><span class="badge badge-success px-2 py-1"><i class="bi bi-cloud-check mr-1"></i> {{ $indicateur->sourceClimatiq() }}</span></div>
+                    <div class="nt-role-row"><span class="text-muted">Facteur officiel</span><strong>{{ number_format($indicateur->facteurValeur(), 4, ',', ' ') }} kg CO₂e / {{ $indicateur->unite }}</strong></div>
                     <div class="nt-role-row"><span class="text-muted">Saisi le</span><strong>{{ $indicateur->created_at?->format('d/m/Y') }}</strong></div>
                 </div>
             </div>

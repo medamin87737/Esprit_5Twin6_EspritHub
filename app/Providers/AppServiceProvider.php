@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,6 +24,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Schema::defaultStringLength(191);
+
         // Le Back Office (SB Admin 2) est en Bootstrap 4 ; le Front passe 'pagination::bootstrap-5' explicitement.
         Paginator::useBootstrapFour();
 

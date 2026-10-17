@@ -19,6 +19,7 @@
                             @guest
                                 <a href="{{ route('login') }}">Connectez-vous</a> pour en comparer jusqu'à {{ config('nutritrace.comparaison.connecte') }}.
                             @endguest
+                            <br>Consultez aussi le <a href="{{ route('front.empreintes.index') }}"><i class="bi bi-trophy me-1" aria-hidden="true"></i>classement des éco-scores</a>.
                         </p>
 
                         @if ($catalogue->isEmpty())

@@ -366,6 +366,49 @@ final class TableauDeBord
             ];
         }
 
+        $perimes = Lot::query()->whereNotNull('date_peremption')->whereDate('date_peremption', '<', $aujourdhui);
+        if ($n = $perimes->count()) {
+            $alertes[] = [
+                'niveau' => 'critique',
+                'icone' => 'bi-x-circle',
+                'titre' => $n.' lot'.($n > 1 ? 's sont déjà périmés' : ' est déjà périmé'),
+                'description' => 'Ces lots ont dépassé leur date limite de consommation (DLC).',
+                'date' => self::date($perimes->max('date_peremption')),
+                'dateLibelle' => 'Dernier dépassement',
+                'action' => ['libelle' => 'Voir les lots périmés', 'url' => route('admin.lots.index', ['peremption' => 'expire'])],
+            ];
+        }
+
+        $expirentJ7 = Lot::query()
+            ->whereNotNull('date_peremption')
+            ->whereBetween('date_peremption', [$aujourdhui, $aujourdhui->copy()->addDays(7)]);
+        if ($n = $expirentJ7->count()) {
+            $alertes[] = [
+                'niveau' => 'critique',
+                'icone' => 'bi-exclamation-triangle-fill',
+                'titre' => $n.' lot'.($n > 1 ? 's arrivent' : ' arrive').' à péremption sous 7 jours (J-7)',
+                'description' => 'Risque imminent de denrées périmées : vérifier la distribution ou le retrait.',
+                'date' => self::date($expirentJ7->min('date_peremption')),
+                'dateLibelle' => 'Échéance la plus proche',
+                'action' => ['libelle' => 'Voir les lots urgents (J-7)', 'url' => route('admin.lots.index', ['peremption' => 'j7'])],
+            ];
+        }
+
+        $expirentJ30 = Lot::query()
+            ->whereNotNull('date_peremption')
+            ->whereBetween('date_peremption', [$aujourdhui->copy()->addDays(8), $aujourdhui->copy()->addDays(30)]);
+        if ($n = $expirentJ30->count()) {
+            $alertes[] = [
+                'niveau' => 'attention',
+                'icone' => 'bi-hourglass-split',
+                'titre' => $n.' lot'.($n > 1 ? 's arrivent' : ' arrive').' à péremption sous 30 jours (J-30)',
+                'description' => 'Anticiper la rotation des stocks et la distribution avant expiration.',
+                'date' => self::date($expirentJ30->min('date_peremption')),
+                'dateLibelle' => 'Première échéance',
+                'action' => ['libelle' => 'Voir les lots (J-30)', 'url' => route('admin.lots.index', ['peremption' => 'j30'])],
+            ];
+        }
+
         $expirent = Certification::valides()->whereDate('date_expiration', '<=', $aujourdhui->copy()->addDays(30));
         if ($n = $expirent->count()) {
             $alertes[] = [
