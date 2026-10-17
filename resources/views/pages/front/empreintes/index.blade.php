@@ -19,7 +19,12 @@
     <section class="page-section pt-0 bg-cream">
         <div class="container px-4 px-lg-5">
             <div class="filter-bar">
-                <h2 class="h6 mb-3">Comment lire l'éco-score ?</h2>
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                    <h2 class="h6 mb-0">Comment lire l'éco-score ?</h2>
+                    <span class="badge bg-success text-white px-2 py-1 small fw-normal">
+                        <i class="bi bi-patch-check-fill me-1" aria-hidden="true"></i> Facteurs certifiés Climatiq API (ADEME / DEFRA)
+                    </span>
+                </div>
                 <div class="score-legend">
                     @foreach ($scores as $score => $seuil)
                         <div class="score-legend-item">

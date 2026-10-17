@@ -38,6 +38,26 @@
                                  help="Remplie automatiquement selon le type." />
         </div>
     </div>
+
+    {{-- Encadré d'estimation en direct Climatiq API --}}
+    <div id="climatiq-preview" class="alert alert-light border mt-3 p-3 rounded" style="display: none;">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="badge badge-success px-2 py-1">
+                <i class="bi bi-cloud-check mr-1" aria-hidden="true"></i> Facteur certifié Climatiq API
+            </span>
+            <code class="small" id="climatiq-activity-id"></code>
+        </div>
+        <div class="d-flex flex-wrap align-items-center justify-content-between">
+            <div class="mr-3 mb-2 mb-md-0">
+                <div class="font-weight-600 text-dark" id="climatiq-source"></div>
+                <div class="text-muted small">Facteur officiel d'émission : <strong id="climatiq-factor"></strong></div>
+            </div>
+            <div class="text-md-right">
+                <div class="h5 mb-0 text-success font-weight-bold" id="climatiq-co2"></div>
+                <small class="text-muted">Émissions brutes de cette mesure</small>
+            </div>
+        </div>
+    </div>
 </div>
 
 @push('scripts')
@@ -45,12 +65,47 @@
         document.addEventListener('DOMContentLoaded', () => {
             const type = document.querySelector('[data-unite-source]');
             const unite = document.querySelector('[data-unite-cible]');
-            const unites = @json(\App\Models\Indicateur::UNITES);
-            if (!type || !unite) return;
+            const valeur = document.querySelector('input[name="valeur"]');
+            const preview = document.getElementById('climatiq-preview');
+            const factorEl = document.getElementById('climatiq-factor');
+            const sourceEl = document.getElementById('climatiq-source');
+            const activityEl = document.getElementById('climatiq-activity-id');
+            const co2El = document.getElementById('climatiq-co2');
 
-            type.addEventListener('change', () => {
-                if (unites[type.value]) unite.value = unites[type.value];
-            });
+            const unites = @json(\App\Models\Indicateur::UNITES);
+            const climatiqFacteurs = @json(app(\App\Services\ClimatiqService::class)->obtenirFacteurs());
+
+            function updateClimatiqPreview() {
+                const t = type ? type.value : '';
+                const v = valeur ? parseFloat(valeur.value) : 0;
+
+                if (t && climatiqFacteurs[t]) {
+                    const info = climatiqFacteurs[t];
+                    if (unite && unites[t]) unite.value = unites[t];
+
+                    factorEl.textContent = Number(info.valeur).toFixed(4) + ' ' + info.unite;
+                    sourceEl.textContent = info.source;
+                    activityEl.textContent = info.activite_id;
+
+                    if (!isNaN(v) && v > 0) {
+                        const total = (v * info.valeur).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        co2El.textContent = total + ' kg CO₂e';
+                        co2El.className = 'h5 mb-0 text-success font-weight-bold';
+                    } else {
+                        co2El.textContent = 'Saisissez une valeur…';
+                        co2El.className = 'small text-muted font-italic font-weight-normal';
+                    }
+                    preview.style.display = 'block';
+                } else {
+                    preview.style.display = 'none';
+                }
+            }
+
+            if (type) type.addEventListener('change', updateClimatiqPreview);
+            if (valeur) valeur.addEventListener('input', updateClimatiqPreview);
+
+            // Initialisation si formulaire pré-rempli
+            updateClimatiqPreview();
         });
     </script>
 @endpush
