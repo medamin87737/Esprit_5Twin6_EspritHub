@@ -362,6 +362,10 @@ import '../css/module1.css';
                 '</div>';
         }).join('');
 
+        if (data.avertissement) {
+            conteneur.innerHTML += '<p class="small text-warning mt-2 mb-0"><i class="bi bi-exclamation-triangle me-1"></i>' + esc(data.avertissement) + '</p>';
+        }
+
         conteneur.querySelectorAll('.m1-ia-appliquer').forEach(function (b) {
             b.addEventListener('click', function () {
                 var input = document.getElementById(b.dataset.champ) || document.querySelector('[name="' + b.dataset.champ + '"]');
@@ -374,6 +378,17 @@ import '../css/module1.css';
                 }
             });
         });
+
+        // Bouton « Tout appliquer »
+        var zoneTout = document.getElementById('m1-ia-tout-appliquer');
+        var btnTout  = document.getElementById('m1-ia-btn-tout-appliquer');
+        if (zoneTout && btnTout) {
+            zoneTout.style.display = '';
+            btnTout.onclick = function () {
+                conteneur.querySelectorAll('.m1-ia-appliquer:not(:disabled)').forEach(function (b) { b.click(); });
+                zoneTout.style.display = 'none';
+            };
+        }
     }
 
     /* ═══════════════════════════════════════════════════════════════════════

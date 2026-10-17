@@ -43,3 +43,6 @@
     <h3 class="nt-form-section-title"><i class="bi bi-image" aria-hidden="true"></i> Visuel</h3>
     <x-admin.form.file name="image" label="Image du produit" accept="image/*" help="Facultatif — JPG, PNG ou WebP, 2 Mo maximum." />
 </div>
+
+{{-- Assistant IA — Module 1 --}}
+@include('pages.front.produits._assistant_ia')
