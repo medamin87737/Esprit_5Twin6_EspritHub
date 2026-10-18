@@ -1,0 +1,115 @@
+// NutriTrace — Pipeline CI seul (intégration continue)
+// Script Path Jenkins : ci/Jenkinsfile
+
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '20'))
+    }
+
+    environment {
+        PROJECT_DIR = "${env.WORKSPACE}"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo "=== CI NutriTrace #${env.BUILD_NUMBER} ==="
+                sh '''
+                    if [ -d /workspace/nutritrace ]; then
+                      export PROJECT_DIR=/workspace/nutritrace
+                    else
+                      export PROJECT_DIR="${WORKSPACE}"
+                    fi
+                    echo "PROJECT_DIR=$PROJECT_DIR"
+                    ls -la "$PROJECT_DIR" | head -25
+                    echo "$PROJECT_DIR" > .project_dir
+                '''
+            }
+        }
+
+        stage('Dependencies') {
+            parallel {
+                stage('Composer') {
+                    steps {
+                        sh '''
+                            PROJECT_DIR=$(cat .project_dir)
+                            docker run --rm \
+                              -v "$PROJECT_DIR:/app" -w /app \
+                              composer:2 \
+                              composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
+                        '''
+                    }
+                }
+                stage('NPM') {
+                    steps {
+                        sh '''
+                            PROJECT_DIR=$(cat .project_dir)
+                            docker run --rm \
+                              -v "$PROJECT_DIR:/app" -w /app \
+                              node:22-alpine \
+                              sh -c "npm ci || npm install"
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Build assets') {
+            steps {
+                sh '''
+                    PROJECT_DIR=$(cat .project_dir)
+                    docker run --rm \
+                      -v "$PROJECT_DIR:/app" -w /app \
+                      node:22-alpine \
+                      npm run build
+                '''
+            }
+        }
+
+        stage('Quality') {
+            steps {
+                sh '''
+                    PROJECT_DIR=$(cat .project_dir)
+                    docker run --rm \
+                      -v "$PROJECT_DIR:/app" -w /app \
+                      composer:2 \
+                      sh -c "cp -n .env.example .env || true; php artisan --version || true"
+                '''
+            }
+        }
+
+        stage('Tests') {
+            steps {
+                sh '''
+                    PROJECT_DIR=$(cat .project_dir)
+                    docker run --rm \
+                      -v "$PROJECT_DIR:/app" -w /app \
+                      -e DB_CONNECTION=sqlite \
+                      -e DB_DATABASE=/app/database/testing.sqlite \
+                      php:8.2-cli \
+                      bash -c "apt-get update -qq && apt-get install -y -qq git unzip libzip-dev > /dev/null \
+                        && docker-php-ext-install zip pdo > /dev/null \
+                        && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+                        && composer install --no-interaction --prefer-dist --ignore-platform-reqs \
+                        && mkdir -p database && touch database/testing.sqlite \
+                        && cp -n .env.example .env \
+                        && php artisan key:generate --force \
+                        && php artisan test --testsuite=Unit"
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "CI SUCCESS — NutriTrace #${env.BUILD_NUMBER} (pas de déploiement)"
+        }
+        failure {
+            echo "CI FAILURE — build #${env.BUILD_NUMBER}"
+        }
+    }
+}

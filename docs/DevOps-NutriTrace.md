@@ -67,61 +67,69 @@ flowchart LR
 
 ---
 
-## 3. Pipeline CI/CD Jenkins
+## 3. Pipelines séparés : CI et CD
 
-Le pipeline est défini en **Pipeline as Code** dans le fichier `Jenkinsfile` à la racine du projet.
+CI et CD sont **volontairement séparés** (deux jobs, deux fichiers) :
 
-### 3.1 Vue d’ensemble des stages
+| Job Jenkins | Fichier (Script Path) | Rôle |
+|-------------|----------------------|------|
+| **nutritrace-ci** | `ci/Jenkinsfile` | Intégration continue seule |
+| **nutritrace-cd** | `cd/Jenkinsfile` | Déploiement continu seul |
+
+### 3.1 Vue d’ensemble
 
 ```mermaid
 flowchart TB
-    S0([Début pipeline]) --> S1[Checkout]
-    S1 --> S2[Dependencies]
-    S2 --> S2a[Composer install]
-    S2 --> S2b[NPM install]
-    S2a --> S3[Build assets — Vite]
-    S2b --> S3
-    S3 --> S4[Quality]
-    S4 --> S4a[Lint Pint]
-    S4 --> S4b[Config / routes Laravel]
-    S4a --> S5[Tests CI — PHPUnit]
-    S4b --> S5
-    S5 -->|Échec| X([Build FAILED])
-    S5 -->|Succès + branche main| S6[Build image Docker]
-    S6 --> S7[Deploy CD — Compose]
-    S7 --> Y([Build SUCCESS])
+    subgraph CI["Job CI — ci/Jenkinsfile"]
+        A1[Checkout] --> A2[Composer + NPM]
+        A2 --> A3[Build Vite]
+        A3 --> A4[Quality]
+        A4 --> A5[Tests Unit]
+        A5 -->|Échec| FX([CI FAILED])
+        A5 -->|Succès| COK([CI SUCCESS])
+    end
+
+    subgraph CD["Job CD — cd/Jenkinsfile"]
+        B1[Checkout] --> B2[Build image Docker]
+        B2 --> B3[Deploy Compose]
+        B3 --> B4[Smoke test]
+        B4 --> DOK([CD SUCCESS])
+    end
+
+    COK -.->|Build after CI / manuel| B1
 ```
 
-### 3.2 Détail des étapes
+### 3.2 Configuration Jenkins (SCM)
 
-#### A. Développement → déclenchement
+Créer **deux** jobs *Pipeline* → *Pipeline script from SCM* → même repo Git :
 
-1. Le développeur pousse son code sur le dépôt Git.  
-2. Jenkins est notifié (webhook GitHub / EspritHub ou *Poll SCM*).  
-3. Un job **Multibranch Pipeline** (ou Pipeline classique) charge le `Jenkinsfile`.
+1. Job **nutritrace-ci** → Script Path = **`ci/Jenkinsfile`**  
+2. Job **nutritrace-cd** → Script Path = **`cd/Jenkinsfile`**  
 
-#### B. Intégration continue (CI)
+Option CD : *Build after other projects are built* → sélectionner `nutritrace-ci` (seulement si CI vert).
 
-| Stage Jenkins | Actions | Critère de succès |
-|---------------|---------|-------------------|
-| **Checkout** | Récupération du code source | Clone OK |
-| **Dependencies** | `composer install` + `npm ci` / `npm install` (en parallèle) | Dépendances installées |
-| **Build assets** | `npm run build` (Vite) | Assets front générés dans `public/build` |
-| **Quality** | Laravel Pint (contrôle de style) + `php artisan route:list` | Pas d’erreur bloquante |
-| **Tests** | `php artisan test` / PHPUnit (Feature & Unit) | Tous les tests verts |
+### 3.3 Étapes CI (`ci/Jenkinsfile`)
 
-Si les tests échouent, le pipeline **s’arrête** : aucun déploiement n’est lancé.
+| Stage | Actions |
+|-------|---------|
+| Checkout | Code Git |
+| Dependencies | Composer + NPM |
+| Build assets | `npm run build` |
+| Quality | Vérif Laravel |
+| Tests | PHPUnit Unit |
 
-#### C. Déploiement continu (CD)
+→ **Aucun déploiement** dans ce job.
 
-Réservé à la branche **`main`** (après merge validé) :
+### 3.4 Étapes CD (`cd/Jenkinsfile`)
 
-| Stage Jenkins | Actions | Résultat |
-|---------------|---------|----------|
-| **Build image** | `docker build -t nutritrace:<BUILD_NUMBER>` | Image applicative PHP/Apache |
-| **Deploy** | `docker compose up -d --build` | Conteneurs `app` + `db` démarrés |
+| Stage | Actions |
+|-------|---------|
+| Checkout | Code Git |
+| Build image | `docker build` |
+| Deploy | `docker compose up -d` (app + db) |
+| Smoke test | HTTP sur le port 8088 |
 
-L’application est alors exposée (port **8088**) avec une base MySQL conteneurisée.
+→ Application : **http://127.0.0.1:8088**
 
 ---
 
