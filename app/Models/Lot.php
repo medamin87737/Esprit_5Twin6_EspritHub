@@ -14,7 +14,7 @@ class Lot extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['produit_id', 'acteur_courant_id', 'numero_lot', 'quantite', 'date_production', 'date_peremption'];
+    protected $fillable = ['produit_id', 'acteur_courant_id', 'numero_lot', 'quantite', 'date_production', 'date_peremption', 'recit_ia', 'audit_ia', 'conseil_ia'];
 
     protected static function booted(): void
     {
@@ -27,6 +27,8 @@ class Lot extends Model
             'quantite' => 'integer',
             'date_production' => 'date',
             'date_peremption' => 'date',
+            'audit_ia' => 'array',
+            'conseil_ia' => 'array',
         ];
     }
 

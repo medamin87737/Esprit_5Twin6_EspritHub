@@ -17,6 +17,10 @@ Route::get('/tracabilite/{lot:numero_lot}', [FrontLotController::class, 'show'])
 
 Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('lots/export', [LotController::class, 'export'])->name('lots.export');
+    Route::post('lots/{lot}/recit-ia', [LotController::class, 'regenererRecit'])->name('lots.recit-ia');
+    Route::post('lots/{lot}/audit-ia', [LotController::class, 'analyserAuditIa'])->name('lots.audit-ia');
+    Route::post('lots/{lot}/conseil-ia', [LotController::class, 'genererConseilIa'])->name('lots.conseil-ia');
     Route::resource('lots', LotController::class);
+    Route::post('etapes/assistant-ai', [EtapeController::class, 'assistantAi'])->name('etapes.assistant-ai');
     Route::resource('etapes', EtapeController::class);
 });
