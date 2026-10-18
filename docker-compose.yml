@@ -38,7 +38,7 @@ services:
       retries: 20
     restart: unless-stopped
 
-  # Jenkins CI/CD — ouvrir depuis Docker Desktop ou http://127.0.0.1:8090
+  # Jenkins — http://127.0.0.1:8090 (config manuelle des jobs CI/CD)
   jenkins:
     build:
       context: .
@@ -47,15 +47,8 @@ services:
     ports:
       - "8090:8080"
       - "50000:50000"
-    environment:
-      JAVA_OPTS: >-
-        -Djenkins.install.runSetupWizard=false
-        -Dhudson.security.csrf.GlobalCrumbIssuerConfiguration.DISABLE_CSRF_PROTECTION=true
-      CASC_JENKINS_CONFIG: /var/jenkins_home/casc.yaml
     volumes:
       - jenkins_home:/var/jenkins_home
-      - ./jenkins/casc.yaml:/var/jenkins_home/casc.yaml:ro
-      - ./jenkins/init.groovy.d:/usr/share/jenkins/ref/init.groovy.d:ro
       - .:/workspace/nutritrace
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped

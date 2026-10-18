@@ -187,15 +187,14 @@ docker compose up -d --build jenkins
 | Accès | URL / info |
 |--------|------------|
 | Interface Jenkins | **http://127.0.0.1:8090** |
-| Login | `admin` / `admin` |
-| Conteneur Docker Desktop | `nutritrace-jenkins` → bouton **Open in Browser** |
-| Job préconfiguré | `nutritrace-ci-cd` (créé au démarrage) |
+| Conteneur Docker Desktop | `nutritrace-jenkins` → **Open in Browser** |
 
 1. Lancer `docker compose up -d` (app + db + jenkins).  
-2. Ouvrir Jenkins depuis Docker Desktop ou le navigateur.  
-3. Se connecter (`admin` / `admin`).  
-4. Ouvrir le job **nutritrace-ci-cd** → **Build Now**.  
-5. Suivre les stages CI/CD dans la console.  
+2. Ouvrir Jenkins (setup wizard : mot de passe initial dans les logs du conteneur).  
+3. Créer **2 jobs Pipeline** (SCM Git) :  
+   - `nutritrace-ci` → Script Path **`ci/Jenkinsfile`**  
+   - `nutritrace-cd` → Script Path **`cd/Jenkinsfile`**  
+4. Lancer **Build Now** sur chaque job.  
 
 Le socket Docker est monté dans Jenkins : le pipeline construit et déploie les images via Docker.
 
@@ -225,9 +224,11 @@ Ce document, accompagné des fichiers `Jenkinsfile`, `Dockerfile` et `docker-com
 
 | Fichier | Rôle |
 |---------|------|
-| `Jenkinsfile` | Pipeline déclaratif CI/CD |
+| `ci/Jenkinsfile` | Pipeline **CI** seul |
+| `cd/Jenkinsfile` | Pipeline **CD** seul |
 | `Dockerfile` | Image applicative |
-| `docker-compose.yml` | Déploiement multi-conteneurs |
+| `Dockerfile.jenkins` | Image Jenkins |
+| `docker-compose.yml` | app + db + jenkins |
 | `docs/DevOps-NutriTrace.md` | Le présent document |
 
 ### B. Commandes utiles (manuel / agent)
