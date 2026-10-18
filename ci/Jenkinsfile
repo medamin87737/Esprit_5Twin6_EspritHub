@@ -1,11 +1,10 @@
-// NutriTrace — CI seul (auto si changement Git front/back)
-// Script Path : ci/Jenkinsfile
+// NutriTrace — Pipeline CI (Intégration Continue)
+// Script Path Jenkins : ci/Jenkinsfile
 // IMPORTANT : décocher "Lightweight checkout"
 
 pipeline {
     agent any
 
-    // Poll Git toutes les 2 min → lance CI dès qu’il y a un commit (front ou back)
     triggers {
         pollSCM('H/2 * * * *')
     }
@@ -17,22 +16,21 @@ pipeline {
 
     environment {
         HOST_DIR = "${env.HOST_PROJECT_DIR ?: '/workspace/nutritrace'}"
-        // Nom du job CD dans Jenkins (adapter si ton job s’appelle autrement)
         CD_JOB   = 'CD'
     }
 
     stages {
-        stage('Checkout') {
+        stage('1. Recuperation du code') {
             steps {
                 checkout scm
-                echo "=== CI NutriTrace #${env.BUILD_NUMBER} (auto poll SCM) ==="
+                echo "=== CI NutriTrace #${env.BUILD_NUMBER} ==="
                 sh 'ls -la | head -20'
             }
         }
 
-        stage('Dependencies') {
+        stage('2. Installation dependances') {
             parallel {
-                stage('Composer') {
+                stage('2a. Backend PHP (Composer)') {
                     steps {
                         sh '''
                             docker run --rm --dns 8.8.8.8 \
@@ -42,7 +40,7 @@ pipeline {
                         '''
                     }
                 }
-                stage('NPM') {
+                stage('2b. Frontend Node (NPM)') {
                     steps {
                         sh '''
                             docker run --rm --dns 8.8.8.8 \
@@ -55,7 +53,7 @@ pipeline {
             }
         }
 
-        stage('Build assets') {
+        stage('3. Build frontend Vite') {
             steps {
                 sh '''
                     docker run --rm --dns 8.8.8.8 \
@@ -66,7 +64,7 @@ pipeline {
             }
         }
 
-        stage('Quality') {
+        stage('4. Verification qualite') {
             steps {
                 sh '''
                     docker run --rm --dns 8.8.8.8 \
@@ -77,7 +75,7 @@ pipeline {
             }
         }
 
-        stage('Tests') {
+        stage('5. Tests automatises') {
             steps {
                 sh '''
                     docker run --rm --dns 8.8.8.8 \
@@ -97,12 +95,11 @@ pipeline {
 
     post {
         success {
-            echo "CI SUCCESS — #${env.BUILD_NUMBER} → déclenche CD"
-            // CD automatique seulement si CI vert
+            echo "CI REUSSI #${env.BUILD_NUMBER} — lancement automatique du CD"
             build job: "${env.CD_JOB}", wait: false, propagate: false
         }
         failure {
-            echo "CI FAILURE — #${env.BUILD_NUMBER} — CD non lancé"
+            echo "CI ECHOUE #${env.BUILD_NUMBER} — CD non lance"
         }
     }
 }

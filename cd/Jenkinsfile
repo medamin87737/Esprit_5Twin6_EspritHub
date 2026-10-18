@@ -1,5 +1,5 @@
-// NutriTrace — CD seul (déclenché auto après CI vert, ou Build Now manuel)
-// Script Path : cd/Jenkinsfile
+// NutriTrace — Pipeline CD (Deploiement Continu)
+// Script Path Jenkins : cd/Jenkinsfile
 // IMPORTANT : décocher "Lightweight checkout"
 
 pipeline {
@@ -15,14 +15,14 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
+        stage('1. Recuperation du code') {
             steps {
                 checkout scm
                 echo "=== CD NutriTrace #${env.BUILD_NUMBER} ==="
             }
         }
 
-        stage('Build image') {
+        stage('2. Construction image Docker') {
             steps {
                 sh '''
                     docker build -t nutritrace:${BUILD_NUMBER} -t nutritrace:latest "${HOST_DIR}"
@@ -30,7 +30,7 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('3. Deploiement containers') {
             steps {
                 sh '''
                     cd "${HOST_DIR}"
@@ -40,19 +40,19 @@ pipeline {
             }
         }
 
-        stage('Smoke test') {
+        stage('4. Test acces application') {
             steps {
                 sh '''
                     sleep 8
                     curl -fsS -o /dev/null -w "%{http_code}\\n" http://host.docker.internal:8088/ \
-                      || echo "Vérifier http://127.0.0.1:8088"
+                      || echo "Verifier http://127.0.0.1:8088"
                 '''
             }
         }
     }
 
     post {
-        success { echo "CD SUCCESS — http://127.0.0.1:8088" }
-        failure { echo "CD FAILURE — #${env.BUILD_NUMBER}" }
+        success { echo "CD REUSSI — App en ligne : http://127.0.0.1:8088" }
+        failure { echo "CD ECHOUE #${env.BUILD_NUMBER}" }
     }
 }
