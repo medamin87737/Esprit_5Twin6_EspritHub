@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (! Schema::hasTable('analyses')) {
+            return;
+        }
+
         Schema::table('analyses', function (Blueprint $table) {
             $table->text('resume_ia')->nullable()->after('rapport');
             $table->timestamp('ia_genere_at')->nullable()->after('resume_ia');
