@@ -9,6 +9,26 @@
             <a href="{{ route('front.certifications.index', ['numero' => $certification->numero]) }}" class="btn btn-light" target="_blank" rel="noopener">
                 <i class="bi bi-box-arrow-up-right mr-1" aria-hidden="true"></i> Vue publique
             </a>
+            @if ($certification->statut === 'en_attente')
+                <form method="POST" action="{{ route('admin.certifications.valider', $certification) }}" class="d-inline">
+                    @csrf @method('PATCH')
+                    <button type="submit" class="btn btn-success"><i class="bi bi-check-lg mr-1" aria-hidden="true"></i> Valider</button>
+                </form>
+                <form method="POST" action="{{ route('admin.certifications.suspendre', $certification) }}" class="d-inline">
+                    @csrf @method('PATCH')
+                    <button type="submit" class="btn btn-warning"><i class="bi bi-pause-circle mr-1" aria-hidden="true"></i> Suspendre</button>
+                </form>
+            @elseif ($certification->statut === 'valide')
+                <form method="POST" action="{{ route('admin.certifications.suspendre', $certification) }}" class="d-inline">
+                    @csrf @method('PATCH')
+                    <button type="submit" class="btn btn-warning"><i class="bi bi-pause-circle mr-1" aria-hidden="true"></i> Suspendre</button>
+                </form>
+            @elseif ($certification->statut === 'suspendue')
+                <form method="POST" action="{{ route('admin.certifications.valider', $certification) }}" class="d-inline">
+                    @csrf @method('PATCH')
+                    <button type="submit" class="btn btn-success"><i class="bi bi-play-circle mr-1" aria-hidden="true"></i> Réactiver</button>
+                </form>
+            @endif
             <a href="{{ route('admin.certifications.edit', $certification) }}" class="btn btn-primary">
                 <i class="bi bi-pencil mr-1" aria-hidden="true"></i> Modifier
             </a>
@@ -79,6 +99,67 @@
                 </div>
             </div>
 
+            {{-- IA Module 5 --}}
+            <div class="card mb-4" id="ia-panel">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h2 class="nt-card-title"><i class="bi bi-robot mr-1" aria-hidden="true"></i> Vérification IA du document</h2>
+                    @if ($certification->ia_verifie_at)
+                        <small class="text-muted">Dernière analyse : {{ $certification->ia_verifie_at->diffForHumans() }}</small>
+                    @endif
+                </div>
+                <div class="card-body">
+                    {{-- Upload document --}}
+                    <form method="POST" action="{{ route('admin.certifications.ia.upload', $certification) }}" enctype="multipart/form-data" class="mb-3">
+                        @csrf
+                        <div class="form-row align-items-end">
+                            <div class="col">
+                                <label class="font-weight-600 small" for="document_pdf">Document certificat (.txt ou .docx)</label>
+                                <input type="file" id="document_pdf" name="document_pdf" class="form-control-file mt-1" accept=".txt,.docx">
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-upload mr-1" aria-hidden="true"></i> Joindre
+                                </button>
+                            </div>
+                        </div>
+                        @if ($certification->document_pdf)
+                            <div class="mt-1 small text-success"><i class="bi bi-file-earmark-check mr-1" aria-hidden="true"></i>Document joint : {{ basename($certification->document_pdf) }}</div>
+                        @endif
+                    </form>
+
+                    {{-- Boutons IA --}}
+                    @if ($certification->document_pdf)
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <button class="btn btn-sm btn-primary" id="btn-verifier" onclick="iaVerifier()">
+                                <i class="bi bi-shield-check mr-1" aria-hidden="true"></i> Vérifier l'authenticité
+                            </button>
+                            <button class="btn btn-sm btn-warning" id="btn-incoherences" onclick="iaIncoherences()">
+                                <i class="bi bi-exclamation-triangle mr-1" aria-hidden="true"></i> Détecter les incohérences
+                            </button>
+                        </div>
+                    @else
+                        <p class="text-muted small mb-0"><i class="bi bi-info-circle mr-1" aria-hidden="true"></i>Joignez un document pour activer la vérification IA.</p>
+                    @endif
+
+                    {{-- Résultat IA --}}
+                    <div id="ia-resultat" class="mt-3" style="display:none"></div>
+
+                    {{-- Résultat précédent --}}
+                    @if ($certification->ia_verification)
+                        <div class="alert alert-light border small mt-2">
+                            <strong><i class="bi bi-clock-history mr-1" aria-hidden="true"></i>Dernière vérification :</strong><br>
+                            {{ $certification->ia_verification }}
+                        </div>
+                    @endif
+                    @if ($certification->ia_incoherences)
+                        <div class="alert alert-warning small mt-2">
+                            <strong><i class="bi bi-exclamation-triangle mr-1" aria-hidden="true"></i>Incohérences détectées :</strong><br>
+                            {{ $certification->ia_incoherences }}
+                        </div>
+                    @endif
+                </div>
+            </div>
+
             <x-admin.table-card :items="$autresLabels" title="Autres labels de ce produit">
                 <x-slot:head>
                     <th scope="col">Numéro</th>
@@ -106,4 +187,68 @@
             </x-admin.table-card>
         </div>
     </div>
+
+    @push('scripts')
+    <script>
+    const csrfToken = '{{ csrf_token() }}';
+    const urlVerifier = '{{ route('admin.certifications.ia.verifier', $certification) }}';
+    const urlIncoherences = '{{ route('admin.certifications.ia.incoherences', $certification) }}';
+
+    function iaAfficher(html) {
+        const el = document.getElementById('ia-resultat');
+        el.innerHTML = html;
+        el.style.display = '';
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function iaChargement(btnId) {
+        document.getElementById(btnId).disabled = true;
+        iaAfficher('<div class="text-muted small"><span class="spinner-border spinner-border-sm mr-1"></span> Analyse IA en cours…</div>');
+    }
+
+    function iaTermine(btnId) {
+        document.getElementById(btnId).disabled = false;
+    }
+
+    async function iaVerifier() {
+        iaChargement('btn-verifier');
+        try {
+            const r = await fetch(urlVerifier, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' } });
+            const d = await r.json();
+            if (d.ok) {
+                const icone = d.valide ? '✅' : '⚠️';
+                const classe = d.valide ? 'success' : 'warning';
+                iaAfficher(`<div class="alert alert-${classe} small">
+                    <strong>${icone} Authenticité du document</strong><br>${d.resume}
+                    <div class="mt-1 text-muted">Confiance : ${Math.round(d.confiance * 100)}%</div>
+                </div>`);
+            } else {
+                iaAfficher(`<div class="alert alert-danger small">${d.message}</div>`);
+            }
+        } catch { iaAfficher('<div class="alert alert-danger small">Erreur réseau.</div>'); }
+        iaTermine('btn-verifier');
+    }
+
+    async function iaIncoherences() {
+        iaChargement('btn-incoherences');
+        try {
+            const r = await fetch(urlIncoherences, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' } });
+            const d = await r.json();
+            if (d.ok) {
+                const niveauClasse = { aucun: 'success', mineur: 'info', majeur: 'warning', critique: 'danger' }[d.niveau] || 'secondary';
+                const liste = d.incoherences.length
+                    ? '<ul class="mb-1 pl-3">' + d.incoherences.map(i => `<li>${i}</li>`).join('') + '</ul>'
+                    : '<p class="mb-1">✅ Aucune incohérence trouvée.</p>';
+                iaAfficher(`<div class="alert alert-${niveauClasse} small">
+                    <strong>Niveau : ${d.niveau}</strong><br>${liste}
+                    <em>${d.justification}</em>
+                </div>`);
+            } else {
+                iaAfficher(`<div class="alert alert-danger small">${d.message}</div>`);
+            }
+        } catch { iaAfficher('<div class="alert alert-danger small">Erreur réseau.</div>'); }
+        iaTermine('btn-incoherences');
+    }
+    </script>
+    @endpush
 @endsection
