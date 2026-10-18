@@ -106,7 +106,11 @@ Créer **deux** jobs *Pipeline* → *Pipeline script from SCM* → même repo Gi
 1. Job **nutritrace-ci** → Script Path = **`ci/Jenkinsfile`**  
 2. Job **nutritrace-cd** → Script Path = **`cd/Jenkinsfile`**  
 
-Option CD : *Build after other projects are built* → sélectionner `nutritrace-ci` (seulement si CI vert).
+**Déclenchement automatique :**
+- **CI** : `pollSCM` toutes les ~2 min → dès qu’un commit arrive sur `main` (front `resources/` ou back `app/`, etc.)
+- **CD** : lancé **automatiquement** à la fin d’un CI **vert** (`build job: 'CD'`)
+
+> Dans Jenkins, le job CI doit s’appeler exactement **`CI`** et le job CD **`CD`** (sinon changer `CD_JOB` dans `ci/Jenkinsfile`).
 
 ### 3.3 Étapes CI (`ci/Jenkinsfile`)
 

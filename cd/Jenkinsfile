@@ -1,6 +1,6 @@
-// NutriTrace — CD seul
+// NutriTrace — CD seul (déclenché auto après CI vert, ou Build Now manuel)
 // Script Path : cd/Jenkinsfile
-// IMPORTANT Jenkins : décocher "Lightweight checkout"
+// IMPORTANT : décocher "Lightweight checkout"
 
 pipeline {
     agent any

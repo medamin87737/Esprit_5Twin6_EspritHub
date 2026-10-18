@@ -1,26 +1,31 @@
-// NutriTrace — CI seul
+// NutriTrace — CI seul (auto si changement Git front/back)
 // Script Path : ci/Jenkinsfile
-// IMPORTANT Jenkins : décocher "Lightweight checkout"
+// IMPORTANT : décocher "Lightweight checkout"
 
 pipeline {
     agent any
 
+    // Poll Git toutes les 2 min → lance CI dès qu’il y a un commit (front ou back)
+    triggers {
+        pollSCM('H/2 * * * *')
+    }
+
     options {
         disableConcurrentBuilds()
         buildDiscarder(logRotator(numToKeepStr: '20'))
-        skipDefaultCheckout(false)
     }
 
     environment {
-        // Chemin HOST Windows pour docker run -v (socket Docker Desktop)
         HOST_DIR = "${env.HOST_PROJECT_DIR ?: '/workspace/nutritrace'}"
+        // Nom du job CD dans Jenkins (adapter si ton job s’appelle autrement)
+        CD_JOB   = 'CD'
     }
 
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
-                echo "=== CI NutriTrace #${env.BUILD_NUMBER} ==="
+                echo "=== CI NutriTrace #${env.BUILD_NUMBER} (auto poll SCM) ==="
                 sh 'ls -la | head -20'
             }
         }
@@ -30,7 +35,7 @@ pipeline {
                 stage('Composer') {
                     steps {
                         sh '''
-                            docker run --rm \
+                            docker run --rm --dns 8.8.8.8 \
                               -v "${HOST_DIR}:/app" -w /app \
                               composer:2 \
                               composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
@@ -40,7 +45,7 @@ pipeline {
                 stage('NPM') {
                     steps {
                         sh '''
-                            docker run --rm \
+                            docker run --rm --dns 8.8.8.8 \
                               -v "${HOST_DIR}:/app" -w /app \
                               node:22-alpine \
                               sh -c "npm ci || npm install"
@@ -53,7 +58,7 @@ pipeline {
         stage('Build assets') {
             steps {
                 sh '''
-                    docker run --rm \
+                    docker run --rm --dns 8.8.8.8 \
                       -v "${HOST_DIR}:/app" -w /app \
                       node:22-alpine \
                       npm run build
@@ -64,7 +69,7 @@ pipeline {
         stage('Quality') {
             steps {
                 sh '''
-                    docker run --rm \
+                    docker run --rm --dns 8.8.8.8 \
                       -v "${HOST_DIR}:/app" -w /app \
                       composer:2 \
                       sh -c "cp -n .env.example .env || true; php artisan --version || true"
@@ -75,7 +80,6 @@ pipeline {
         stage('Tests') {
             steps {
                 sh '''
-                    # vendor déjà installé à l’étape Composer — pas de re-download
                     docker run --rm --dns 8.8.8.8 \
                       -v "${HOST_DIR}:/app" -w /app \
                       -e DB_CONNECTION=sqlite \
@@ -92,7 +96,13 @@ pipeline {
     }
 
     post {
-        success { echo "CI SUCCESS — #${env.BUILD_NUMBER}" }
-        failure { echo "CI FAILURE — #${env.BUILD_NUMBER}" }
+        success {
+            echo "CI SUCCESS — #${env.BUILD_NUMBER} → déclenche CD"
+            // CD automatique seulement si CI vert
+            build job: "${env.CD_JOB}", wait: false, propagate: false
+        }
+        failure {
+            echo "CI FAILURE — #${env.BUILD_NUMBER} — CD non lancé"
+        }
     }
 }
