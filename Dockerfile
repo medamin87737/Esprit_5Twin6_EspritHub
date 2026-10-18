@@ -1,4 +1,13 @@
 # NutriTrace — image applicative (PHP 8.2 + Apache)
+# Stage 1 : assets Vite (public/build est dans .gitignore)
+FROM node:22-alpine AS frontend
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm ci || npm install
+COPY . .
+RUN npm run build
+
+# Stage 2 : runtime PHP
 FROM php:8.2-apache
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -12,6 +21,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 
 COPY . .
+COPY --from=frontend /app/public/build /var/www/html/public/build
 
 RUN composer install --no-dev --optimize-autoloader --no-interaction \
     && cp -n .env.example .env \
