@@ -43,6 +43,22 @@
 
             <div class="row g-4 mt-2">
                 <div class="col-lg-7">
+                    @if ($lot->recit_ia)
+                        <div class="card border-0 shadow-sm rounded-3 mb-4" style="background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%); border-left: 4px solid #16a34a !important;">
+                            <div class="card-body p-3 p-md-4">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="badge bg-success text-white px-2 py-1 rounded-pill d-inline-flex align-items-center gap-1 small">
+                                        <i class="bi bi-stars"></i> Histoire du produit
+                                    </span>
+                                    <small class="text-muted"><i class="bi bi-robot me-1"></i>Récit IA de traçabilité</small>
+                                </div>
+                                <p class="mb-0 text-dark" style="font-size: 0.95rem; line-height: 1.6; font-style: italic;">
+                                    « {{ $lot->recit_ia }} »
+                                </p>
+                            </div>
+                        </div>
+                    @endif
+
                     <h2 class="h4 mb-3">Les étapes du parcours</h2>
                     @if ($lot->etapes->isEmpty())
                         <x-front.empty-state icon="bi-hourglass-split" title="Parcours en cours de saisie">

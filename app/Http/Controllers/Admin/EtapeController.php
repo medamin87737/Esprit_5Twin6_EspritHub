@@ -34,6 +34,23 @@ class EtapeController extends Controller
         return view('pages.admin.etapes.create', $this->formData());
     }
 
+    /**
+     * Analyse un texte en langage naturel pour préremplir les champs d'étape.
+     */
+    public function assistantAi(Request $request, \App\Services\TracabiliteIaService $iaService): \Illuminate\Http\JsonResponse
+    {
+        $request->validate([
+            'prompt' => ['required', 'string', 'max:500'],
+        ]);
+
+        $analyse = $iaService->analyserTexteEtape($request->input('prompt'));
+
+        return response()->json([
+            'success' => true,
+            'data' => $analyse,
+        ]);
+    }
+
     public function store(EtapeRequest $request): RedirectResponse
     {
         $etape = Etape::create($request->validated());

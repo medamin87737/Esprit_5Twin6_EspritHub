@@ -4,12 +4,13 @@ namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
 use App\Models\Lot;
+use App\Services\TracabiliteIaService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class LotController extends Controller
 {
-    public function show(Request $request, Lot $lot): View
+    public function show(Request $request, Lot $lot, TracabiliteIaService $iaService): View
     {
         $lot->load([
             'produit.categorie',
@@ -21,6 +22,11 @@ class LotController extends Controller
         ]);
 
         $this->enregistrerScan($request, $lot);
+
+        // Récit IA du produit : mis en cache dans le lot et régénéré si vide
+        if (blank($lot->recit_ia) && $lot->etapes->isNotEmpty()) {
+            $lot->recit_ia = $iaService->genererHistoireLot($lot);
+        }
 
         $points = $lot->etapes
             ->filter(fn ($etape) => $etape->hasCoordinates() || $etape->acteur?->hasCoordinates())

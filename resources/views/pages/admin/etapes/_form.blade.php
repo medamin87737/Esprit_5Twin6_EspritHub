@@ -24,6 +24,30 @@
 
 <div class="nt-form-section">
     <h3 class="nt-form-section-title"><i class="bi bi-signpost-split" aria-hidden="true"></i> Déroulement</h3>
+
+    {{-- Assistant IA de saisie en langage naturel --}}
+    <div class="card border-0 mb-3" style="background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%); border-left: 4px solid #3b82f6 !important; border-radius: 6px;">
+        <div class="card-body p-3">
+            <div class="mb-1">
+                <span class="font-weight-bold text-dark small">
+                    <i class="bi bi-stars text-primary mr-1"></i> Assistant de saisie rapide IA
+                </span>
+            </div>
+            <small class="text-muted d-block mb-2">
+                Tapez ou dictez une phrase (ex: <em>« Produit à Zaghouan le 12/10/2026 »</em> ou <em>« Livré à Tunis hier à 14h par camion frigorifique »</em>) pour préremplir automatiquement le formulaire.
+            </small>
+            <div class="input-group input-group-sm">
+                <input type="text" id="ia-prompt-input" class="form-control" placeholder="Décrivez l'étape en langage naturel (ex: arrivé à Sousse hier par camion)...">
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="button" id="btn-ia-remplir">
+                        <i class="bi bi-magic mr-1"></i> Remplir par IA
+                    </button>
+                </div>
+            </div>
+            <div id="ia-feedback" class="mt-1 small" style="display: none;"></div>
+        </div>
+    </div>
+
     <div class="form-row">
         <div class="col-md-6">
             <x-admin.form.select name="type_etape" label="Type d'étape" :options="config('nutritrace.options.etape_types')"
@@ -224,10 +248,13 @@ document.addEventListener('DOMContentLoaded', function () {
         geocoderInverse(e.latlng.lat, e.latlng.lng);
     });
 
-    async function lancerRecherche() {
-        if (!searchInput) return;
-        const query = (searchInput.value || '').trim();
+    async function lancerRecherche(terme = null) {
+        const query = (terme || (searchInput ? searchInput.value : '') || '').trim();
         if (!query) return;
+
+        if (searchInput && terme) {
+            searchInput.value = terme;
+        }
 
         if (statusEl) {
             statusEl.innerHTML = `<span class="spinner-border spinner-border-sm text-primary mr-1" role="status"></span> Recherche de « ${query} »…`;
@@ -272,6 +299,83 @@ document.addEventListener('DOMContentLoaded', function () {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 lancerRecherche();
+            }
+        });
+    }
+
+    // Assistant IA de saisie rapide en langage naturel
+    const iaInput = document.getElementById('ia-prompt-input');
+    const iaBtn = document.getElementById('btn-ia-remplir');
+    const iaFeedback = document.getElementById('ia-feedback');
+    const typeSelect = document.getElementById('type_etape');
+    const dateInput = document.getElementById('date_heure');
+    const transportSelect = document.getElementById('mode_transport');
+    const remarquesInput = document.getElementById('remarques');
+
+    if (iaBtn && iaInput) {
+        async function executerAssistantIa() {
+            const prompt = (iaInput.value || '').trim();
+            if (!prompt) return;
+
+            iaBtn.disabled = true;
+            iaBtn.innerHTML = '<span class="spinner-border spinner-border-sm mr-1"></span> Analyse…';
+            if (iaFeedback) {
+                iaFeedback.style.display = 'block';
+                iaFeedback.className = 'mt-1 small text-primary';
+                iaFeedback.innerHTML = '<i class="bi bi-hourglass-split mr-1"></i> Analyse intelligente de votre phrase…';
+            }
+
+            try {
+                const csrfToken = document.querySelector('input[name="_token"]')?.value
+                    || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+                const response = await fetch('{{ route("admin.etapes.assistant-ai") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+
+                const res = await response.json();
+                if (res.success && res.data) {
+                    const d = res.data;
+                    if (typeSelect && d.type_etape) typeSelect.value = d.type_etape;
+                    if (dateInput && d.date_heure) dateInput.value = d.date_heure;
+                    if (transportSelect && d.mode_transport) transportSelect.value = d.mode_transport;
+                    if (remarquesInput && d.remarques && !remarquesInput.value) remarquesInput.value = d.remarques;
+
+                    if (d.lieu) {
+                        lieuInput.value = d.lieu;
+                        lancerRecherche(d.lieu);
+                    }
+
+                    if (iaFeedback) {
+                        iaFeedback.className = 'mt-1 small text-success font-weight-bold';
+                        iaFeedback.innerHTML = '<i class="bi bi-check-circle-fill mr-1"></i> Formulaire prérempli avec succès par l\'IA !';
+                    }
+                } else {
+                    throw new Error('Réponse invalide');
+                }
+            } catch (err) {
+                console.warn('Erreur assistant IA:', err);
+                if (iaFeedback) {
+                    iaFeedback.className = 'mt-1 small text-danger';
+                    iaFeedback.innerHTML = '<i class="bi bi-exclamation-circle mr-1"></i> Erreur lors de l\'analyse par l\'IA.';
+                }
+            } finally {
+                iaBtn.disabled = false;
+                iaBtn.innerHTML = '<i class="bi bi-magic mr-1"></i> Remplir par IA';
+            }
+        }
+
+        iaBtn.addEventListener('click', executerAssistantIa);
+        iaInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                executerAssistantIa();
             }
         });
     }
