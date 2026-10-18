@@ -12,7 +12,20 @@
     @endphp
 
     <x-front.page-header eyebrow="Labels" title="Ce label est-il valide ?" image="consommateur-salade.webp"
-                         subtitle="Vérifiez en quelques secondes qu'une certification bio, locale ou équitable est authentique et toujours en cours de validité." />
+                         subtitle="Vérifiez en quelques secondes qu'une certification bio, locale ou équitable est authentique et toujours en cours de validité.">
+        <x-slot:actions>
+            <a href="{{ route('front.certifications.chat') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-robot me-2" aria-hidden="true"></i> Poser une question à l'IA
+            </a>
+        </x-slot:actions>
+    </x-front.page-header>
+
+    {{-- Bouton chatbot IA --}}
+    <div class="text-center" style="margin-top: -1.5rem; position: relative; z-index: 10;">
+        <a href="{{ route('front.certifications.chat') }}" class="btn btn-primary btn-lg shadow">
+            <i class="bi bi-robot me-2" aria-hidden="true"></i> Poser une question à l'IA
+        </a>
+    </div>
 
     <section class="page-section pt-0 bg-cream">
         <div class="container px-4 px-lg-5">
@@ -91,6 +104,7 @@
                                     <th scope="col">Organisme</th>
                                     <th scope="col">Expiration</th>
                                     <th scope="col">Statut</th>
+                                    <th scope="col">IA</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -102,6 +116,11 @@
                                         <td class="text-muted">{{ $item->organisme?->nom }}</td>
                                         <td class="text-muted">{{ $item->date_expiration?->format('d/m/Y') }}</td>
                                         <td><span class="status-pill {{ $statutClasses[$item->statutEffectif()] ?? '' }}">{{ $item->statutLabel() }}</span></td>
+                                        <td>
+                                            <a href="{{ route('front.certifications.chat', ['numero' => $item->numero]) }}" class="btn btn-sm btn-outline-primary" title="Poser une question IA sur ce label">
+                                                <i class="bi bi-robot" aria-hidden="true"></i>
+                                            </a>
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
