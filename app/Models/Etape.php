@@ -20,6 +20,27 @@ class Etape extends Model
 
     protected $fillable = ['lot_id', 'acteur_id', 'type_etape', 'date_heure', 'lieu', 'latitude', 'longitude', 'mode_transport', 'remarques'];
 
+    protected static function booted(): void
+    {
+        static::saved(function (Etape $etape) {
+            if ($etape->lot_id) {
+                Lot::where('id', $etape->lot_id)->update([
+                    'recit_ia' => null,
+                    'audit_ia' => null,
+                ]);
+            }
+        });
+
+        static::deleted(function (Etape $etape) {
+            if ($etape->lot_id) {
+                Lot::where('id', $etape->lot_id)->update([
+                    'recit_ia' => null,
+                    'audit_ia' => null,
+                ]);
+            }
+        });
+    }
+
     protected function casts(): array
     {
         return [

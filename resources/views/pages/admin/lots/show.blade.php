@@ -42,6 +42,25 @@
             </div>
 
             <div class="card mt-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h2 class="nt-card-title mb-0"><i class="bi bi-stars text-success mr-1"></i> Histoire IA du produit</h2>
+                    <form action="{{ route('admin.lots.recit-ia', $lot) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-outline-success">
+                            <i class="bi bi-arrow-clockwise mr-1"></i> Régénérer
+                        </button>
+                    </form>
+                </div>
+                <div class="card-body">
+                    @if ($lot->recit_ia)
+                        <p class="font-italic text-secondary mb-0 small">« {{ $lot->recit_ia }} »</p>
+                    @else
+                        <p class="text-muted small mb-0">Aucun récit généré pour le moment. Cliquez sur <em>Régénérer</em> ou ajoutez des étapes.</p>
+                    @endif
+                </div>
+            </div>
+
+            <div class="card mt-4">
                 <div class="card-header"><h2 class="nt-card-title">Empreinte carbone</h2></div>
                 <div class="card-body">
                     @if ($lot->empreinteCarbone)
@@ -137,9 +156,190 @@
                 </x-slot:empty>
             </x-admin.table-card>
 
-            <a href="{{ route('admin.etapes.create', ['lot' => $lot->id]) }}" class="btn btn-primary">
-                <i class="bi bi-plus-lg mr-1" aria-hidden="true"></i> Ajouter une étape à ce lot
-            </a>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <a href="{{ route('admin.etapes.create', ['lot' => $lot->id]) }}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg mr-1" aria-hidden="true"></i> Ajouter une étape à ce lot
+                </a>
+            </div>
+
+            {{-- Encadré Intelligence Artificielle & Traçabilité (Module 3) --}}
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white py-3">
+                    <h2 class="nt-card-title mb-0">
+                        <i class="bi bi-cpu-fill text-primary mr-1"></i> Intelligence Artificielle & Traçabilité
+                    </h2>
+                    <div class="text-muted small mt-1">
+                        Auditeur anti-fraude de cohérence de parcours et conseiller intelligent anti-gaspillage
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Option 1: Auditeur IA de cohérence / Anti-fraude -->
+                        <div class="col-lg-6 mb-4 mb-lg-0">
+                            <div class="p-3 border rounded h-100 bg-white d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <strong class="d-block text-dark">
+                                                <i class="bi bi-shield-check text-primary mr-1"></i> Auditeur de Cohérence & Anti-fraude
+                                            </strong>
+                                            <span class="text-muted small">Contrôle temporel, vitesses GPS, chaîne du froid & péremption</span>
+                                        </div>
+                                        <form action="{{ route('admin.lots.audit-ia', $lot) }}" method="POST">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm {{ $lot->audit_ia ? 'btn-outline-primary' : 'btn-primary' }}" title="Lancer ou réactualiser l'audit">
+                                                <i class="bi {{ $lot->audit_ia ? 'bi-arrow-clockwise' : 'bi-play-fill' }} mr-1"></i>
+                                                {{ $lot->audit_ia ? 'Ré-auditer' : 'Lancer l\'audit' }}
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                    @if ($lot->audit_ia)
+                                        <div class="d-flex align-items-center justify-content-between p-2 mb-3 rounded bg-light">
+                                            <div>
+                                                <span class="font-weight-bold text-muted small mr-1">Score :</span>
+                                                <span class="h5 mb-0 font-weight-bold">{{ $lot->audit_ia['score'] }} / 100</span>
+                                            </div>
+                                            @if ($lot->audit_ia['statut'] === 'conforme')
+                                                <span class="nt-badge nt-badge-success">
+                                                    <i class="bi bi-check-circle-fill mr-1"></i> Conforme · Parcours certifié
+                                                </span>
+                                            @elseif ($lot->audit_ia['statut'] === 'avertissement')
+                                                <span class="nt-badge nt-badge-gold">
+                                                    <i class="bi bi-exclamation-triangle-fill mr-1"></i> Points de vigilance
+                                                </span>
+                                            @else
+                                                <span class="nt-badge nt-badge-danger">
+                                                    <i class="bi bi-shield-slash-fill mr-1"></i> Anomalies détectées
+                                                </span>
+                                            @endif
+                                        </div>
+
+                                        <p class="small text-secondary mb-3 font-italic">
+                                            « {{ $lot->audit_ia['synthese'] }} »
+                                        </p>
+
+                                        @if (! empty($lot->audit_ia['anomalies']))
+                                            <div class="mb-2">
+                                                <div class="small font-weight-bold text-danger mb-1">
+                                                    <i class="bi bi-exclamation-octagon mr-1"></i> Alertes / Incohérences :
+                                                </div>
+                                                <ul class="pl-3 mb-0 small text-danger">
+                                                    @foreach ($lot->audit_ia['anomalies'] as $anomalie)
+                                                        <li>{{ $anomalie }}</li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        @endif
+
+                                        @if (! empty($lot->audit_ia['points_forts']))
+                                            <div class="mt-2">
+                                                <div class="small font-weight-bold text-success mb-1">
+                                                    <i class="bi bi-check-all mr-1"></i> Points forts validés :
+                                                </div>
+                                                <ul class="pl-3 mb-0 small text-success">
+                                                    @foreach ($lot->audit_ia['points_forts'] as $point)
+                                                        <li>{{ $point }}</li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        @endif
+                                    @else
+                                        <div class="p-3 text-center bg-light rounded text-muted small my-3">
+                                            <i class="bi bi-shield-shaded d-block mb-2 text-primary" style="font-size: 2rem;"></i>
+                                            Aucun audit réalisé pour ce lot.<br>
+                                            Cliquez sur <strong>« Lancer l'audit »</strong> pour analyser l'authenticité et la logique du parcours.
+                                        </div>
+                                    @endif
+                                </div>
+
+                                @if ($lot->audit_ia && ! empty($lot->audit_ia['audite_le']))
+                                    <div class="text-muted small border-top pt-2 mt-3 text-right">
+                                        <i class="bi bi-clock-history mr-1"></i> Audité le {{ $lot->audit_ia['audite_le'] }}
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- Option 2: Conseiller IA Anti-gaspillage & Rotation -->
+                        <div class="col-lg-6">
+                            <div class="p-3 border rounded h-100 bg-white d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <strong class="d-block text-dark">
+                                                <i class="bi bi-recycle text-success mr-1"></i> Conseiller Anti-gaspillage & Stock
+                                            </strong>
+                                            <span class="text-muted small">Plan de rotation, démarque promo & valorisation selon la DLC</span>
+                                        </div>
+                                        <form action="{{ route('admin.lots.conseil-ia', $lot) }}" method="POST">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm {{ $lot->conseil_ia ? 'btn-outline-success' : 'btn-success' }}" title="Générer ou actualiser le plan">
+                                                <i class="bi {{ $lot->conseil_ia ? 'bi-arrow-clockwise' : 'bi-magic' }} mr-1"></i>
+                                                {{ $lot->conseil_ia ? 'Réactualiser' : 'Générer le plan' }}
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                    @if ($lot->conseil_ia)
+                                        <div class="d-flex align-items-center justify-content-between p-2 mb-3 rounded bg-light">
+                                            <strong class="small text-dark font-weight-bold">
+                                                {{ $lot->conseil_ia['titre'] }}
+                                            </strong>
+                                            @if ($lot->conseil_ia['urgence'] === 'critique')
+                                                <span class="nt-badge nt-badge-danger">
+                                                    <i class="bi bi-fire mr-1"></i> {{ $lot->conseil_ia['statut_badge'] }}
+                                                </span>
+                                            @elseif ($lot->conseil_ia['urgence'] === 'attention')
+                                                <span class="nt-badge nt-badge-gold">
+                                                    <i class="bi bi-hourglass-split mr-1"></i> {{ $lot->conseil_ia['statut_badge'] }}
+                                                </span>
+                                            @elseif ($lot->conseil_ia['urgence'] === 'perime')
+                                                <span class="nt-badge nt-badge-danger">
+                                                    <i class="bi bi-x-octagon mr-1"></i> {{ $lot->conseil_ia['statut_badge'] }}
+                                                </span>
+                                            @else
+                                                <span class="nt-badge nt-badge-success">
+                                                    <i class="bi bi-check-circle mr-1"></i> {{ $lot->conseil_ia['statut_badge'] }}
+                                                </span>
+                                            @endif
+                                        </div>
+
+                                        <p class="small text-secondary mb-3 font-italic">
+                                            « {{ $lot->conseil_ia['synthese'] }} »
+                                        </p>
+
+                                        @if (! empty($lot->conseil_ia['actions']))
+                                            <div>
+                                                <div class="small font-weight-bold text-dark mb-1">
+                                                    <i class="bi bi-lightning-charge-fill text-warning mr-1"></i> Actions opérationnelles prioritaires :
+                                                </div>
+                                                <ul class="pl-3 mb-0 small text-secondary">
+                                                    @foreach ($lot->conseil_ia['actions'] as $action)
+                                                        <li class="mb-1">{{ $action }}</li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        @endif
+                                    @else
+                                        <div class="p-3 text-center bg-light rounded text-muted small my-3">
+                                            <i class="bi bi-box2-heart d-block mb-2 text-success" style="font-size: 2rem;"></i>
+                                            Aucun plan anti-gaspillage généré.<br>
+                                            Cliquez sur <strong>« Générer le plan »</strong> pour obtenir les actions prioritaires de rotation de stock.
+                                        </div>
+                                    @endif
+                                </div>
+
+                                @if ($lot->conseil_ia && ! empty($lot->conseil_ia['genere_le']))
+                                    <div class="text-muted small border-top pt-2 mt-3 text-right">
+                                        <i class="bi bi-clock-history mr-1"></i> Recommandation du {{ $lot->conseil_ia['genere_le'] }}
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 @endsection

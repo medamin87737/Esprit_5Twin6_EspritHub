@@ -41,6 +41,36 @@ class LotController extends Controller
     }
 
     /**
+     * Régénère manuellement le récit IA d'un lot.
+     */
+    public function regenererRecit(Lot $lot, \App\Services\TracabiliteIaService $iaService): RedirectResponse
+    {
+        $recit = $iaService->genererHistoireLot($lot, force: true);
+
+        return back()->with('success', $recit ? "L'histoire IA du lot a été générée avec succès." : "Impossible de générer l'histoire : aucune étape pour ce lot.");
+    }
+
+    /**
+     * Lance ou actualise l'audit IA de cohérence et anti-fraude du parcours du lot.
+     */
+    public function analyserAuditIa(Lot $lot, \App\Services\TracabiliteIaService $iaService): RedirectResponse
+    {
+        $audit = $iaService->auditerParcoursLot($lot, force: true);
+
+        return back()->with('success', "L'audit IA de traçabilité a été exécuté (Score : {$audit['score']}/100 · " . ucfirst($audit['statut']) . ").");
+    }
+
+    /**
+     * Génère ou actualise le plan d'action IA anti-gaspillage pour le lot.
+     */
+    public function genererConseilIa(Lot $lot, \App\Services\TracabiliteIaService $iaService): RedirectResponse
+    {
+        $conseil = $iaService->genererConseilAntiGaspillage($lot, force: true);
+
+        return back()->with('success', "Le plan d'action anti-gaspillage a été actualisé ({$conseil['statut_badge']}).");
+    }
+
+    /**
      * Exporte la liste filtrée des lots avec le détail de leurs étapes au format CSV / Excel.
      */
     public function export(Request $request): StreamedResponse

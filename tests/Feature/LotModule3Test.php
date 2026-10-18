@@ -432,5 +432,212 @@ class LotModule3Test extends TestCase
         $response->assertSee('9.8739');
         $response->assertSee('Champ de Bizerte');
     }
+
+    public function test_recit_ia_histoire_du_produit_genere_et_mis_en_cache(): void
+    {
+        $produit = Produit::factory()->create(['nom' => 'Dattes Deglet Nour']);
+        $lot = Lot::factory()->create(['produit_id' => $produit->id, 'recit_ia' => null]);
+        $typeActeur = TypeActeur::factory()->create();
+        $acteur = Acteur::factory()->create(['type_acteur_id' => $typeActeur->id, 'nom' => 'Oasis Tozeur']);
+
+        $etape = Etape::factory()->create([
+            'lot_id' => $lot->id,
+            'acteur_id' => $acteur->id,
+            'type_etape' => 'production',
+            'lieu' => 'Tozeur',
+            'date_heure' => today()->subDays(3),
+        ]);
+
+        $this->assertNull($lot->recit_ia);
+
+        // 1. Accès à la page publique : l'histoire est générée et mise en cache
+        $response = $this->get(route('front.lots.show', $lot));
+        $response->assertOk();
+        $response->assertSee('Histoire du produit');
+        $response->assertSee('Dattes Deglet Nour');
+
+        $lotFresh = $lot->fresh();
+        $this->assertNotNull($lotFresh->recit_ia);
+        $this->assertStringContainsString('Dattes Deglet Nour', $lotFresh->recit_ia);
+
+        // 2. Invalidation du cache quand une étape est modifiée
+        $etape->update(['lieu' => 'Nefta']);
+        $this->assertNull($lot->fresh()->recit_ia);
+    }
+
+    public function test_assistant_ai_etape_analyse_phrase_langage_naturel(): void
+    {
+        $response = $this->actingAs($this->admin)->postJson(route('admin.etapes.assistant-ai'), [
+            'prompt' => 'Livré à Tunis hier à 14h par camion frigorifique',
+        ]);
+
+        $response->assertOk();
+        $response->assertJson([
+            'success' => true,
+            'data' => [
+                'type_etape' => 'distribution',
+                'lieu' => 'Tunis',
+                'mode_transport' => 'camion_frigorifique',
+            ],
+        ]);
+        $this->assertStringContainsString('T14:00', $response->json('data.date_heure'));
+
+        // Test détection du verbe "produit" -> type production
+        $responseProd = $this->actingAs($this->admin)->postJson(route('admin.etapes.assistant-ai'), [
+            'prompt' => 'produit à Zaghouan le 12/10/2026',
+        ]);
+        $responseProd->assertOk();
+        $this->assertSame('production', $responseProd->json('data.type_etape'));
+        $this->assertSame('Zaghouan', $responseProd->json('data.lieu'));
+
+        // Test avec date en lettres "19 octobre 2026 à 14h30 à tunis ariana" -> transformation
+        $responseTrans = $this->actingAs($this->admin)->postJson(route('admin.etapes.assistant-ai'), [
+            'prompt' => 'transformé le 19 octobre 2026 à 14h30 à tunis ariana',
+        ]);
+        $responseTrans->assertOk();
+        $this->assertSame('transformation', $responseTrans->json('data.type_etape'));
+        $this->assertStringContainsString('2026-10-19T14:30', $responseTrans->json('data.date_heure'));
+        $this->assertStringContainsString('tunis ariana', strtolower($responseTrans->json('data.lieu')));
+    }
+
+    public function test_admin_peut_regenerer_manuellement_recit_ia(): void
+    {
+        $produit = Produit::factory()->create(['nom' => 'Huile d\'olive']);
+        $lot = Lot::factory()->create(['produit_id' => $produit->id]);
+        $typeActeur = TypeActeur::factory()->create();
+        $acteur = Acteur::factory()->create(['type_acteur_id' => $typeActeur->id]);
+
+        Etape::factory()->create([
+            'lot_id' => $lot->id,
+            'acteur_id' => $acteur->id,
+            'type_etape' => 'production',
+            'lieu' => 'Zaghouan',
+        ]);
+
+        $response = $this->actingAs($this->admin)->post(route('admin.lots.recit-ia', $lot));
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        $this->assertNotNull($lot->fresh()->recit_ia);
+    }
+
+    public function test_audit_ia_detecte_coherence_et_anomalies_du_parcours(): void
+    {
+        $produit = Produit::factory()->create(['nom' => 'Lait Frais']);
+        $lot = Lot::factory()->create([
+            'produit_id' => $produit->id,
+            'date_production' => today()->subDays(3),
+            'date_peremption' => today()->addDays(5),
+        ]);
+        $typeActeur = TypeActeur::factory()->create();
+        $acteur = Acteur::factory()->create(['type_acteur_id' => $typeActeur->id]);
+
+        // Parcours cohérent
+        Etape::factory()->create([
+            'lot_id' => $lot->id,
+            'acteur_id' => $acteur->id,
+            'type_etape' => 'production',
+            'lieu' => 'Béja',
+            'date_heure' => today()->subDays(2)->setTime(8, 0),
+            'latitude' => 36.7256,
+            'longitude' => 9.1817,
+            'mode_transport' => 'aucun',
+        ]);
+        Etape::factory()->create([
+            'lot_id' => $lot->id,
+            'acteur_id' => $acteur->id,
+            'type_etape' => 'distribution',
+            'lieu' => 'Tunis',
+            'date_heure' => today()->subDays(1)->setTime(14, 0),
+            'latitude' => 36.8065,
+            'longitude' => 10.1815,
+            'mode_transport' => 'camion_frigorifique',
+        ]);
+
+        $response = $this->actingAs($this->admin)->post(route('admin.lots.audit-ia', $lot));
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        $lotFresh = $lot->fresh();
+        $this->assertNotNull($lotFresh->audit_ia);
+        $this->assertGreaterThanOrEqual(80, $lotFresh->audit_ia['score']);
+        $this->assertSame('conforme', $lotFresh->audit_ia['statut']);
+        $this->assertNotEmpty($lotFresh->audit_ia['points_forts']);
+    }
+
+    public function test_audit_ia_detecte_anomalie_chronologique(): void
+    {
+        $produit = Produit::factory()->create(['nom' => 'Fromage']);
+        $lot = Lot::factory()->create([
+            'produit_id' => $produit->id,
+            'date_production' => today()->subDays(2),
+        ]);
+        $typeActeur = TypeActeur::factory()->create();
+        $acteur = Acteur::factory()->create(['type_acteur_id' => $typeActeur->id]);
+
+        // Étape antérieure à la date de production
+        $etape = Etape::factory()->create([
+            'lot_id' => $lot->id,
+            'acteur_id' => $acteur->id,
+            'type_etape' => 'production',
+            'lieu' => 'Béja',
+            'date_heure' => today()->subDays(10), // ANOMALIE
+        ]);
+
+        $iaService = app(\App\Services\TracabiliteIaService::class);
+        $audit = $iaService->auditerParcoursLot($lot, force: true);
+
+        $this->assertNotEmpty($audit['anomalies']);
+        $this->assertStringContainsString('Incohérence temporelle', $audit['anomalies'][0]);
+
+        // Invalidation du cache d'audit quand l'étape change
+        $etape->update(['lieu' => 'Nouveau Lieu']);
+        $this->assertNull($lot->fresh()->audit_ia);
+    }
+
+    public function test_conseil_ia_anti_gaspillage_adapte_a_la_peremption(): void
+    {
+        $produit = Produit::factory()->create(['nom' => 'Yaourt Nature']);
+
+        // 1. Test Lot critique J-3
+        $lotCritique = Lot::factory()->create([
+            'produit_id' => $produit->id,
+            'quantite' => 300,
+            'date_production' => today()->subDays(10),
+            'date_peremption' => today()->addDays(3),
+        ]);
+
+        $responseCritique = $this->actingAs($this->admin)->post(route('admin.lots.conseil-ia', $lotCritique));
+        $responseCritique->assertRedirect();
+        $responseCritique->assertSessionHas('success');
+
+        $lotFreshCritique = $lotCritique->fresh();
+        $this->assertNotNull($lotFreshCritique->conseil_ia);
+        $this->assertSame('critique', $lotFreshCritique->conseil_ia['urgence']);
+        $this->assertNotEmpty($lotFreshCritique->conseil_ia['actions']);
+
+        // 2. Test Lot attention J-20
+        $lotAttention = Lot::factory()->create([
+            'produit_id' => $produit->id,
+            'quantite' => 150,
+            'date_production' => today()->subDays(5),
+            'date_peremption' => today()->addDays(20),
+        ]);
+
+        $iaService = app(\App\Services\TracabiliteIaService::class);
+        $conseilAttention = $iaService->genererConseilAntiGaspillage($lotAttention);
+        $this->assertSame('attention', $conseilAttention['urgence']);
+
+        // 3. Test Lot périmé
+        $lotPerime = Lot::factory()->create([
+            'produit_id' => $produit->id,
+            'quantite' => 80,
+            'date_production' => today()->subDays(30),
+            'date_peremption' => today()->subDays(2),
+        ]);
+
+        $conseilPerime = $iaService->genererConseilAntiGaspillage($lotPerime);
+        $this->assertSame('perime', $conseilPerime['urgence']);
+    }
 }
 
