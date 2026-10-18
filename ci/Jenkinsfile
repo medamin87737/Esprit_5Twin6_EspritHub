@@ -75,16 +75,14 @@ pipeline {
         stage('Tests') {
             steps {
                 sh '''
-                    docker run --rm \
+                    # vendor déjà installé à l’étape Composer — pas de re-download
+                    docker run --rm --dns 8.8.8.8 \
                       -v "${HOST_DIR}:/app" -w /app \
                       -e DB_CONNECTION=sqlite \
                       -e DB_DATABASE=/app/database/testing.sqlite \
-                      php:8.2-cli \
-                      bash -c "apt-get update -qq && apt-get install -y -qq git unzip libzip-dev > /dev/null \
-                        && docker-php-ext-install zip pdo > /dev/null \
-                        && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
-                        && composer install --no-interaction --prefer-dist --ignore-platform-reqs \
-                        && mkdir -p database && touch database/testing.sqlite \
+                      composer:2 \
+                      sh -c "mkdir -p database \
+                        && touch database/testing.sqlite \
                         && cp -n .env.example .env \
                         && php artisan key:generate --force \
                         && php artisan test --testsuite=Unit"
