@@ -15,16 +15,6 @@
         </x-slot:actions>
     </x-admin.page-header>
 
-    @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
-            <i class="bi bi-check-circle-fill mr-2" aria-hidden="true"></i>
-            {{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    @endif
-
     {{-- Bandeau d'état et KPIs --}}
     <div class="row mb-4">
         <div class="col-xl-3 col-md-6 mb-3">
