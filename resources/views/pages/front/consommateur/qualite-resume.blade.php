@@ -20,9 +20,7 @@
                     @endif
                 </div>
 
-                <div class="mb-3" style="white-space: pre-wrap; line-height: 1.7;">
-                    {!! preg_replace('/\*\*(.+?)\*\*/', '<strong>$1</strong>', e($data['resume_qualite'] ?? $data['resume_court'] ?? 'Résumé indisponible.')) !!}
-                </div>
+                <div class="mb-3" style="white-space: pre-wrap; line-height: 1.7;" id="nt-resume-corps"></div>
 
                 @if (! empty($data['commentaire']))
                     <p class="small text-muted mb-0"><strong>Commentaire :</strong> {{ $data['commentaire'] }}</p>
@@ -38,3 +36,18 @@
         </div>
     </section>
 @endsection
+
+@push('scripts')
+    @vite('resources/assets/admin/js/analyse-ia.js')
+    <script>
+        (function () {
+            const texte = @json($data['resume_qualite'] ?? $data['resume_court'] ?? 'Synthèse indisponible.');
+            const titre = @json($data['titre_resume'] ?? 'Synthèse qualité');
+            const corps = document.getElementById('nt-resume-corps');
+            if (corps) corps.textContent = String(texte).replace(/\*\*/g, '');
+            function ouvrir() { window.ntIaShowResume(texte, titre); }
+            if (window.ntIaShowResume) ouvrir();
+            else document.addEventListener('nt-ia-ready', ouvrir, { once: true });
+        })();
+    </script>
+@endpush

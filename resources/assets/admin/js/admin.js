@@ -15,3 +15,4 @@ import '@fontsource/inter/600.css';
 import '@fontsource/inter/700.css';
 
 import './nutritrace-admin.js';
+import '../../shared/a11y/a11y.js';

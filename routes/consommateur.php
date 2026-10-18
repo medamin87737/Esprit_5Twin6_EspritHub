@@ -19,8 +19,8 @@ Route::middleware(['auth', 'verified', 'can:espace-consommateur'])->prefix('mon-
     Route::get('/scans', ScanController::class)->name('scans.index');
 
     Route::get('/qualite', [QualiteController::class, 'index'])->name('qualite.index');
-    Route::post('/qualite/resumer-fichier', [QualiteController::class, 'resumerFichier'])->name('qualite.resumer-fichier');
     Route::post('/qualite/analyses/{analyse}/resumer', [QualiteController::class, 'resumerAnalyse'])->name('qualite.resumer');
+    Route::post('/qualite/lots/{lot}/risque', [QualiteController::class, 'risqueLot'])->name('qualite.risque');
 
     Route::post('/assistant-qualite', ChatQualiteController::class)->name('chat-qualite');
 });

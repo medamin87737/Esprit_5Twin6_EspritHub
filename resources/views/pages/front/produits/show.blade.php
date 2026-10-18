@@ -94,20 +94,20 @@
                         @else
                             <span class="product-card-placeholder"><i class="bi bi-box-seam" aria-hidden="true"></i></span>
                         @endif
-                        <button
-                            type="button"
-                            class="nt-qualite-avatar nt-qualite-avatar--lg"
-                            data-chat-produit
-                            data-produit-id="{{ $produit->id }}"
-                            data-produit-nom="{{ $produit->nom }}"
-                            data-login-url="{{ route('login') }}"
-                            title="Assistant qualité — {{ $produit->nom }}"
-                            aria-label="Poser une question qualité sur {{ $produit->nom }}"
-                        >
-                            <span class="nt-qualite-avatar__pulse" aria-hidden="true"></span>
-                            <i class="bi bi-clipboard2-pulse" aria-hidden="true"></i>
-                            <span class="nt-qualite-avatar__badge">Qualité</span>
-                        </button>
+                        @auth
+                            @can('espace-consommateur')
+                                <a
+                                    href="{{ route('consommateur.qualite.index') }}"
+                                    class="nt-qualite-avatar nt-qualite-avatar--lg"
+                                    title="Espace Qualité NutriTrace"
+                                    aria-label="Ouvrir l'espace Qualité"
+                                >
+                                    <span class="nt-qualite-avatar__pulse" aria-hidden="true"></span>
+                                    <i class="bi bi-clipboard2-pulse" aria-hidden="true"></i>
+                                    <span class="nt-qualite-avatar__badge">Qualité</span>
+                                </a>
+                            @endcan
+                        @endauth
                     </div>
 
                     {{-- Score global --}}

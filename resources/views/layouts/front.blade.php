@@ -14,6 +14,7 @@
         @endif
     </title>
     <link rel="icon" type="image/svg+xml" href="{{ Vite::asset('resources/assets/front/img/favicon.svg') }}">
+    @include('partials.a11y.boot')
     @vite([
         'resources/assets/front/css/styles.css',
         'resources/assets/front/css/nutritrace.css',
@@ -22,16 +23,20 @@
     @stack('styles')
 </head>
 <body id="page-top" class="@yield('body_class')">
+    @include('partials.a11y.panel')
     @include('partials.front.navbar')
     @include('partials.front.flash')
 
-    <main>
+    <main id="contenu-principal" tabindex="-1">
         @yield('content')
     </main>
 
     @include('partials.front.footer')
     @include('partials.front.scan-modal')
-    @include('partials.front.chat-qualite')
+    {{-- Assistant chat : uniquement sur l'espace Qualité consommateur --}}
+    @if (request()->routeIs('consommateur.qualite.*'))
+        @include('partials.front.chat-qualite')
+    @endif
 
     @stack('scripts')
 </body>

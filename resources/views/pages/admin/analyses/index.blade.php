@@ -28,7 +28,8 @@
         </x-slot:actions>
     </x-admin.page-header>
 
-    <x-admin.table-card :items="$analyses" title="Liste des analyses" search-placeholder="Numéro, lot ou produit…"
+    <x-admin.table-card :items="$analyses" title="Liste des analyses"
+                        search-placeholder="Rechercher partout : n°, lot, produit, labo, type…"
                         :filter-keys="['q', 'resultat', 'type', 'laboratoire', 'lot', 'du', 'au']">
         <x-slot:filters>
             <label for="filter-type" class="sr-only">Type</label>

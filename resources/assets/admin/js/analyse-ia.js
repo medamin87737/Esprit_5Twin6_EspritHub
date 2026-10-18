@@ -131,26 +131,31 @@
         el.id = 'nt-ia-modal';
         el.innerHTML = `
 <style>
-#nt-ia-modal{position:fixed;inset:0;z-index:1080;display:none;align-items:center;justify-content:center;padding:1rem;background:rgba(6,32,19,.5)}
+#nt-ia-modal{position:fixed;inset:0;z-index:1080;display:none;align-items:center;justify-content:center;padding:1rem;background:rgba(32,43,40,.48)}
 #nt-ia-modal.open{display:flex}
-#nt-ia-modal .box{width:min(480px,100%);background:#fff;border-radius:14px;overflow:hidden;border:1px solid #d7e0d9;box-shadow:0 16px 40px rgba(0,0,0,.18)}
-#nt-ia-modal .hd{background:#064e35;color:#fff;padding:1rem 1.1rem;position:relative}
-#nt-ia-modal .hd small{display:block;color:#ffb627;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:.65rem;margin-bottom:.25rem}
-#nt-ia-modal .hd h3{margin:0;font-size:1.1rem}
-#nt-ia-modal .x{position:absolute;top:.6rem;right:.7rem;border:0;background:transparent;color:#fff;font-size:1.3rem;cursor:pointer}
-#nt-ia-modal .bd{padding:1.1rem;min-height:5rem;line-height:1.65;color:#2a3b31;font-size:.95rem;white-space:pre-wrap}
-#nt-ia-modal .ft{padding:0 1.1rem 1rem;text-align:right}
-#nt-ia-modal .cur{display:inline-block;width:.5ch;background:#087443;animation:ntb .7s step-end infinite}
+#nt-ia-modal .box{width:min(520px,100%);background:#fff;border-radius:16px;overflow:hidden;border:1px solid #dde6e1;box-shadow:0 18px 48px rgba(32,43,40,.2)}
+#nt-ia-modal .hd{background:#087f5b;color:#fff;padding:1.05rem 1.2rem;position:relative}
+#nt-ia-modal .hd small{display:block;color:#c8f0de;font-weight:700;letter-spacing:.07em;text-transform:uppercase;font-size:.65rem;margin-bottom:.3rem}
+#nt-ia-modal .hd h3{margin:0;font-size:1.12rem;font-weight:700}
+#nt-ia-modal .x{position:absolute;top:.65rem;right:.75rem;border:0;background:transparent;color:#fff;font-size:1.35rem;line-height:1;cursor:pointer}
+#nt-ia-modal .bd{padding:1.2rem 1.25rem;min-height:5.5rem;line-height:1.7;color:#202b28;font-size:.95rem;white-space:pre-wrap}
+#nt-ia-modal .ft{padding:0 1.25rem 1.15rem;display:flex;justify-content:flex-end}
+#nt-ia-modal .ft button{border:0;border-radius:.7rem;background:#087f5b;color:#fff;padding:.55rem 1rem;font-weight:600;cursor:pointer}
+#nt-ia-modal .cur{display:inline-block;width:.45ch;height:1em;background:#087f5b;margin-left:1px;vertical-align:-2px;animation:ntb .7s step-end infinite}
+@media (prefers-reduced-motion:reduce){#nt-ia-modal .cur{animation:none} #nt-ia-modal .bd{transition:none}}
 @keyframes ntb{50%{opacity:0}}
 </style>
-<div class="box" role="dialog" aria-modal="true">
-  <div class="hd"><small>NutriTrace</small><h3 data-t>Résumé qualité</h3><button type="button" class="x" data-c aria-label="Fermer">&times;</button></div>
-  <div class="bd" data-b>Lecture…</div>
-  <div class="ft"><button type="button" class="btn btn-success btn-sm" data-c>Fermer</button></div>
+<div class="box" role="dialog" aria-modal="true" aria-labelledby="nt-ia-modal-title">
+  <div class="hd"><small>NutriTrace · Synthèse IA</small><h3 id="nt-ia-modal-title" data-t>Synthèse qualité</h3><button type="button" class="x" data-c aria-label="Fermer">&times;</button></div>
+  <div class="bd" data-b>Préparation de la synthèse…</div>
+  <div class="ft"><button type="button" data-c>Fermer</button></div>
 </div>`;
         document.body.appendChild(el);
         el.addEventListener('click', (e) => {
             if (e.target === el || e.target.closest('[data-c]')) el.classList.remove('open');
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && el.classList.contains('open')) el.classList.remove('open');
         });
         return el;
     }
@@ -158,18 +163,57 @@
     function typewrite(node, text, speed) {
         return new Promise((resolve) => {
             let i = 0;
+            const plain = String(text || '');
             const tick = () => {
                 i++;
-                node.innerHTML = format(text.slice(0, i)) + (i < text.length ? '<span class="cur">|</span>' : '');
-                if (i < text.length) setTimeout(tick, speed);
+                node.innerHTML = format(plain.slice(0, i)) + (i < plain.length ? '<span class="cur">|</span>' : '');
+                if (i < plain.length) setTimeout(tick, speed);
                 else resolve();
             };
             tick();
         });
     }
 
-    document.addEventListener('DOMContentLoaded', initDropzones);
+    async function showResume(text, titre) {
+        const m = modal();
+        const title = m.querySelector('[data-t]');
+        const body = m.querySelector('[data-b]');
+        title.textContent = titre || 'Synthèse qualité';
+        body.innerHTML = '<span class="cur">|</span>';
+        m.classList.add('open');
+        await typewrite(body, text || 'Synthèse indisponible.', 14);
+    }
+
+    window.ntIaShowResume = showResume;
+    document.dispatchEvent(new CustomEvent('nt-ia-ready'));
+
+    function initLoadingForms() {
+        document.querySelectorAll('[data-nt-loading-form]').forEach((form) => {
+            if (form.dataset.ntLoadingReady) return;
+            form.dataset.ntLoadingReady = '1';
+            form.addEventListener('submit', () => {
+                const btn = form.querySelector('button[type="submit"]');
+                if (!btn || btn.disabled) return;
+                btn.disabled = true;
+                btn.dataset.ntOriginal = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Traitement…';
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initDropzones();
+        initLoadingForms();
+
+        document.querySelectorAll('[data-nt-typewrite]').forEach((el) => {
+            const full = el.getAttribute('data-nt-typewrite') || el.textContent || '';
+            if (!full.trim()) return;
+            el.textContent = '';
+            typewrite(el, full, 12);
+        });
+    });
     initDropzones();
+    initLoadingForms();
 
     document.addEventListener('click', async (event) => {
         const btn = event.target.closest('[data-ia-prefill]');

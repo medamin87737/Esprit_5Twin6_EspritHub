@@ -6,6 +6,7 @@
     <meta name="theme-color" content="#064e35">
     <title>@yield('title') · NutriTrace</title>
     <link rel="icon" type="image/svg+xml" href="{{ Vite::asset('resources/assets/front/img/favicon.svg') }}">
+    @include('partials.a11y.boot')
     @vite([
         'resources/assets/admin/css/sb-admin-2.css',
         'resources/assets/admin/css/admin.css',
@@ -13,7 +14,9 @@
     ])
 </head>
 <body>
-    <main class="nt-auth">
+    @include('partials.a11y.panel')
+
+    <main id="contenu-principal" class="nt-auth" tabindex="-1">
         <div class="nt-auth-card">
             <div class="row no-gutters">
                 <div class="col-lg-6 col-xl-7">

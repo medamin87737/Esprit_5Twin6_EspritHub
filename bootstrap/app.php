@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureAccountIsActive;
+use App\Http\Middleware\EnsureEmailIsVerifiedWhenAuthenticated;
 use App\Http\Middleware\EnsureProfilSocieteComplet;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Foundation\Application;
@@ -23,11 +24,18 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(append: [
             EnsureAccountIsActive::class,
+            EnsureEmailIsVerifiedWhenAuthenticated::class,
         ]);
 
-        $middleware->redirectUsersTo(
-            fn (Request $request) => $request->user()?->espaceParDefaut() ?? route('home')
-        );
+        $middleware->redirectUsersTo(function (Request $request) {
+            $user = $request->user();
+
+            if ($user && ! $user->hasVerifiedEmail()) {
+                return route('verification.notice');
+            }
+
+            return $user?->espaceParDefaut() ?? route('home');
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (TokenMismatchException $e, Request $request) {

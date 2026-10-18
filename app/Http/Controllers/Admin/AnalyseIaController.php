@@ -9,7 +9,6 @@ use App\Services\Analyses\AnalyseIaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use RuntimeException;
 use Throwable;
 
 class AnalyseIaController extends Controller
@@ -29,7 +28,6 @@ class AnalyseIaController extends Controller
         ]);
 
         try {
-            $this->assurerCle();
             $extrait = $this->ia->extraireDepuisPdf($request->file('rapport'));
 
             return response()->json([
@@ -52,7 +50,6 @@ class AnalyseIaController extends Controller
         }
 
         try {
-            $this->assurerCle();
             $extrait = $this->ia->extraireDepuisPdf($analyse->rapport);
 
             $analyse->fill(array_filter([
@@ -79,10 +76,11 @@ class AnalyseIaController extends Controller
     public function resumer(Analyse $analyse): RedirectResponse
     {
         try {
-            $this->assurerCle();
-            $this->ia->resumer($analyse);
+            $resume = $this->ia->resumer($analyse);
 
-            return back()->with('success', 'Résumé IA généré pour '.$analyse->numero.'.');
+            return back()
+                ->with('success', 'Synthèse qualité générée pour '.$analyse->numero.'.')
+                ->with('resume_ia_affiche', $resume);
         } catch (Throwable $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -97,13 +95,6 @@ class AnalyseIaController extends Controller
                 ->with('success', $risque['libelle'].' — score '.$risque['score'].'/100.');
         } catch (Throwable $e) {
             return back()->with('error', $e->getMessage());
-        }
-    }
-
-    private function assurerCle(): void
-    {
-        if (! $this->ia->disponible()) {
-            throw new RuntimeException('Ajoutez OPENROUTER_API_KEY dans le fichier .env puis videz le cache config.');
         }
     }
 }

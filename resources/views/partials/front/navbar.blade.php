@@ -4,10 +4,11 @@
     $logo = $user?->isPro() ? \App\Support\MenuFront::accueil($user) : (request()->routeIs('home') ? '' : route('home')) . '#page-top';
 @endphp
 
-<nav class="navbar navbar-expand-lg navbar-light fixed-top py-3" id="mainNav">
+<nav class="navbar navbar-expand-lg navbar-light fixed-top py-2" id="mainNav" aria-label="Navigation principale">
+    <span id="navigation-principale" class="visually-hidden" tabindex="-1">Navigation principale</span>
     <div class="container px-4 px-lg-5">
         <a class="navbar-brand d-flex align-items-center gap-2" href="{{ $logo }}">
-            <img src="{{ Vite::asset('resources/assets/front/img/logo.svg') }}" alt="" width="38" height="38">
+            <img src="{{ Vite::asset('resources/assets/front/img/logo.svg') }}" alt="NutriTrace" width="34" height="34">
             <span>Nutri<span class="brand-accent">Trace</span></span>
         </a>
         <button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Ouvrir le menu">

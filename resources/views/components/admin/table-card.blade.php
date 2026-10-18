@@ -3,6 +3,7 @@
     'title',
     'searchPlaceholder' => null,
     'filterKeys' => ['q'],
+    'liveSearch' => true,
 ])
 
 @php
@@ -10,7 +11,10 @@
     $filtered = request()->hasAny($filterKeys) && collect(request()->only($filterKeys))->filter(fn ($v) => filled($v))->isNotEmpty();
 @endphp
 
-<div {{ $attributes->class(['card mb-4']) }}>
+<div
+    {{ $attributes->class(['card mb-4', 'nt-live-search' => $liveSearch && $searchPlaceholder]) }}
+    @if ($liveSearch && $searchPlaceholder) data-nt-live-search @endif
+>
     <div class="card-header nt-card-header">
         <div>
             <h2 class="nt-card-title">{{ $title }}</h2>
@@ -18,43 +22,61 @@
         </div>
 
         @if ($searchPlaceholder)
-            <form method="GET" action="{{ url()->current() }}" class="nt-toolbar" role="search">
+            <form method="GET" action="{{ url()->current() }}" class="nt-toolbar" role="search" data-nt-live-form>
                 <div class="nt-search">
                     <i class="bi bi-search" aria-hidden="true"></i>
                     <label for="table-search" class="sr-only">Rechercher</label>
-                    <input id="table-search" type="search" name="q" value="{{ request('q') }}" class="form-control" placeholder="{{ $searchPlaceholder }}">
+                    <input
+                        id="table-search"
+                        type="search"
+                        name="q"
+                        value="{{ request('q') }}"
+                        class="form-control"
+                        placeholder="{{ $searchPlaceholder }}"
+                        autocomplete="off"
+                        data-nt-live-q
+                        @if ($liveSearch) aria-describedby="nt-live-search-hint" @endif
+                    >
                 </div>
                 {{ $filters ?? '' }}
-                <button type="submit" class="btn btn-light"><i class="bi bi-funnel" aria-hidden="true"></i><span class="sr-only">Filtrer</span></button>
+                <button type="submit" class="btn btn-light" title="Filtrer">
+                    <i class="bi bi-funnel" aria-hidden="true"></i>
+                    <span class="sr-only">Filtrer</span>
+                </button>
             </form>
+            @if ($liveSearch)
+                <p id="nt-live-search-hint" class="sr-only">La liste se met à jour pendant la saisie.</p>
+            @endif
         @endif
     </div>
 
-    @if ($total === 0)
-        @if ($filtered)
-            <x-admin.empty-state icon="bi-search" title="Aucun résultat">
-                Aucun enregistrement ne correspond à vos critères de recherche.
-                <x-slot:action>
-                    <a href="{{ url()->current() }}" class="btn btn-light btn-sm"><i class="bi bi-x-lg mr-1" aria-hidden="true"></i> Réinitialiser les filtres</a>
-                </x-slot:action>
-            </x-admin.empty-state>
+    <div data-nt-live-body>
+        @if ($total === 0)
+            @if ($filtered)
+                <x-admin.empty-state icon="bi-search" title="Aucun résultat">
+                    Aucun enregistrement ne correspond à vos critères de recherche.
+                    <x-slot:action>
+                        <a href="{{ url()->current() }}" class="btn btn-light btn-sm"><i class="bi bi-x-lg mr-1" aria-hidden="true"></i> Réinitialiser les filtres</a>
+                    </x-slot:action>
+                </x-admin.empty-state>
+            @else
+                {{ $empty }}
+            @endif
         @else
-            {{ $empty }}
-        @endif
-    @else
-        <div class="table-responsive">
-            <table class="table nt-table">
-                <thead>
-                    <tr>{{ $head }}</tr>
-                </thead>
-                <tbody>
-                    {{ $slot }}
-                </tbody>
-            </table>
-        </div>
+            <div class="table-responsive">
+                <table class="table nt-table">
+                    <thead>
+                        <tr>{{ $head }}</tr>
+                    </thead>
+                    <tbody>
+                        {{ $slot }}
+                    </tbody>
+                </table>
+            </div>
 
-        @if ($items instanceof \Illuminate\Contracts\Pagination\Paginator && $items->hasPages())
-            <div class="card-footer">{{ $items->withQueryString()->links() }}</div>
+            @if ($items instanceof \Illuminate\Contracts\Pagination\Paginator && $items->hasPages())
+                <div class="card-footer">{{ $items->withQueryString()->links() }}</div>
+            @endif
         @endif
-    @endif
+    </div>
 </div>

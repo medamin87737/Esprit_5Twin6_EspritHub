@@ -590,6 +590,30 @@ a:hover {
   padding-left: 2.35rem;
 }
 
+.nt-live-search.is-loading [data-nt-live-body] {
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.nt-live-search.is-loading .nt-search::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  width: 0.9rem;
+  height: 0.9rem;
+  margin-top: -0.45rem;
+  border: 2px solid var(--nt-border);
+  border-top-color: var(--nt-primary);
+  border-radius: 50%;
+  animation: nt-live-spin 0.6s linear infinite;
+}
+
+@keyframes nt-live-spin {
+  to { transform: rotate(360deg); }
+}
+
 .nt-toolbar .custom-select {
   flex: 0 1 12rem;
   width: auto;

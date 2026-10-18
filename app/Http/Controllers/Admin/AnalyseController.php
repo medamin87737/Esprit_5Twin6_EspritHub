@@ -17,10 +17,7 @@ class AnalyseController extends Controller
     {
         $analyses = Analyse::query()
             ->with(['lot:id,numero_lot,produit_id', 'lot.produit:id,nom', 'laboratoire:id,nom'])
-            ->when($request->filled('q'), fn ($q) => $q->where(fn ($sub) => $sub
-                ->where('numero', 'like', '%'.$request->input('q').'%')
-                ->orWhereHas('lot', fn ($l) => $l->where('numero_lot', 'like', '%'.$request->input('q').'%'))
-                ->orWhereHas('lot.produit', fn ($p) => $p->where('nom', 'like', '%'.$request->input('q').'%'))))
+            ->search($request->string('q')->trim()->value())
             ->when($request->filled('resultat'), fn ($q) => $q->resultat($request->input('resultat')))
             ->when($request->filled('type'), fn ($q) => $q->where('type', $request->input('type')))
             ->when($request->filled('laboratoire'), fn ($q) => $q->where('laboratoire_id', $request->input('laboratoire')))

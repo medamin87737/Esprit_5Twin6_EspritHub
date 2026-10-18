@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -12,6 +13,28 @@ class Laboratoire extends Model
     use HasFactory;
 
     protected $fillable = ['nom', 'ville', 'pays', 'accreditation', 'email', 'telephone'];
+
+    /**
+     * Recherche libre sur tous les champs utiles du laboratoire.
+     */
+    public function scopeSearch(Builder $query, ?string $term): void
+    {
+        $term = trim((string) $term);
+        if ($term === '') {
+            return;
+        }
+
+        $like = '%'.$term.'%';
+
+        $query->where(function (Builder $w) use ($like) {
+            $w->where('nom', 'like', $like)
+                ->orWhere('ville', 'like', $like)
+                ->orWhere('pays', 'like', $like)
+                ->orWhere('accreditation', 'like', $like)
+                ->orWhere('email', 'like', $like)
+                ->orWhere('telephone', 'like', $like);
+        });
+    }
 
     public function analyses(): HasMany
     {

@@ -41,6 +41,17 @@ class TwoFactorController extends Controller
             $request->session()->regenerate();
             $user->forceFill(['last_login_at' => now()])->save();
 
+            if (! $user->hasVerifiedEmail()) {
+                try {
+                    $user->sendEmailVerificationNotification();
+                } catch (\Throwable) {
+                    // L'utilisateur pourra renvoyer depuis la page de vérification.
+                }
+
+                return redirect()->route('verification.notice')
+                    ->with('status', 'Confirmez votre adresse e-mail via le lien reçu par message.');
+            }
+
             return redirect()->intended($user->espaceParDefaut());
         }
 
@@ -56,7 +67,9 @@ class TwoFactorController extends Controller
         $qr = null;
         $otpauth = null;
 
-        if (! $user->hasTwoFactorEnabled() && session('two_factor.setup_secret')) {
+        // QR affiché par défaut tant que la 2FA n'est pas confirmée.
+        if (! $user->hasTwoFactorEnabled()) {
+            $this->demarrerConfiguration($request);
             $secret = session('two_factor.setup_secret');
             $otpauth = Totp::uri($secret, $user->email);
             $qr = Totp::qrUrl($otpauth);
@@ -73,6 +86,21 @@ class TwoFactorController extends Controller
 
     public function enable(Request $request): RedirectResponse
     {
+        $this->demarrerConfiguration($request, force: true);
+
+        return redirect()->route('two-factor.show')
+            ->with('status', 'Nouveau QR code généré. Scannez-le puis confirmez avec un code à 6 chiffres.');
+    }
+
+    /**
+     * Prépare secret + codes de récupération (affichage immédiat du QR).
+     */
+    private function demarrerConfiguration(Request $request, bool $force = false): void
+    {
+        if (! $force && $request->session()->has('two_factor.setup_secret') && $request->user()->twoFactorSecret()) {
+            return;
+        }
+
         $secret = Totp::genererSecret();
         $codes = Totp::codesRecuperation();
 
@@ -87,9 +115,6 @@ class TwoFactorController extends Controller
             ))),
             'two_factor_confirmed_at' => null,
         ])->save();
-
-        return redirect()->route('two-factor.show')
-            ->with('status', 'Scannez le QR code puis confirmez avec un code à 6 chiffres.');
     }
 
     public function confirm(Request $request): RedirectResponse

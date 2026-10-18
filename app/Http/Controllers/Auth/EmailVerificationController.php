@@ -7,6 +7,7 @@ use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Illuminate\View\View;
 use Throwable;
 
@@ -14,11 +15,15 @@ class EmailVerificationController extends Controller
 {
     public function notice(Request $request): View|RedirectResponse
     {
-        if ($request->user()->hasVerifiedEmail()) {
-            return redirect()->intended($request->user()->espaceParDefaut());
+        $user = $request->user();
+
+        if ($user->hasVerifiedEmail()) {
+            return redirect()->intended($user->espaceParDefaut());
         }
 
-        return view('pages.auth.verify-email');
+        return view('pages.auth.verify-email', [
+            'expireMinutes' => (int) Config::get('auth.verification.expire', 60),
+        ]);
     }
 
     public function verify(EmailVerificationRequest $request): RedirectResponse
@@ -43,10 +48,10 @@ class EmailVerificationController extends Controller
 
         try {
             $request->user()->sendEmailVerificationNotification();
+
+            return back()->with('status', 'Un nouvel e-mail de vérification vient d\'être envoyé.');
         } catch (Throwable $e) {
             return back()->with('error', 'Envoi impossible : '.$e->getMessage());
         }
-
-        return back()->with('status', 'Un nouvel e-mail de vérification vient d\'être envoyé.');
     }
 }

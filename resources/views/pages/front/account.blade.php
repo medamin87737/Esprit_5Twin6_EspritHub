@@ -94,15 +94,18 @@
                     @endif
 
                     <div class="account-card mb-4">
-                        <h2 class="account-card-title"><i class="bi bi-shield-lock" aria-hidden="true"></i> Double authentification (2FA)</h2>
+                        <h2 class="account-card-title"><i class="bi bi-qr-code-scan" aria-hidden="true"></i> Double authentification (2FA)</h2>
                         <p class="text-muted small mb-3">
                             @if ($user->hasTwoFactorEnabled())
                                 Activée — un code TOTP est demandé à chaque connexion.
                             @else
-                                Non activée — recommande pour sécuriser votre compte.
+                                Non activée — le QR code s'affiche dès l'ouverture de la page.
                             @endif
                         </p>
-                        <a href="{{ route('two-factor.show') }}" class="btn btn-outline-primary">Gérer la 2FA</a>
+                        <a href="{{ route('two-factor.show') }}" class="btn btn-primary">
+                            <i class="bi bi-qr-code me-1" aria-hidden="true"></i>
+                            {{ $user->hasTwoFactorEnabled() ? 'Gérer la 2FA' : 'Configurer le QR code 2FA' }}
+                        </a>
                     </div>
 
                     <form method="POST" action="{{ route('profile.password') }}" class="account-card mb-4" novalidate>

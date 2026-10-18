@@ -2,12 +2,12 @@
  * Assistant chat qualité (consommateur) — fenêtre flottante + focus produit.
  */
 const WELCOME =
-    "Bonjour 😊 Je suis votre assistant qualité NutriTrace. Posez-moi vos questions sur la conformité, les analyses laboratoire ou les produits du catalogue — uniquement la qualité.";
+    "Bonjour. Je suis l’assistant NutriTrace : qualité, conformité et orientation produit selon votre profil (ex. diabète / sucre). Ceci n’est pas un avis médical.";
 
 const SUGGESTIONS = [
     'Quels produits sont conformes ?',
+    'J’ai du diabète, quels produits me conseiller ?',
     'Y a-t-il des analyses non conformes ?',
-    'Quels lots ont des analyses en attente ?',
 ];
 
 function escapeHtml(text) {
@@ -49,7 +49,7 @@ export function initChatQualite() {
     const messages = document.getElementById('nt-chat-messages');
     const form = document.getElementById('nt-chat-form');
     const input = document.getElementById('nt-chat-input');
-    const openBtn = document.getElementById('nt-chat-open');
+    const openBtns = () => [...document.querySelectorAll('[data-nt-chat-open], #nt-chat-open')];
     const closeBtn = document.getElementById('nt-chat-close');
     const subtitle = root?.querySelector('.nt-chat__subtitle');
     const endpoint = root?.dataset.endpoint;
@@ -59,11 +59,18 @@ export function initChatQualite() {
         root.hidden = false;
     }
 
+    function syncOpenBtns(expanded) {
+        openBtns().forEach((btn) => {
+            btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            btn.classList.toggle('is-open', expanded);
+        });
+    }
+
     function suggestionsPourProduit(nom) {
         return [
             `Ce produit « ${nom} » est-il conforme ?`,
-            `Quelles analyses pour « ${nom} » ?`,
-            `Y a-t-il un risque qualité sur « ${nom} » ?`,
+            `J’ai du sucre / diabète : « ${nom} » est-il adapté ?`,
+            `Quel risque qualité pour « ${nom} » ?`,
         ];
     }
 
@@ -167,8 +174,7 @@ export function initChatQualite() {
 
         ouvert = true;
         panel.hidden = false;
-        openBtn?.setAttribute('aria-expanded', 'true');
-        openBtn?.classList.add('is-open');
+        syncOpenBtns(true);
 
         if (!welcomeDone) {
             welcomeDone = true;
@@ -192,8 +198,22 @@ export function initChatQualite() {
     function fermer() {
         ouvert = false;
         if (panel) panel.hidden = true;
-        openBtn?.setAttribute('aria-expanded', 'false');
-        openBtn?.classList.remove('is-open');
+        syncOpenBtns(false);
+    }
+
+    function toggleChat() {
+        if (ouvert) {
+            fermer();
+            return;
+        }
+        if (produitFocus) {
+            produitFocus = null;
+            if (messages) messages.innerHTML = '';
+            historique.length = 0;
+            welcomeDone = false;
+            majSousTitre();
+        }
+        ouvrir();
     }
 
     async function envoyer(texte, opts = {}) {
@@ -238,19 +258,11 @@ export function initChatQualite() {
         }
     }
 
-    openBtn?.addEventListener('click', () => {
-        if (ouvert) {
-            fermer();
-            return;
-        }
-        if (produitFocus) {
-            produitFocus = null;
-            if (messages) messages.innerHTML = '';
-            historique.length = 0;
-            welcomeDone = false;
-            majSousTitre();
-        }
-        ouvrir();
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-nt-chat-open], #nt-chat-open');
+        if (!btn || btn.closest('[data-chat-produit]')) return;
+        e.preventDefault();
+        toggleChat();
     });
     closeBtn?.addEventListener('click', fermer);
 

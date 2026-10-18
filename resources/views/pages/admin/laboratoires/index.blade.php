@@ -12,7 +12,9 @@
         </x-slot:actions>
     </x-admin.page-header>
 
-    <x-admin.table-card :items="$laboratoires" title="Liste des laboratoires" search-placeholder="Nom ou accréditation…" :filter-keys="['q', 'ville']">
+    <x-admin.table-card :items="$laboratoires" title="Liste des laboratoires"
+                        search-placeholder="Rechercher partout : nom, ville, accréditation, email…"
+                        :filter-keys="['q', 'ville']">
         <x-slot:filters>
             <label for="filter-ville" class="sr-only">Ville</label>
             <select id="filter-ville" name="ville" class="custom-select">

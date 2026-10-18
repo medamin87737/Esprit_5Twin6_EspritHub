@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Throwable;
 
 class LoginController extends Controller
 {
@@ -56,6 +58,28 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
         $user->forceFill(['last_login_at' => now()])->save();
+
+        // MustVerifyEmail : bloquer l'accès tant que l'e-mail n'est pas confirmé.
+        if (! $user->hasVerifiedEmail()) {
+            try {
+                $user->sendEmailVerificationNotification();
+                $emailEnvoye = true;
+            } catch (Throwable $e) {
+                $emailEnvoye = false;
+                Log::warning('Connexion : e-mail de vérification non envoyé', [
+                    'user_id' => $user->id,
+                    'erreur' => $e->getMessage(),
+                ]);
+            }
+
+            $redirect = redirect()->route('verification.notice');
+
+            if ($emailEnvoye) {
+                return $redirect->with('status', 'Un e-mail de confirmation a été envoyé. Ouvrez-le pour activer votre compte.');
+            }
+
+            return $redirect->with('error', 'Impossible d\'envoyer l\'e-mail. Réessayez avec « Renvoyer l\'e-mail ».');
+        }
 
         return redirect()->intended($user->espaceParDefaut());
     }
