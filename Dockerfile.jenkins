@@ -1,0 +1,33 @@
+FROM jenkins/jenkins:lts-jdk17
+
+USER root
+
+# CLI Docker (socket Docker Desktop du host)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ca-certificates curl git \
+    && curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-27.3.1.tgz \
+        | tar -xz -C /tmp \
+    && mv /tmp/docker/docker /usr/local/bin/docker \
+    && chmod +x /usr/local/bin/docker \
+    && rm -rf /tmp/docker /var/lib/apt/lists/* \
+    && (getent group docker || groupadd docker) \
+    && usermod -aG docker jenkins
+
+# docker compose plugin (v2)
+RUN mkdir -p /usr/local/lib/docker/cli-plugins \
+    && curl -fsSL https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-linux-x86_64 \
+        -o /usr/local/lib/docker/cli-plugins/docker-compose \
+    && chmod +x /usr/local/lib/docker/cli-plugins/docker-compose \
+    && ln -sf /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose
+
+USER jenkins
+
+RUN jenkins-plugin-cli --plugins \
+      workflow-aggregator \
+      git \
+      docker-workflow \
+      blueocean \
+      configuration-as-code \
+      job-dsl \
+      pipeline-stage-view \
+      credentials-binding

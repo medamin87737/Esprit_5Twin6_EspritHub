@@ -1,0 +1,16 @@
+jenkins:
+  systemMessage: "NutriTrace — Jenkins CI/CD (Docker). Login: admin / admin"
+  numExecutors: 2
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "admin"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+unclassified:
+  location:
+    url: http://127.0.0.1:8090/
