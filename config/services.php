@@ -20,6 +20,7 @@ return [
 
     'resend' => [
         'key' => env('RESEND_API_KEY'),
+        'redirect_to' => env('RESEND_REDIRECT_TO'),
     ],
 
     'ses' => [

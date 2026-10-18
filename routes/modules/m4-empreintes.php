@@ -7,6 +7,7 @@
 */
 
 use App\Http\Controllers\Admin\EmpreinteCarboneController;
+use App\Http\Controllers\Admin\EmpreinteIaController;
 use App\Http\Controllers\Admin\FacteurClimatiqController;
 use App\Http\Controllers\Admin\IndicateurController;
 use App\Http\Controllers\Front\ComparaisonController;
@@ -20,6 +21,10 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     Route::resource('empreintes', EmpreinteCarboneController::class);
     Route::resource('indicateurs', IndicateurController::class);
 
+    Route::post('empreintes/{empreinte}/audit-ia', [EmpreinteIaController::class, 'auditer'])->name('empreintes.audit-ia');
+    Route::delete('empreintes/{empreinte}/audit-ia', [EmpreinteIaController::class, 'reinitialiser'])->name('empreintes.audit-ia.reinitialiser');
+
     Route::get('facteurs-climatiq', [FacteurClimatiqController::class, 'index'])->name('facteurs-climatiq.index');
     Route::post('facteurs-climatiq/synchroniser', [FacteurClimatiqController::class, 'synchroniser'])->name('facteurs-climatiq.synchroniser');
 });
+

@@ -37,29 +37,29 @@ class AnalysePdfLocal
         };
 
         $points = $indices === []
-            ? 'Aucun contaminant critique détecté dans le texte.'
-            : 'Éléments repérés : **'.implode('**, **', array_slice($indices, 0, 5)).'**.';
+            ? 'Aucun contaminant critique n\'a été identifié dans le rapport.'
+            : 'Indicateurs identifiés : **'.implode('**, **', array_slice($indices, 0, 5)).'**.';
 
         $reco = match ($resultat) {
-            'conforme' => 'Recommandation : archiver le rapport et poursuivre le contrôle de routine.',
-            'non_conforme' => 'Recommandation : **bloquer le lot** et planifier une contre-analyse.',
-            default => 'Recommandation : compléter le verdict laboratoire dès réception.',
+            'conforme' => 'Action recommandée : archiver le rapport et maintenir le contrôle de routine.',
+            'non_conforme' => 'Action recommandée : **suspendre le lot** et programmer une contre-analyse laboratoire.',
+            default => 'Action recommandée : compléter le verdict laboratoire dès réception des résultats.',
         };
 
         $commentaire = match ($resultat) {
             'conforme' => "Résultat conforme pour l'analyse {$typeLabel}.",
             'non_conforme' => "Résultat non conforme pour l'analyse {$typeLabel}.",
-            default => "Résultat non tranché pour l'analyse {$typeLabel}.",
+            default => "Résultat en attente pour l'analyse {$typeLabel}.",
         };
 
         if ($indices !== []) {
-            $commentaire .= ' Indices : '.implode(', ', array_slice($indices, 0, 4)).'.';
+            $commentaire .= ' Indicateurs : '.implode(', ', array_slice($indices, 0, 4)).'.';
         }
 
-        $resumeQualite = "NutriTrace a lu « **{$nomFichier}** » en local. "
-            ."Type estimé : **{$typeLabel}**. Verdict : {$resultatLabel}. "
-            .($dates['prelevement'] ? "Prélèvement probable : **{$dates['prelevement']}**. " : '')
-            .($dates['resultat'] ? "Résultat daté : **{$dates['resultat']}**. " : '')
+        $resumeQualite = "Synthèse du rapport **{$nomFichier}**. "
+            ."Nature d'analyse : **{$typeLabel}**. Verdict : {$resultatLabel}. "
+            .($dates['prelevement'] ? "Date de prélèvement : **{$dates['prelevement']}**. " : '')
+            .($dates['resultat'] ? "Date de résultat : **{$dates['resultat']}**. " : '')
             ."{$points} {$reco}";
 
         return [
@@ -69,7 +69,9 @@ class AnalysePdfLocal
             'date_resultat' => $dates['resultat'],
             'commentaire' => mb_substr($commentaire, 0, 400),
             'confiance' => $this->confiance($type, $resultat, $dates, $indices),
-            'resume_court' => "Le rapport indique un résultat {$resultat} ({$typeLabel}).",
+            'resume_court' => 'Le rapport indique un résultat '
+                .str_replace(['**', '_'], '', $resultatLabel)
+                ." ({$typeLabel}).",
             'titre_resume' => $titre,
             'resume_qualite' => $resumeQualite,
         ];

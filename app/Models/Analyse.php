@@ -78,6 +78,57 @@ class Analyse extends Model
         $query->where('resultat', $resultat);
     }
 
+    /**
+     * Recherche libre : numéro, commentaire, type/résultat (clé ou libellé),
+     * lot, produit, laboratoire.
+     */
+    public function scopeSearch(Builder $query, ?string $term): void
+    {
+        $term = trim((string) $term);
+        if ($term === '') {
+            return;
+        }
+
+        $like = '%'.$term.'%';
+        $needle = mb_strtolower($term);
+
+        $types = collect(config('nutritrace.options.analyse_types', []))
+            ->filter(fn ($label, $key) => str_contains(mb_strtolower((string) $label), $needle)
+                || str_contains(mb_strtolower((string) $key), $needle))
+            ->keys()
+            ->all();
+
+        $resultats = collect(config('nutritrace.options.analyse_resultats', []))
+            ->filter(fn ($label, $key) => str_contains(mb_strtolower((string) $label), $needle)
+                || str_contains(mb_strtolower((string) $key), $needle))
+            ->keys()
+            ->all();
+
+        $query->where(function (Builder $w) use ($like, $types, $resultats) {
+            $w->where('numero', 'like', $like)
+                ->orWhere('commentaire', 'like', $like)
+                ->orWhere('resume_ia', 'like', $like)
+                ->orWhere('type', 'like', $like)
+                ->orWhere('resultat', 'like', $like)
+                ->orWhereHas('lot', fn (Builder $l) => $l->where(function (Builder $lw) use ($like) {
+                    $lw->where('numero_lot', 'like', $like)
+                        ->orWhereHas('produit', fn (Builder $p) => $p->where('nom', 'like', $like));
+                }))
+                ->orWhereHas('laboratoire', fn (Builder $lab) => $lab->where(function (Builder $lb) use ($like) {
+                    $lb->where('nom', 'like', $like)
+                        ->orWhere('ville', 'like', $like)
+                        ->orWhere('accreditation', 'like', $like);
+                }));
+
+            if ($types !== []) {
+                $w->orWhereIn('type', $types);
+            }
+            if ($resultats !== []) {
+                $w->orWhereIn('resultat', $resultats);
+            }
+        });
+    }
+
     public static function prochainNumero(): string
     {
         $prefixe = 'ANA-'.now()->year.'-';

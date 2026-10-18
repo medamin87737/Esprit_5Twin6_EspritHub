@@ -48,11 +48,12 @@ class ChatQualiteService
     {
         $contexte = $catalogue->map(function (array $p) {
             return sprintf(
-                'id=%d | %s | catégorie=%s | bilan=%s | détails=%s',
+                'id=%d | %s | catégorie=%s | bilan=%s | composition=%s | détails=%s',
                 $p['id'],
                 $p['nom'],
                 $p['categorie'] ?? '—',
                 $p['bilan'],
+                $p['composition'] !== '' ? $p['composition'] : 'n/c',
                 $p['details']
             );
         })->implode("\n");
@@ -67,18 +68,20 @@ class ChatQualiteService
         }
 
         $systeme = <<<'PROMPT'
-Tu es l'assistant qualité NutriTrace (Tunisie). Tu réponds UNIQUEMENT aux questions sur :
-- qualité alimentaire, analyses de laboratoire, conformité / non-conformité
-- résultats d'analyses (microbiologie, pesticides, métaux lourds, mycotoxines)
-- lots et rapports qualité liés aux produits du catalogue fourni
+Tu es l'assistant qualité & orientation produit NutriTrace (Tunisie). Tu réponds sur :
+- qualité alimentaire, analyses labo, conformité / non-conformité
+- lots et rapports qualité du catalogue fourni
+- orientation produit selon un profil déclaré (ex. diabète / sucre, hypertension, allergies) :
+  dis clairement si un produit paraît adapté, à consommer avec prudence, ou peu recommandé
+  en te basant sur la composition/catégorie/bilan qualité — JAMAIS un diagnostic médical
 
-Refuse poliment tout autre sujet (prix, recettes, politique, code, etc.) en 1 phrase et propose une question qualité.
+Refuse poliment : prix, recettes détaillées, politique, code, sujets hors alimentation/qualité.
 
-Style : français clair, professionnel, chaleureux. Tu peux utiliser 1 emoji discret (😊 ✅ 🧪) si cela aide.
+Style : français professionnel, clair, rassurant. Mentionne une fois si besoin : « ceci n'est pas un avis médical ».
 Quand tu cites un produit du catalogue, utilise exactement son nom et place son id dans "produits_ids".
-Ne invente jamais un produit absent du catalogue.
+N'invente jamais un produit absent du catalogue.
 Réponds en JSON strict :
-{"reponse":"texte","produits_ids":[1,2]}
+{"reponse":"texte","produits_ids":[1,2],"aptitude":"adapte|prudence|deconseille|null"}
 PROMPT;
 
         $messages = [
@@ -138,16 +141,36 @@ PROMPT;
             }
         }
 
+        $sante = (bool) preg_match('/diab|sucre|glyc[eé]|tension|hypertens|allerg|intol[eé]ran|gluten|lactose|maladie|r[eé]gime|sant[eé]/u', $q);
+
         $horsSujet = ! preg_match(
             '/qualit|conform|non.?conform|analys|labo|pesticid|microbio|m[eé]tal|mycotox|lot|rapport|s[eé]curit[eé]|hygi[eè]ne|contamin/u',
             $q
         );
 
-        if ($horsSujet && ! preg_match('/produit|aliment|yaourt|lait|tomate|farine|couscous|p[aâ]te/u', $q)) {
+        if ($horsSujet && ! $sante && ! preg_match('/produit|aliment|yaourt|lait|tomate|farine|couscous|p[aâ]te|conseil|adapt/u', $q)) {
             return [
-                'reponse' => "Je suis spécialisé uniquement dans la qualité et la conformité des produits NutriTrace 😊 Posez-moi par exemple : « Quels produits sont conformes ? » ou « Y a-t-il des analyses non conformes ? »",
+                'reponse' => "Je vous oriente sur la qualité NutriTrace et l'adéquation produit selon votre profil (ex. diabète). Exemple : « J'ai du diabète, ce produit est-il adapté ? » ou « Quels produits sont conformes ? »",
                 'produits' => [],
             ];
+        }
+
+        if ($sante && $produitId) {
+            $cible = $catalogue->firstWhere('id', $produitId);
+            if ($cible) {
+                $bas = mb_strtolower($cible['composition'].' '.$cible['nom']);
+                $prudenceSucre = preg_match('/diab|sucre|glyc[eé]/u', $q)
+                    && preg_match('/sucre|miel|confitur|chocolat|sirop|dessert/u', $bas);
+
+                $msg = $prudenceSucre
+                    ? "Pour un profil lié au sucre / diabète, « {$cible['nom']} » mérite de la prudence (composition potentiellement sucrée). Bilan qualité : {$cible['bilan_label']}. Ceci n'est pas un avis médical."
+                    : "Compte tenu de votre profil, « {$cible['nom']} » peut être envisagé avec attention à l'étiquette. Bilan qualité : {$cible['bilan_label']}. Ceci n'est pas un avis médical.";
+
+                return [
+                    'reponse' => $msg,
+                    'produits' => [$this->carteProduit($cible)],
+                ];
+            }
         }
 
         $filtre = null;
@@ -222,7 +245,7 @@ PROMPT;
             ])
             ->orderBy('nom')
             ->limit(60)
-            ->get(['id', 'nom', 'origine', 'categorie_id'])
+            ->get(['id', 'nom', 'origine', 'description', 'composition', 'categorie_id'])
             ->map(function (Produit $produit) {
                 $analyses = $produit->lots->flatMap->analyses;
                 $nbConforme = $analyses->where('resultat', 'conforme')->count();
@@ -249,6 +272,7 @@ PROMPT;
                     'nom' => $produit->nom,
                     'categorie' => $produit->categorie?->nom,
                     'origine' => $produit->origine,
+                    'composition' => mb_substr(trim((string) ($produit->composition ?: $produit->description)), 0, 220),
                     'bilan' => $bilan,
                     'bilan_label' => match ($bilan) {
                         'conforme' => 'Conforme',

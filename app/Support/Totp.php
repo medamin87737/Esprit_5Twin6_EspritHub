@@ -67,7 +67,8 @@ class Totp
 
     public static function qrUrl(string $otpauthUri, int $taille = 200): string
     {
-        return 'https://api.qrserver.com/v1/create-qr-code/?size='.$taille.'x'.$taille.'&data='.urlencode($otpauthUri);
+        // QuickChart (fiable pour démo TOTP). La page 2FA a aussi un rendu JS de secours.
+        return 'https://quickchart.io/qr?size='.$taille.'&margin=2&text='.rawurlencode($otpauthUri);
     }
 
     /**

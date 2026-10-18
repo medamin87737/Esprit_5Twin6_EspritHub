@@ -13,14 +13,14 @@
             @endif
             <form method="POST" action="{{ route('admin.analyses.ia.resumer', $analyse) }}" class="d-inline">
                 @csrf
-                <button type="submit" class="btn btn-light" @disabled(! config('openrouter.api_key'))>
+                <button type="submit" class="btn btn-light">
                     <i class="bi bi-stars mr-1" aria-hidden="true"></i> Résumé IA
                 </button>
             </form>
             @if ($analyse->rapport)
                 <form method="POST" action="{{ route('admin.analyses.ia.extraire', $analyse) }}" class="d-inline">
                     @csrf
-                    <button type="submit" class="btn btn-light" @disabled(! config('openrouter.api_key'))>
+                    <button type="submit" class="btn btn-light">
                         <i class="bi bi-magic mr-1" aria-hidden="true"></i> Extraire le rapport
                     </button>
                 </form>
@@ -74,11 +74,8 @@
                     @if ($analyse->resume_ia)
                         <p class="mb-0">{{ $analyse->resume_ia }}</p>
                     @else
-                        <p class="text-muted mb-0">Aucun résumé pour l'instant. Cliquez sur « Résumé IA » pour le générer via OpenRouter.</p>
+                        <p class="text-muted mb-0">Aucune synthèse pour l'instant. Cliquez sur « Résumé IA » pour la générer.</p>
                     @endif
-                    @unless (config('openrouter.api_key'))
-                        <p class="small text-warning mb-0 mt-2"><i class="bi bi-key mr-1" aria-hidden="true"></i>Ajoutez <code>OPENROUTER_API_KEY</code> dans <code>.env</code>.</p>
-                    @endunless
                 </div>
             </div>
         </div>
@@ -146,3 +143,18 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    @vite('resources/assets/admin/js/analyse-ia.js')
+    @if (session('resume_ia_affiche'))
+        <script>
+            (function () {
+                const texte = @json(session('resume_ia_affiche'));
+                const titre = @json('Synthèse qualité · '.$analyse->typeLabel());
+                function ouvrir() { window.ntIaShowResume(texte, titre); }
+                if (window.ntIaShowResume) ouvrir();
+                else document.addEventListener('nt-ia-ready', ouvrir, { once: true });
+            })();
+        </script>
+    @endif
+@endpush

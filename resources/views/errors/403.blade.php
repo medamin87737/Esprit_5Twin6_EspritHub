@@ -12,6 +12,9 @@
                 @auth
                     <h2 class="h5">Cette page n'est pas accessible avec votre profil</h2>
                     <p>Vous êtes connecté en tant que <strong>{{ auth()->user()->roleLabel() }}</strong>. Cette page est réservée à un autre type de compte.</p>
+                    @if (auth()->user()->isConsommateur())
+                        <p class="small text-muted mb-3">En tant que consommateur, utilisez le menu <strong>Qualité</strong> (pas l'espace professionnel).</p>
+                    @endif
                     <a href="{{ auth()->user()->espaceParDefaut() }}" class="btn btn-primary rounded-pill px-4">
                         <i class="bi bi-house me-1" aria-hidden="true"></i> Retour à mon espace
                     </a>

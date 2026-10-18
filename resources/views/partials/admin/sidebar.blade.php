@@ -1,4 +1,5 @@
-<ul class="navbar-nav sidebar sidebar-dark accordion nt-sidebar" id="accordionSidebar">
+<ul class="navbar-nav sidebar sidebar-dark accordion nt-sidebar" id="accordionSidebar" role="navigation" aria-label="Navigation principale">
+    <li class="sr-only"><span id="navigation-principale" tabindex="-1">Navigation principale</span></li>
     <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ route('admin.dashboard') }}">
         <div class="sidebar-brand-icon">
             <img src="{{ Vite::asset('resources/assets/front/img/logo.svg') }}" alt="" width="36" height="36">

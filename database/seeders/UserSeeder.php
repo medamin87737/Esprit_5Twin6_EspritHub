@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
                 'role' => 'admin',
                 'active' => true,
                 'password' => 'Admin@NutriTrace2026',
-                'email_verified_at' => now(),
+                'email_verified_at' => null,
             ],
         );
 
@@ -27,7 +27,7 @@ class UserSeeder extends Seeder
                 'role' => 'consommateur',
                 'active' => true,
                 'password' => 'User@NutriTrace2026',
-                'email_verified_at' => now(),
+                'email_verified_at' => null,
             ],
         );
 
@@ -46,7 +46,7 @@ class UserSeeder extends Seeder
                     'role' => $role,
                     'active' => true,
                     'password' => 'Pro@NutriTrace2026',
-                    'email_verified_at' => now(),
+                    'email_verified_at' => null,
                 ],
             );
         }

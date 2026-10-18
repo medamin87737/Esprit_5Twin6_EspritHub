@@ -10,7 +10,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use RuntimeException;
 use Throwable;
 
 class AnalyseIaController extends Controller
@@ -29,7 +28,6 @@ class AnalyseIaController extends Controller
         ]);
 
         try {
-            $this->assurerCle();
             $extrait = $this->ia->extraireDepuisPdf($request->file('rapport'));
 
             return response()->json([
@@ -54,7 +52,6 @@ class AnalyseIaController extends Controller
         }
 
         try {
-            $this->assurerCle();
             $extrait = $this->ia->extraireDepuisPdf($analyse->rapport);
 
             $analyse->fill(array_filter([
@@ -83,11 +80,11 @@ class AnalyseIaController extends Controller
         Gate::authorize('update', $analyse);
 
         try {
-            $this->assurerCle();
-            $this->ia->resumer($analyse);
+            $resume = $this->ia->resumer($analyse);
 
             return redirect()->route('pro.lots.show', $analyse->lot)
-                ->with('status', 'Résumé IA généré pour '.$analyse->numero.'.');
+                ->with('status', 'Synthèse qualité générée pour '.$analyse->numero.'.')
+                ->with('resume_ia_affiche', $resume);
         } catch (Throwable $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -100,16 +97,12 @@ class AnalyseIaController extends Controller
         try {
             $risque = $this->ia->evaluerRisque($lot);
 
-            return back()->with('risque_ia', $risque)->with('status', $risque['libelle'].' ('.$risque['score'].'/100).');
+            return back()
+                ->with('risque_ia', $risque)
+                ->with('risque_lot_id', $lot->id)
+                ->with('status', $risque['libelle'].' ('.$risque['score'].'/100).');
         } catch (Throwable $e) {
             return back()->with('error', $e->getMessage());
-        }
-    }
-
-    private function assurerCle(): void
-    {
-        if (! $this->ia->disponible()) {
-            throw new RuntimeException('Ajoutez OPENROUTER_API_KEY dans le fichier .env.');
         }
     }
 }

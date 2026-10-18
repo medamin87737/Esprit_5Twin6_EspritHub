@@ -15,9 +15,7 @@ class LaboratoireController extends Controller
     {
         $laboratoires = Laboratoire::query()
             ->withCount(['analyses', 'analyses as non_conformes_count' => fn ($q) => $q->resultat('non_conforme')])
-            ->when($request->filled('q'), fn ($q) => $q->where(fn ($sub) => $sub
-                ->where('nom', 'like', '%'.$request->input('q').'%')
-                ->orWhere('accreditation', 'like', '%'.$request->input('q').'%')))
+            ->search($request->string('q')->trim()->value())
             ->when($request->filled('ville'), fn ($q) => $q->where('ville', $request->input('ville')))
             ->orderBy('nom')
             ->paginate(10)

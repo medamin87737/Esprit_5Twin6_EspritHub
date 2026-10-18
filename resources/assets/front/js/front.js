@@ -16,6 +16,7 @@ import '@fontsource/inter/600.css';
 
 import './scripts.js';
 import './nutritrace.js';
+import '../../shared/a11y/a11y.js';
 
 window.bootstrap = bootstrap;
 window.SimpleLightbox = SimpleLightbox;

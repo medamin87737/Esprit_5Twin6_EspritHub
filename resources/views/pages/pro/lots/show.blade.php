@@ -151,3 +151,17 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    @vite('resources/assets/admin/js/analyse-ia.js')
+    @if (session('resume_ia_affiche'))
+        <script>
+            (function () {
+                const texte = @json(session('resume_ia_affiche'));
+                function ouvrir() { window.ntIaShowResume(texte, 'Synthèse qualité'); }
+                if (window.ntIaShowResume) ouvrir();
+                else document.addEventListener('nt-ia-ready', ouvrir, { once: true });
+            })();
+        </script>
+    @endif
+@endpush

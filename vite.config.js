@@ -22,6 +22,7 @@ export default defineConfig({
                 'resources/assets/admin/js/admin.js',
                 'resources/assets/admin/js/dashboard.js',
                 'resources/assets/admin/js/analyse-ia.js',
+                'resources/assets/front/js/qualite-risque.js',
                 'resources/assets/front/js/module1.js',
             ],
             refresh: true,

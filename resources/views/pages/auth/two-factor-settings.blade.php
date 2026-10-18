@@ -4,7 +4,7 @@
 
 @section('content')
     <x-front.page-header eyebrow="Sécurité" title="Authentification à deux facteurs" image="legumes-planche.webp"
-                         subtitle="Protégez votre compte avec un code TOTP (Google Authenticator, Authy…) et des codes de récupération." />
+                         subtitle="Scannez le QR code avec Google Authenticator ou Authy, puis confirmez avec un code à 6 chiffres." />
 
     <section class="page-section bg-cream">
         <div class="container px-4 px-lg-5">
@@ -14,11 +14,13 @@
                         <div class="alert alert-success">{{ session('status') }}</div>
                     @endif
 
-                    <div class="account-card mb-4">
-                        <h2 class="account-card-title"><i class="bi bi-shield-lock" aria-hidden="true"></i> État actuel</h2>
-                        @if ($user->hasTwoFactorEnabled())
-                            <p class="mb-3"><span class="status-pill status-valid">2FA activée</span></p>
-                            <form method="POST" action="{{ route('two-factor.disable') }}" class="row g-3 align-items-end"
+                    @if ($user->hasTwoFactorEnabled())
+                        <div class="account-card mb-4">
+                            <h2 class="account-card-title"><i class="bi bi-shield-check" aria-hidden="true"></i> 2FA activée</h2>
+                            <p class="mb-3"><span class="status-pill status-valid">Protection active</span></p>
+                            <p class="text-muted small">Un code TOTP est demandé à chaque connexion.</p>
+
+                            <form method="POST" action="{{ route('two-factor.disable') }}" class="row g-3 align-items-end mt-2"
                                   onsubmit="return confirm('Désactiver la double authentification ?');">
                                 @csrf
                                 @method('DELETE')
@@ -31,53 +33,18 @@
                                     <button class="btn btn-outline-danger" type="submit">Désactiver</button>
                                 </div>
                             </form>
-                        @else
-                            <p class="text-muted">La 2FA n'est pas encore activée.</p>
-                            <form method="POST" action="{{ route('two-factor.enable') }}">
-                                @csrf
-                                <button class="btn btn-primary" type="submit">Activer la 2FA</button>
-                            </form>
-                        @endif
-                    </div>
-
-                    @if ($qr && $secret)
-                        <div class="account-card mb-4">
-                            <h2 class="account-card-title">1. Scannez le QR code</h2>
-                            <div class="text-center mb-3">
-                                <img src="{{ $qr }}" alt="QR code 2FA" width="200" height="200" class="img-fluid border rounded">
-                            </div>
-                            <p class="small text-muted">Ou saisissez manuellement la clé : <code>{{ $secret }}</code></p>
-
-                            <h3 class="h6 mt-4">2. Confirmez avec un code</h3>
-                            <form method="POST" action="{{ route('two-factor.confirm') }}" class="row g-3 align-items-end">
-                                @csrf
-                                <div class="col-md-8">
-                                    <label class="form-label" for="code">Code à 6 chiffres</label>
-                                    <input type="text" name="code" id="code" class="form-control @error('code') is-invalid @enderror" inputmode="numeric" required>
-                                    @error('code') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-                                <div class="col-md-4 d-grid">
-                                    <button class="btn btn-primary" type="submit">Confirmer</button>
-                                </div>
-                            </form>
                         </div>
-                    @endif
 
-                    @if ($recoveryCodes)
-                        <div class="account-card mb-4">
-                            <h2 class="account-card-title text-warning"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> Codes de récupération</h2>
-                            <p class="small text-muted">Conservez-les en lieu sûr. Chaque code ne peut être utilisé qu'une fois.</p>
-                            <ul class="list-unstyled font-monospace">
-                                @foreach ($recoveryCodes as $code)
-                                    <li>{{ $code }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-
-                    @if ($user->hasTwoFactorEnabled())
                         <div class="account-card">
-                            <h2 class="account-card-title">Régénérer les codes</h2>
+                            <h2 class="account-card-title">Codes de récupération</h2>
+                            @if ($recoveryCodes)
+                                <p class="small text-muted">Conservez-les en lieu sûr. Chaque code ne peut être utilisé qu'une fois.</p>
+                                <ul class="list-unstyled font-monospace mb-3">
+                                    @foreach ($recoveryCodes as $code)
+                                        <li>{{ $code }}</li>
+                                    @endforeach
+                                </ul>
+                            @endif
                             <form method="POST" action="{{ route('two-factor.recovery') }}" class="row g-3 align-items-end">
                                 @csrf
                                 <div class="col-md-8">
@@ -89,6 +56,64 @@
                                 </div>
                             </form>
                         </div>
+                    @elseif ($qr && $secret)
+                        <div class="account-card mb-4">
+                            <h2 class="account-card-title"><i class="bi bi-qr-code-scan" aria-hidden="true"></i> 1. Scannez le QR code</h2>
+                            <div class="text-center mb-3">
+                                <img id="nt-2fa-qr-img" src="{{ $qr }}" alt="QR code 2FA" width="220" height="220"
+                                     class="img-fluid border rounded bg-white p-2 shadow-sm"
+                                     onerror="this.classList.add('d-none'); document.getElementById('nt-2fa-qr-canvas').classList.remove('d-none');">
+                                <canvas id="nt-2fa-qr-canvas" class="d-none border rounded bg-white p-2" width="220" height="220"
+                                        data-otpauth="{{ $otpauth }}"></canvas>
+                            </div>
+                            <p class="small text-muted mb-1">Google Authenticator, Authy, Microsoft Authenticator…</p>
+                            <p class="small mb-0">Clé manuelle : <code class="user-select-all">{{ $secret }}</code></p>
+                        </div>
+
+                        @if ($recoveryCodes)
+                            <div class="account-card mb-4">
+                                <h2 class="account-card-title text-warning"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> Codes de récupération</h2>
+                                <p class="small text-muted">Notez-les avant de confirmer. Ils servent si vous perdez votre téléphone.</p>
+                                <ul class="list-unstyled font-monospace mb-0">
+                                    @foreach ($recoveryCodes as $code)
+                                        <li>{{ $code }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
+                        <div class="account-card mb-4">
+                            <h2 class="account-card-title">2. Confirmez avec un code</h2>
+                            <form method="POST" action="{{ route('two-factor.confirm') }}" class="row g-3 align-items-end">
+                                @csrf
+                                <div class="col-md-8">
+                                    <label class="form-label" for="code">Code à 6 chiffres</label>
+                                    <input type="text" name="code" id="code" class="form-control @error('code') is-invalid @enderror"
+                                           inputmode="numeric" autocomplete="one-time-code" maxlength="6" required autofocus>
+                                    @error('code') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+                                <div class="col-md-4 d-grid">
+                                    <button class="btn btn-primary" type="submit">Activer la 2FA</button>
+                                </div>
+                            </form>
+                            <form method="POST" action="{{ route('two-factor.enable') }}" class="mt-3">
+                                @csrf
+                                <button type="submit" class="btn btn-link btn-sm px-0">Régénérer un autre QR code</button>
+                            </form>
+                        </div>
+
+                        @push('scripts')
+                            <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js" defer></script>
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function () {
+                                    var canvas = document.getElementById('nt-2fa-qr-canvas');
+                                    if (!canvas || typeof QRCode === 'undefined') return;
+                                    QRCode.toCanvas(canvas, canvas.getAttribute('data-otpauth'), { width: 220, margin: 2 }, function () {
+                                        canvas.classList.remove('d-none');
+                                    });
+                                });
+                            </script>
+                        @endpush
                     @endif
 
                     <p class="mt-4"><a href="{{ route('profile.edit') }}"><i class="bi bi-arrow-left me-1"></i>Retour au profil</a></p>

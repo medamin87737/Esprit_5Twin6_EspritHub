@@ -8,6 +8,7 @@
     <meta name="theme-color" content="#064e35">
     <title>@yield('title', 'Tableau de bord') · NutriTrace Admin</title>
     <link rel="icon" type="image/svg+xml" href="{{ Vite::asset('resources/assets/front/img/favicon.svg') }}">
+    @include('partials.a11y.boot')
     @vite([
         'resources/assets/admin/css/sb-admin-2.css',
         'resources/assets/admin/css/admin.css',
@@ -16,6 +17,8 @@
     @stack('styles')
 </head>
 <body id="page-top">
+    @include('partials.a11y.panel')
+
     <div id="wrapper">
         @include('partials.admin.sidebar')
 
@@ -23,7 +26,7 @@
             <div id="content">
                 @include('partials.admin.topbar')
 
-                <main class="container-fluid px-3 px-md-4">
+                <main id="contenu-principal" class="container-fluid px-3 px-md-4" tabindex="-1">
                     @include('partials.admin.alerts')
                     @yield('content')
                 </main>
