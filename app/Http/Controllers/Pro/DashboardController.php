@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Analyse;
 use App\Models\Certification;
 use App\Models\Lot;
-use App\Models\Signalement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -47,8 +46,6 @@ class DashboardController extends Controller
                     ->with('produit:id,nom')
                     ->orderBy('date_expiration')
                     ->get(),
-                'signalements' => Signalement::whereIn('produit_id', $mesProduits)->with('produit:id,nom')->latest()->limit(5)->get(),
-                'nbSignalementsEnAttente' => Signalement::where('statut', 'en_attente')->whereIn('produit_id', $mesProduits)->count(),
             ];
         }
 

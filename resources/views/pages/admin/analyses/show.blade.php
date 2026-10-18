@@ -21,7 +21,7 @@
                 <form method="POST" action="{{ route('admin.analyses.ia.extraire', $analyse) }}" class="d-inline">
                     @csrf
                     <button type="submit" class="btn btn-light" @disabled(! config('openrouter.api_key'))>
-                        <i class="bi bi-magic mr-1" aria-hidden="true"></i> Extraire le PDF
+                        <i class="bi bi-magic mr-1" aria-hidden="true"></i> Extraire le rapport
                     </button>
                 </form>
             @endif

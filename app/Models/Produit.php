@@ -106,11 +106,6 @@ class Produit extends Model
         return $this->hasMany(Certification::class);
     }
 
-    public function signalements(): HasMany
-    {
-        return $this->hasMany(Signalement::class);
-    }
-
     public function organismes(): BelongsToMany
     {
         return $this->belongsToMany(Organisme::class, 'certifications')

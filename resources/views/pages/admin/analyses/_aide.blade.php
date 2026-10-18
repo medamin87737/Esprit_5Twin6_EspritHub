@@ -4,11 +4,11 @@
     'Prélèvement' => 'entre la production du lot et aujourd\'hui.',
     'Date du résultat' => 'obligatoire sauf « En attente », après le prélèvement.',
     'Commentaire' => 'obligatoire si « Non conforme ».',
-    'Rapport' => 'PDF de 5 Mo maximum, téléchargeable par les membres connectés.',
+    'Rapport' => 'TXT ou DOCX, 5 Mo maximum, téléchargeable par les membres connectés.',
 ]" />
 
 <x-admin.help-card title="Fonctions avancées & IA" icon="bi-stars" :rules="[
-    'Lire le PDF avec l\'IA' => 'OpenRouter lit le rapport et propose type, résultat, dates et commentaire.',
+    'Lire le rapport · Résumé qualité' => 'Fichier TXT / DOCX → lecture + résumé qualité animé et préremplissage.',
     'Résumé IA' => 'disponible sur la fiche analyse après enregistrement.',
     'Score de risque' => 'sur la fiche lot : faible / moyen / élevé selon l\'historique des analyses.',
     'Export CSV' => 'télécharge les analyses filtrées depuis la liste.',

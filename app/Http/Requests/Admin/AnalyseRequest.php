@@ -41,7 +41,7 @@ class AnalyseRequest extends FormRequest
             'resultat' => ['required', Rule::in(array_keys(config('nutritrace.options.analyse_resultats')))],
             'date_resultat' => ['nullable', 'prohibited_if:resultat,en_attente', 'required_unless:resultat,en_attente', 'date', 'after_or_equal:date_prelevement', 'before_or_equal:today'],
             'commentaire' => ['nullable', 'required_if:resultat,non_conforme', 'string', 'max:1000'],
-            'rapport' => ['nullable', 'file', 'mimes:pdf', 'max:5120'],
+            'rapport' => ['nullable', 'file', 'mimes:txt,docx,text', 'max:5120'],
         ];
 
         if (! $this->estPro()) {
@@ -65,7 +65,7 @@ class AnalyseRequest extends FormRequest
             'resultat' => 'résultat',
             'date_resultat' => 'date du résultat',
             'commentaire' => 'commentaire',
-            'rapport' => 'rapport PDF',
+            'rapport' => 'rapport',
         ];
     }
 
@@ -81,7 +81,7 @@ class AnalyseRequest extends FormRequest
             'date_resultat.required_unless' => 'Indiquez la date à laquelle le laboratoire a rendu son résultat.',
             'date_resultat.prohibited_if' => 'Une analyse en attente n\'a pas encore de date de résultat.',
             'commentaire.required_if' => 'Décrivez la non-conformité constatée par le laboratoire.',
-            'rapport.mimes' => 'Le rapport doit être un fichier PDF.',
+            'rapport.mimes' => 'Le rapport doit être un fichier TXT ou DOCX.',
         ];
     }
 

@@ -17,7 +17,11 @@
         <div class="col-xl-4 mb-4">
             <div class="card">
                 <div class="card-body text-center">
-                    <span class="nt-avatar mb-3" style="width: 5rem; height: 5rem; font-size: 1.6rem;">{{ $user->initials() }}</span>
+                    @if ($user->avatarUrl())
+                        <img src="{{ $user->avatarUrl() }}" alt="" class="nt-avatar nt-avatar--img mb-3" width="80" height="80" style="width: 5rem; height: 5rem;">
+                    @else
+                        <span class="nt-avatar mb-3" style="width: 5rem; height: 5rem; font-size: 1.6rem;">{{ $user->initials() }}</span>
+                    @endif
                     <h2 class="h5 font-weight-600 mb-1">{{ $user->name }}</h2>
                     <div class="text-muted small mb-3">{{ $user->email }}</div>
                     <span class="nt-badge nt-badge-gold"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {{ $user->roleLabel() }}</span>
@@ -30,7 +34,7 @@
         </div>
 
         <div class="col-xl-8">
-            <form method="POST" action="{{ route('profile.update') }}" novalidate class="card mb-4">
+            <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" novalidate class="card mb-4">
                 @csrf
                 @method('PUT')
                 <div class="card-header"><h2 class="nt-card-title"><i class="fa-solid fa-id-card text-muted mr-2" aria-hidden="true"></i>Informations personnelles</h2></div>
@@ -46,6 +50,12 @@
                             <input id="email" name="email" type="email" value="{{ old('email', $user->email) }}" class="form-control @error('email', 'profile') is-invalid @enderror" autocomplete="email" required>
                             @error('email', 'profile') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                         </div>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label for="avatar">Photo de profil</label>
+                        <input id="avatar" name="avatar" type="file" accept="image/jpeg,image/png,image/webp" class="form-control-file @error('avatar', 'profile') is-invalid @enderror">
+                        @error('avatar', 'profile') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                        <small class="form-text text-muted">JPG, PNG ou WebP — 2 Mo max.</small>
                     </div>
                 </div>
                 <div class="card-footer text-right">

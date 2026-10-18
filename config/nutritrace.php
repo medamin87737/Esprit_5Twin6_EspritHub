@@ -137,18 +137,6 @@ return [
             'conforme' => 'Conforme',
             'non_conforme' => 'Non conforme',
         ],
-        'signalement_motifs' => [
-            'information_trompeuse' => 'Information trompeuse',
-            'label_douteux' => 'Label ou certification douteux',
-            'origine_incorrecte' => 'Origine incorrecte',
-            'qualite' => 'Problème de qualité',
-            'autre' => 'Autre',
-        ],
-        'signalement_statuts' => [
-            'en_attente' => 'En attente',
-            'valide' => 'Validé',
-            'rejete' => 'Rejeté',
-        ],
     ],
 
     /*
@@ -229,17 +217,17 @@ return [
         'consommateur' => [
             ['route' => 'front.produits.index', 'actif' => ['front.produits.*'], 'libelle' => 'Catalogue', 'icone' => 'bi-basket2', 'droit' => null],
             ['route' => 'front.lots.search', 'actif' => ['front.lots.*'], 'libelle' => 'Scanner un lot', 'icone' => 'bi-upc-scan', 'droit' => null],
+            ['route' => 'consommateur.qualite.index', 'actif' => ['consommateur.qualite.*'], 'libelle' => 'Qualité', 'icone' => 'bi-clipboard2-pulse', 'droit' => 'espace-consommateur'],
             ['route' => 'front.acteurs.index', 'actif' => ['front.acteurs.*'], 'libelle' => 'Acteurs', 'icone' => 'bi-people', 'droit' => null],
             ['route' => 'front.comparaison', 'actif' => ['front.comparaison'], 'libelle' => 'Comparer', 'icone' => 'bi-bar-chart', 'droit' => null],
             ['route' => 'front.certifications.index', 'actif' => ['front.certifications.*'], 'libelle' => 'Labels', 'icone' => 'bi-award', 'droit' => null],
-            ['route' => 'consommateur.signalements.index', 'actif' => ['consommateur.signalements.*'], 'libelle' => 'Mes signalements', 'icone' => 'bi-flag', 'droit' => 'espace-consommateur'],
         ],
         'pro' => [
             ['route' => 'pro.dashboard', 'actif' => ['pro.dashboard'], 'libelle' => 'Tableau de bord', 'icone' => 'bi-speedometer2', 'droit' => 'espace-pro'],
             ['route' => 'pro.produits.index', 'actif' => ['pro.produits.*'], 'libelle' => 'Mes produits', 'icone' => 'bi-box-seam', 'droit' => 'pro-produits'],
             ['route' => 'pro.lots.index', 'actif' => ['pro.lots.*', 'pro.etapes.*', 'pro.indicateurs.*'], 'libelle' => 'Mes lots', 'icone' => 'bi-upc-scan', 'droit' => 'espace-pro'],
+            ['route' => 'pro.qualite', 'actif' => ['pro.qualite', 'pro.analyses.*'], 'libelle' => 'Qualité', 'icone' => 'bi-clipboard2-pulse', 'droit' => 'espace-pro'],
             ['route' => 'pro.certifications.index', 'actif' => ['pro.certifications.*'], 'libelle' => 'Certifications', 'icone' => 'bi-award', 'droit' => 'pro-produits'],
-            ['route' => 'pro.signalements.index', 'actif' => ['pro.signalements.*'], 'libelle' => 'Signalements', 'icone' => 'bi-flag', 'droit' => 'pro-produits'],
         ],
     ],
 

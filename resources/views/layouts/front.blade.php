@@ -31,6 +31,7 @@
 
     @include('partials.front.footer')
     @include('partials.front.scan-modal')
+    @include('partials.front.chat-qualite')
 
     @stack('scripts')
 </body>

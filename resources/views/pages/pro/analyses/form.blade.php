@@ -43,12 +43,14 @@
                 </div>
                 <x-front.champ name="commentaire" label="Commentaire du laboratoire" type="textarea" rows="3" :value="$analyse->commentaire"
                                maxlength="1000" placeholder="Ex. Salmonella non détectée dans 25 g" help="Obligatoire en cas de non-conformité." />
-                <x-front.champ name="rapport" label="Rapport PDF" type="file" accept="application/pdf"
-                               :help="$analyse->rapport ? 'Un rapport est déjà joint : un nouveau fichier le remplacera.' : 'Facultatif · PDF, 5 Mo maximum. Téléchargeable par les membres connectés.'" />
+                <x-front.dropzone-rapport
+                    name="rapport"
+                    :help="$analyse->rapport ? 'Un rapport est déjà joint : un nouveau fichier le remplacera.' : null"
+                />
 
                 <div class="nt-ia-box mb-3">
                     <button type="button" class="btn btn-outline-success btn-sm" data-ia-prefill="{{ route('pro.analyses.ia.prefill', $lot) }}">
-                        <i class="bi bi-stars me-1" aria-hidden="true"></i> Lire le PDF avec l'IA
+                        <i class="bi bi-stars me-1" aria-hidden="true"></i> Lire le rapport · Résumé qualité
                     </button>
                     <p class="nt-ia-status small mt-2 mb-0" data-ia-status hidden></p>
                 </div>
@@ -57,7 +59,7 @@
                     <div class="d-flex flex-wrap gap-2 mb-3">
                         <form method="POST" action="{{ route('pro.analyses.ia.extraire', $analyse) }}">
                             @csrf
-                            <button type="submit" class="btn btn-sm btn-outline-secondary">Extraire depuis le PDF enregistré</button>
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">Extraire depuis le rapport enregistré</button>
                         </form>
                         <form method="POST" action="{{ route('pro.analyses.ia.resumer', $analyse) }}">
                             @csrf

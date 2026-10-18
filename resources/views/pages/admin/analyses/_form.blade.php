@@ -49,15 +49,17 @@
     </div>
     <x-admin.form.textarea name="commentaire" label="Commentaire du laboratoire" rows="3" :value="$analyse?->commentaire"
                            help="Obligatoire si le résultat est non conforme." />
-    <x-admin.form.file name="rapport" label="Rapport PDF" accept="application/pdf"
-                       :help="$analyse?->rapport ? 'Un rapport est déjà joint : un nouveau fichier le remplacera.' : 'PDF, 5 Mo maximum.'" />
+    <x-admin.form.dropzone-rapport
+        name="rapport"
+        :help="$analyse?->rapport ? 'Un rapport est déjà joint : un nouveau fichier le remplacera.' : null"
+    />
 
     <div class="nt-ia-box mt-3">
         <div class="d-flex flex-wrap align-items-center" style="gap: 0.75rem;">
             <button type="button" class="btn btn-outline-primary btn-sm" data-ia-prefill="{{ route('admin.analyses.ia.prefill') }}">
-                <i class="bi bi-stars mr-1" aria-hidden="true"></i> Lire le PDF avec l'IA
+                <i class="bi bi-stars mr-1" aria-hidden="true"></i> Lire le rapport · Résumé qualité
             </button>
-            <span class="small text-muted">OpenRouter extrait type, résultat, dates et commentaire. Vérifiez avant d'enregistrer.</span>
+            <span class="small text-muted">OpenRouter lit le texte, ouvre le résumé animé et préremplit les champs.</span>
         </div>
         <p class="nt-ia-status mt-2 mb-0" data-ia-status hidden></p>
     </div>

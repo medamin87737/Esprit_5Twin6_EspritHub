@@ -27,7 +27,11 @@
                     <span class="nt-user-name">{{ $user->name }}</span>
                     <span class="nt-user-role">{{ $user->roleLabel() }}</span>
                 </span>
-                <span class="nt-avatar">{{ $user->initials() }}</span>
+                @if ($user->avatarUrl())
+                    <img src="{{ $user->avatarUrl() }}" alt="" class="nt-avatar nt-avatar--img" width="40" height="40">
+                @else
+                    <span class="nt-avatar">{{ $user->initials() }}</span>
+                @endif
             </a>
             <div class="dropdown-menu dropdown-menu-right animated--grow-in" aria-labelledby="userDropdown">
                 <div class="px-3 py-2 d-lg-none">

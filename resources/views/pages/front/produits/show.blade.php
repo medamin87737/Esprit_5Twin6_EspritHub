@@ -88,12 +88,26 @@
             <div class="row g-4">
                 {{-- ── Colonne gauche ──────────────────────────────────── --}}
                 <div class="col-lg-5">
-                    <div class="produit-visuel mb-4">
+                    <div class="produit-visuel mb-4 position-relative">
                         @if ($produit->image)
                             <img src="{{ asset('storage/' . $produit->image) }}" alt="{{ $produit->nom }}">
                         @else
                             <span class="product-card-placeholder"><i class="bi bi-box-seam" aria-hidden="true"></i></span>
                         @endif
+                        <button
+                            type="button"
+                            class="nt-qualite-avatar nt-qualite-avatar--lg"
+                            data-chat-produit
+                            data-produit-id="{{ $produit->id }}"
+                            data-produit-nom="{{ $produit->nom }}"
+                            data-login-url="{{ route('login') }}"
+                            title="Assistant qualité — {{ $produit->nom }}"
+                            aria-label="Poser une question qualité sur {{ $produit->nom }}"
+                        >
+                            <span class="nt-qualite-avatar__pulse" aria-hidden="true"></span>
+                            <i class="bi bi-clipboard2-pulse" aria-hidden="true"></i>
+                            <span class="nt-qualite-avatar__badge">Qualité</span>
+                        </button>
                     </div>
 
                     {{-- Score global --}}
@@ -269,32 +283,6 @@
                         @endif
                     </div>
 
-                    {{-- Avis --}}
-                    <div class="panel">
-                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                            <h2 class="panel-title mb-0"><i class="bi bi-chat-square-text" aria-hidden="true"></i>Avis vérifiés des consommateurs</h2>
-                            @can('signaler')
-                                <a href="{{ route('consommateur.signalements.create', $produit) }}" class="btn btn-outline-danger btn-sm">
-                                    <i class="bi bi-flag me-1" aria-hidden="true"></i>Signaler
-                                </a>
-                            @endcan
-                            @guest
-                                <a href="{{ route('login') }}" class="small">Connectez-vous pour signaler un problème</a>
-                            @endguest
-                        </div>
-                        @forelse ($produit->signalements as $signalement)
-                            <div class="avis-item">
-                                <div class="d-flex justify-content-between gap-2">
-                                    <strong>{{ $signalement->motifLabel() }}</strong>
-                                    <span class="small text-muted">{{ $signalement->created_at?->format('d/m/Y') }}</span>
-                                </div>
-                                <p class="mb-1">{{ $signalement->description }}</p>
-                                <span class="small text-muted">{{ \Illuminate\Support\Str::of($signalement->user?->name)->explode(' ')->first() }} · avis validé par NutriTrace</span>
-                            </div>
-                        @empty
-                            <p class="text-muted mb-0">Aucun avis validé pour ce produit.</p>
-                        @endforelse
-                    </div>
                 </div>
             </div>
         </div>

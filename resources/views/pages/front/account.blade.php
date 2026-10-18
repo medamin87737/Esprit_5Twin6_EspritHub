@@ -43,8 +43,8 @@
                                 <i class="bi bi-speedometer2 me-1" aria-hidden="true"></i> Mon tableau de bord
                             </a>
                         @elseif ($user->isConsommateur())
-                            <a href="{{ route('consommateur.signalements.index') }}" class="btn btn-outline-primary w-100 mt-3">
-                                <i class="bi bi-flag me-1" aria-hidden="true"></i> Mes signalements
+                            <a href="{{ route('consommateur.qualite.index') }}" class="btn btn-outline-primary w-100 mt-3">
+                                <i class="bi bi-clipboard2-pulse me-1" aria-hidden="true"></i> Qualité
                             </a>
                         @endif
                     </aside>

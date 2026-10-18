@@ -10,14 +10,13 @@ use App\Models\Laboratoire;
 use App\Models\Lot;
 use App\Models\Organisme;
 use App\Models\Produit;
-use App\Models\Signalement;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Données de démonstration du Front Office : un parcours en cours chez chaque
- * professionnel, des signalements, une déclaration de certification et des scans.
+ * professionnel, une déclaration de certification et des scans.
  * Lancer après les seeders des modules 1 à 5.
  */
 class FrontOfficeSeeder extends Seeder
@@ -51,7 +50,6 @@ class FrontOfficeSeeder extends Seeder
             ['transformation', $semoulerie, 4, 'camion', [['transport', 160], ['energie', 300]]],
         ]);
 
-        $this->signalements();
         $this->declarationEnAttente();
         $this->scans();
         $this->analyseAComplete();
@@ -131,35 +129,6 @@ class FrontOfficeSeeder extends Seeder
 
             $courant->produits()->syncWithoutDetaching([$produit->id]);
         });
-    }
-
-    private function signalements(): void
-    {
-        $consommateur = User::firstWhere('email', 'utilisateur@nutritrace.tn');
-
-        if (! $consommateur || $consommateur->signalements()->exists()) {
-            return;
-        }
-
-        $exemples = [
-            ['Tomates de plein champ', 'origine_incorrecte', 'L\'étiquette du magasin indique une origine différente de celle affichée sur NutriTrace.', 'en_attente'],
-            ['Yaourt nature', 'qualite', 'Produit conforme et frais, la chaîne du froid semble bien respectée : traçabilité vérifiée en magasin.', 'valide'],
-            ['Couscous moyen 1 kg', 'label_douteux', 'Le logo « Local » figure sur le paquet alors que la certification est suspendue.', 'valide'],
-            ['Pâtes spaghetti 500 g', 'autre', 'Je pensais que le paquet faisait 1 kg.', 'rejete'],
-        ];
-
-        foreach ($exemples as [$nomProduit, $motif, $description, $statut]) {
-            $produit = Produit::firstWhere('nom', $nomProduit);
-
-            if (! $produit) {
-                continue;
-            }
-
-            $signalement = new Signalement(['produit_id' => $produit->id, 'motif' => $motif, 'description' => $description]);
-            $signalement->user()->associate($consommateur);
-            $signalement->statut = $statut;
-            $signalement->save();
-        }
     }
 
     private function declarationEnAttente(): void

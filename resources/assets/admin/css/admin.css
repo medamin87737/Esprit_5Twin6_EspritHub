@@ -408,6 +408,13 @@ a:hover {
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.02em;
+  overflow: hidden;
+}
+
+.nt-avatar--img {
+  object-fit: cover;
+  padding: 0;
+  background: transparent;
 }
 
 .nt-user-name {
@@ -2553,6 +2560,72 @@ textarea.form-control {
 }
 
 /* ---------- Module 2 · IA analyses ---------- */
+
+.nt-dropzone {
+  position: relative;
+  border: 2px dashed #b7dcc8;
+  border-radius: 0.85rem;
+  background: #f7fbf8;
+  padding: 1.35rem 1rem;
+  text-align: center;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+}
+
+.nt-dropzone.is-dragover {
+  border-color: #087443;
+  background: #eaf5ee;
+  box-shadow: inset 0 0 0 2px rgba(8, 116, 67, 0.12);
+}
+
+.nt-dropzone.has-file {
+  border-color: #087443;
+  background: #eaf5ee;
+}
+
+.nt-dropzone__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.nt-dropzone__icon {
+  display: block;
+  font-size: 1.75rem;
+  color: #087443;
+  margin-bottom: 0.35rem;
+}
+
+.nt-dropzone__title {
+  margin: 0;
+  font-weight: 700;
+  color: #064e35;
+  font-size: 0.98rem;
+}
+
+.nt-dropzone__hint {
+  margin: 0;
+  color: #65756a;
+  font-size: 0.82rem;
+}
+
+.nt-dropzone__file {
+  display: inline-block;
+  margin-top: 0.15rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #d7e0d9;
+  color: #17231c;
+  font-size: 0.8rem;
+  font-weight: 600;
+  max-width: 100%;
+  word-break: break-all;
+}
 
 .nt-ia-box {
   padding: 0.85rem 1rem;

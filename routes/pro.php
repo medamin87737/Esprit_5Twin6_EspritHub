@@ -19,7 +19,7 @@ use App\Http\Controllers\Pro\IndicateurController;
 use App\Http\Controllers\Pro\LotController;
 use App\Http\Controllers\Pro\ProduitController;
 use App\Http\Controllers\Pro\ProfilController;
-use App\Http\Controllers\Pro\SignalementController;
+use App\Http\Controllers\Pro\QualiteController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified', 'can:espace-pro'])->prefix('pro')->name('pro.')->group(function () {
@@ -28,14 +28,14 @@ Route::middleware(['auth', 'verified', 'can:espace-pro'])->prefix('pro')->name('
     Route::get('/profil', [ProfilController::class, 'edit'])->name('profil.edit');
     Route::put('/profil', [ProfilController::class, 'update'])->name('profil.update');
 
+    Route::get('/qualite', QualiteController::class)->name('qualite')->middleware('profil-societe');
+
     Route::middleware('can:pro-produits')->group(function () {
         Route::resource('produits', ProduitController::class)->except('show');
 
         Route::get('/certifications', [CertificationController::class, 'index'])->name('certifications.index');
         Route::get('/certifications/create', [CertificationController::class, 'create'])->name('certifications.create');
         Route::post('/certifications', [CertificationController::class, 'store'])->name('certifications.store');
-
-        Route::get('/signalements', SignalementController::class)->name('signalements.index');
     });
 
     Route::middleware('profil-societe')->group(function () {

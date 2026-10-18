@@ -8,7 +8,6 @@ use App\Models\Certification;
 use App\Models\EmpreinteCarbone;
 use App\Models\Etape;
 use App\Models\Lot;
-use App\Models\Signalement;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -251,7 +250,7 @@ final class TableauDeBord
     }
 
     /**
-     * Derniers événements de la période : étapes, certifications, analyses et signalements.
+     * Derniers événements de la période : étapes, certifications et analyses.
      *
      * @return Collection<int, array<string, mixed>>
      */
@@ -317,27 +316,7 @@ final class TableauDeBord
                 'lien' => route('admin.analyses.show', $a),
             ]);
 
-        $signalements = Signalement::query()
-            ->with(['user:id,name', 'produit:id,nom'])
-            ->whereBetween('created_at', [$debut, $fin])
-            ->latest()->limit($limite)->get()
-            ->map(fn (Signalement $s) => [
-                'date' => $s->created_at,
-                'heure' => true,
-                'icone' => 'bi-flag',
-                'type' => 'Signalement · '.$s->motifLabel(),
-                'acteur' => $s->user?->name,
-                'objet' => $s->produit?->nom,
-                'statut' => $s->statutLabel(),
-                'badge' => match ($s->statut) {
-                    'valide' => 'nt-badge',
-                    'rejete' => 'nt-badge nt-badge-muted',
-                    default => 'nt-badge nt-badge-gold',
-                },
-                'lien' => $s->produit_id ? route('admin.produits.show', $s->produit_id) : null,
-            ]);
-
-        return $etapes->concat($certifications)->concat($analyses)->concat($signalements)
+        return $etapes->concat($certifications)->concat($analyses)
             ->sortByDesc(fn (array $ligne) => $ligne['date']?->getTimestamp() ?? 0)
             ->take($limite)
             ->values();
@@ -460,19 +439,6 @@ final class TableauDeBord
                 'date' => self::date($analysesRetard->min('date_prelevement')),
                 'dateLibelle' => 'Plus ancien prélèvement',
                 'action' => ['libelle' => 'Traiter', 'url' => route('admin.analyses.index', ['resultat' => 'en_attente'])],
-            ];
-        }
-
-        $signalements = Signalement::where('statut', 'en_attente');
-        if ($n = $signalements->count()) {
-            $alertes[] = [
-                'niveau' => 'attention',
-                'icone' => 'bi-flag',
-                'titre' => $n.' signalement'.($n > 1 ? 's' : '').' consommateur'.($n > 1 ? 's' : '').' en attente',
-                'description' => 'Traités par les professionnels propriétaires des produits concernés.',
-                'date' => self::date($signalements->min('created_at')),
-                'dateLibelle' => 'Plus ancien',
-                'action' => null,
             ];
         }
 

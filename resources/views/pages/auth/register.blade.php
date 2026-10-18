@@ -14,6 +14,10 @@
     <h1 class="nt-auth-title">Rejoindre NutriTrace</h1>
     <p class="nt-auth-subtitle">Créez votre compte en moins d'une minute.</p>
 
+    @if (session('error'))
+        <div class="alert alert-danger" role="alert">{{ session('error') }}</div>
+    @endif
+
     <form method="POST" action="{{ route('register.store') }}" novalidate>
         @csrf
 

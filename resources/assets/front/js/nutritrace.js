@@ -1,6 +1,7 @@
 import { Toast } from 'bootstrap';
 import { initCartes } from './carte.js';
 import { initScan } from './scan.js';
+import { initChatQualite } from './chat-qualite.js';
 
 document.documentElement.classList.add('reveal-ready');
 
@@ -35,6 +36,7 @@ const init = () => {
 
     initScan();
     initCartes();
+    initChatQualite();
 
     // Indicateur : l'unité suit le type choisi (eau → L, énergie → kWh…).
     document.querySelectorAll('[data-unites]').forEach((bloc) => {

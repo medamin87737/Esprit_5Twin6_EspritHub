@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Notifications\ResetPasswordNotification;
-use App\Notifications\VerifyEmailNotification;
+use App\Services\ResendMailer;
+use App\Support\EmailTemplate;
 use App\Support\Totp;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -13,7 +13,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -72,12 +75,86 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function sendPasswordResetNotification($token): void
     {
-        $this->notify(new ResetPasswordNotification($token));
+        $url = url(route('password.reset', [
+            'token' => $token,
+            'email' => $this->getEmailForPasswordReset(),
+        ], false));
+        $expire = (int) config('auth.passwords.users.expire', 60);
+        $name = e($this->name);
+        $email = e($this->getEmailForPasswordReset());
+        $logo = EmailTemplate::logoUrl();
+        $home = rtrim((string) config('app.url'), '/');
+
+        $fallback = <<<HTML
+<table width="100%" style="background:#F5F8F6;padding:32px 12px;font-family:Segoe UI,Arial,sans-serif"><tr><td align="center">
+<table width="600" style="background:#fff;border-radius:16px;overflow:hidden;border:1px solid #E1E9E3">
+<tr><td style="background:#064E35;padding:28px 32px"><img src="{$logo}" width="48" height="48" alt="NutriTrace" style="border-radius:12px;vertical-align:middle"><span style="color:#fff;font-size:20px;font-weight:700;margin-left:12px">NutriTrace</span></td></tr>
+<tr><td style="height:4px;background:#FFB627"></td></tr>
+<tr><td style="padding:36px 32px"><h1 style="color:#064E35;font-size:24px">Bonjour {$name},</h1>
+<p style="color:#3A4A40;font-size:15px;line-height:1.65">Réinitialisez le mot de passe de <strong>{$email}</strong>. Lien valable <strong>{$expire} min</strong>.</p>
+<p><a href="{$url}" style="display:inline-block;background:#087443;color:#fff;padding:14px 28px;border-radius:10px;font-weight:700;text-decoration:none">Réinitialiser mon mot de passe</a></p>
+<p style="font-size:12px;color:#65756A;word-break:break-all">{$url}</p></td></tr>
+<tr><td style="background:#064E35;padding:20px;text-align:center;color:#B7DCC8;font-size:12px">NutriTrace · <a href="{$home}" style="color:#FFB627">{$home}</a></td></tr>
+</table></td></tr></table>
+HTML;
+
+        $html = EmailTemplate::render('emails.reset-password', [
+            'name' => $this->name,
+            'email' => $this->getEmailForPasswordReset(),
+            'url' => $url,
+            'expire' => $expire,
+        ], $fallback);
+
+        app(ResendMailer::class)->send(
+            $this->getEmailForPasswordReset(),
+            'Réinitialisation de votre mot de passe NutriTrace',
+            $html,
+            [EmailTemplate::logoAttachment()],
+        );
     }
 
     public function sendEmailVerificationNotification(): void
     {
-        $this->notify(new VerifyEmailNotification);
+        $url = URL::temporarySignedRoute(
+            'verification.verify',
+            Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)),
+            [
+                'id' => $this->getKey(),
+                'hash' => sha1($this->getEmailForVerification()),
+            ],
+        );
+        $expire = (int) Config::get('auth.verification.expire', 60);
+        $name = e($this->name);
+        $email = e($this->getEmailForVerification());
+        $logo = EmailTemplate::logoUrl();
+        $home = rtrim((string) config('app.url'), '/');
+
+        $fallback = <<<HTML
+<table width="100%" style="background:#F5F8F6;padding:32px 12px;font-family:Segoe UI,Arial,sans-serif"><tr><td align="center">
+<table width="600" style="background:#fff;border-radius:16px;overflow:hidden;border:1px solid #E1E9E3">
+<tr><td style="background:#064E35;padding:28px 32px"><img src="{$logo}" width="48" height="48" alt="NutriTrace" style="border-radius:12px;vertical-align:middle"><span style="color:#fff;font-size:20px;font-weight:700;margin-left:12px">NutriTrace</span></td></tr>
+<tr><td style="height:4px;background:#FFB627"></td></tr>
+<tr><td style="padding:36px 32px"><h1 style="color:#064E35;font-size:24px">Bienvenue {$name} !</h1>
+<p style="color:#3A4A40;font-size:15px;line-height:1.65">Confirmez <strong>{$email}</strong> pour activer votre compte. Lien valable <strong>{$expire} min</strong>.</p>
+<p><a href="{$url}" style="display:inline-block;background:#087443;color:#fff;padding:14px 28px;border-radius:10px;font-weight:700;text-decoration:none">Vérifier mon e-mail</a></p>
+<p style="font-size:12px;color:#65756A;word-break:break-all">{$url}</p></td></tr>
+<tr><td style="background:#064E35;padding:20px;text-align:center;color:#B7DCC8;font-size:12px">NutriTrace · <a href="{$home}" style="color:#FFB627">{$home}</a></td></tr>
+</table></td></tr></table>
+HTML;
+
+        $html = EmailTemplate::render('emails.verify-email', [
+            'name' => $this->name,
+            'email' => $this->getEmailForVerification(),
+            'url' => $url,
+            'expire' => $expire,
+        ], $fallback);
+
+        app(ResendMailer::class)->send(
+            $this->getEmailForVerification(),
+            'Vérifiez votre adresse e-mail NutriTrace',
+            $html,
+            [EmailTemplate::logoAttachment()],
+        );
     }
 
     public function hasTwoFactorEnabled(): bool
@@ -138,7 +215,11 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function avatarUrl(): ?string
     {
-        return $this->avatar ? asset('storage/'.$this->avatar) : null;
+        if (! $this->avatar) {
+            return null;
+        }
+
+        return asset('storage/'.$this->avatar).'?v='.($this->updated_at?->timestamp ?? time());
     }
 
     public function supprimerAvatar(): void
@@ -230,11 +311,6 @@ class User extends Authenticatable implements MustVerifyEmail
     public function produits(): HasMany
     {
         return $this->hasMany(Produit::class, 'proprietaire_id');
-    }
-
-    public function signalements(): HasMany
-    {
-        return $this->hasMany(Signalement::class);
     }
 
     public function scans(): HasMany

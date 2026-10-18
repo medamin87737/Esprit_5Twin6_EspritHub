@@ -15,6 +15,8 @@ class RapportAnalyseController extends Controller
 
         abort_unless($disque->exists($analyse->rapport), 404);
 
-        return $disque->download($analyse->rapport, "Rapport-{$analyse->numero}.pdf");
+        $ext = pathinfo((string) $analyse->rapport, PATHINFO_EXTENSION) ?: 'txt';
+
+        return $disque->download($analyse->rapport, "Rapport-{$analyse->numero}.{$ext}");
     }
 }

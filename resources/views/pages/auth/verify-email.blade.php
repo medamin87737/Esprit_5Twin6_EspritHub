@@ -20,6 +20,15 @@
     @if (session('status'))
         <div class="alert alert-success" role="status">{{ session('status') }}</div>
     @endif
+    @if (session('error'))
+        <div class="alert alert-danger" role="alert">{{ session('error') }}</div>
+    @endif
+    @if (session('verification_url'))
+        <div class="alert alert-warning" role="status">
+            <p class="mb-2">Lien de vérification (développement) :</p>
+            <a href="{{ session('verification_url') }}" class="btn btn-sm btn-primary">Activer mon compte</a>
+        </div>
+    @endif
 
     <form method="POST" action="{{ route('verification.send') }}">
         @csrf

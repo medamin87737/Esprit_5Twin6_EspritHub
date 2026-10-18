@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,15 +27,38 @@ class PasswordResetController extends Controller
             'email' => ['required', 'email'],
         ], [], ['email' => 'adresse e-mail']);
 
-        $status = Password::sendResetLink($request->only('email'));
+        $email = $request->string('email')->toString();
+        $user = User::where('email', $email)->first();
 
-        if ($status !== Password::RESET_LINK_SENT) {
-            throw ValidationException::withMessages([
-                'email' => __($status),
-            ]);
+        // Même message si l'e-mail n'existe pas (sécurité).
+        if (! $user) {
+            return back()->with('status', 'Si un compte existe pour cette adresse, un lien de réinitialisation vient d\'être envoyé (valable '.config('auth.passwords.users.expire').' minutes).');
         }
 
-        return back()->with('status', 'Un lien de réinitialisation vous a été envoyé par e-mail (valable '.config('auth.passwords.users.expire').' minutes).');
+        $token = Password::broker()->createToken($user);
+        $url = url(route('password.reset', [
+            'token' => $token,
+            'email' => $user->email,
+        ], false));
+
+        try {
+            $user->sendPasswordResetNotification($token);
+
+            return back()->with('status', 'Un lien de réinitialisation vous a été envoyé par e-mail (valable '.config('auth.passwords.users.expire').' minutes).');
+        } catch (\Throwable $e) {
+            report($e);
+
+            // En local / démo : on montre le lien pour que la fonctionnalité reste testable.
+            if (config('app.debug')) {
+                return back()
+                    ->with('status', 'L\'e-mail n\'a pas pu partir ('.$e->getMessage().'). Utilisez le lien ci-dessous pour tester.')
+                    ->with('reset_url', $url);
+            }
+
+            throw ValidationException::withMessages([
+                'email' => 'Impossible d\'envoyer l\'e-mail pour le moment. Vérifiez RESEND_API_KEY et le domaine expéditeur sur resend.com.',
+            ]);
+        }
     }
 
     public function resetForm(Request $request, string $token): View

@@ -27,7 +27,11 @@
                 @auth
                     <li class="nav-item dropdown ms-lg-3 mt-2 mt-lg-0">
                         <a class="nav-link dropdown-toggle nav-user" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <span class="nav-avatar">{{ $user->initials() }}</span>
+                            @if ($user->avatarUrl())
+                                <img src="{{ $user->avatarUrl() }}" alt="" class="nav-avatar nav-avatar--img" width="32" height="32">
+                            @else
+                                <span class="nav-avatar">{{ $user->initials() }}</span>
+                            @endif
                             <span>{{ \Illuminate\Support\Str::of($user->name)->explode(' ')->first() }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end nav-user-menu" aria-labelledby="userMenu">
@@ -38,10 +42,12 @@
                             <li><hr class="dropdown-divider"></li>
 
                             @can('espace-consommateur')
+                                <li><a class="dropdown-item" href="{{ route('consommateur.qualite.index') }}"><i class="bi bi-clipboard2-pulse me-2" aria-hidden="true"></i>Qualité</a></li>
                                 <li><a class="dropdown-item" href="{{ route('consommateur.scans.index') }}"><i class="bi bi-clock-history me-2" aria-hidden="true"></i>Historique des scans</a></li>
                             @endcan
 
                             @can('espace-pro')
+                                <li><a class="dropdown-item" href="{{ route('pro.qualite') }}"><i class="bi bi-clipboard2-pulse me-2" aria-hidden="true"></i>Qualité</a></li>
                                 <li><a class="dropdown-item" href="{{ route('pro.profil.edit') }}"><i class="bi bi-building me-2" aria-hidden="true"></i>Profil société</a></li>
                             @endcan
 

@@ -35,10 +35,6 @@
                 <span class="kpi-icon"><i class="bi bi-award" aria-hidden="true"></i></span>
                 <span><span class="kpi-value">{{ $nbCertificationsValides }}</span><span class="kpi-label">certification(s) valide(s)@if ($nbCertificationsEnAttente) · {{ $nbCertificationsEnAttente }} en attente @endif</span></span>
             </a>
-            <a href="{{ route('pro.signalements.index') }}" class="kpi-card">
-                <span @class(['kpi-icon', 'is-alert' => $nbSignalementsEnAttente > 0])><i class="bi bi-flag" aria-hidden="true"></i></span>
-                <span><span class="kpi-value">{{ $nbSignalementsEnAttente }}</span><span class="kpi-label">signalement(s) en attente</span></span>
-            </a>
         @endif
     </div>
 
@@ -90,24 +86,6 @@
                     @endif
                 </div>
 
-                <div class="panel">
-                    <h2 class="panel-title"><i class="bi bi-flag" aria-hidden="true"></i>Derniers signalements reçus</h2>
-                    @if ($signalements->isEmpty())
-                        <p class="text-muted mb-0">Aucun signalement sur vos produits.</p>
-                    @else
-                        <ul class="alert-list">
-                            @foreach ($signalements as $signalement)
-                                <li>
-                                    <span>
-                                        <strong>{{ $signalement->produit?->nom }}</strong>
-                                        <span class="small text-muted d-block">{{ $signalement->motifLabel() }} · {{ $signalement->created_at?->format('d/m/Y') }}</span>
-                                    </span>
-                                    <span class="status-pill {{ $signalement->statutClasse() }}">{{ $signalement->statutLabel() }}</span>
-                                </li>
-                            @endforeach
-                        </ul>
-                    @endif
-                </div>
             </div>
         @endif
     </div>

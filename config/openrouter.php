@@ -8,7 +8,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Clé sur https://openrouter.ai/keys — compatible API OpenAI.
-    | Modèle multimodal recommandé pour lire les PDF : google/gemini-2.0-flash-001
+    | Modèle gratuit : openrouter/free (texte uniquement, sans Python / vision).
     |
     */
 
@@ -16,9 +16,11 @@ return [
 
     'base_url' => env('OPENROUTER_BASE_URL', 'https://openrouter.ai/api/v1'),
 
-    'model' => env('OPENROUTER_MODEL', 'google/gemini-2.0-flash-001'),
+    'model' => env('OPENROUTER_MODEL', 'openrouter/free'),
 
-    'timeout' => (int) env('OPENROUTER_TIMEOUT', 60),
+    'timeout' => (int) env('OPENROUTER_TIMEOUT', 20),
+
+    'connect_timeout' => (int) env('OPENROUTER_CONNECT_TIMEOUT', 8),
 
     'site_url' => env('OPENROUTER_SITE_URL', env('APP_URL', 'http://127.0.0.1:8000')),
 

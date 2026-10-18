@@ -156,7 +156,8 @@ return [
     |
     */
 
-    'domain' => env('SESSION_DOMAIN'),
+    // « null » en string dans .env casse le cookie → erreur 419 CSRF.
+    'domain' => ($d = env('SESSION_DOMAIN')) && strtolower((string) $d) !== 'null' ? $d : null,
 
     /*
     |--------------------------------------------------------------------------

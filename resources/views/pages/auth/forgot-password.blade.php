@@ -18,6 +18,13 @@
         <div class="alert alert-success" role="status">{{ session('status') }}</div>
     @endif
 
+    @if (session('reset_url'))
+        <div class="alert alert-warning" role="status">
+            <strong>Lien de test (mode debug) :</strong><br>
+            <a href="{{ session('reset_url') }}">{{ session('reset_url') }}</a>
+        </div>
+    @endif
+
     <form method="POST" action="{{ route('password.email') }}" novalidate>
         @csrf
         <div class="form-group">

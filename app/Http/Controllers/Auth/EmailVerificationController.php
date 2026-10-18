@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Throwable;
 
 class EmailVerificationController extends Controller
 {
@@ -40,7 +41,11 @@ class EmailVerificationController extends Controller
             return redirect()->intended($request->user()->espaceParDefaut());
         }
 
-        $request->user()->sendEmailVerificationNotification();
+        try {
+            $request->user()->sendEmailVerificationNotification();
+        } catch (Throwable $e) {
+            return back()->with('error', 'Envoi impossible : '.$e->getMessage());
+        }
 
         return back()->with('status', 'Un nouvel e-mail de vérification vient d\'être envoyé.');
     }

@@ -9,6 +9,7 @@ use App\Services\Analyses\AnalyseIaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use RuntimeException;
 use Throwable;
 
@@ -18,10 +19,13 @@ class AnalyseIaController extends Controller
 
     public function prefill(Request $request, Lot $lot): JsonResponse
     {
-        $this->authorize('ajouterAnalyse', $lot);
+        Gate::authorize('ajouterAnalyse', $lot);
 
         $request->validate([
-            'rapport' => ['required', 'file', 'mimes:pdf', 'max:5120'],
+            'rapport' => ['required', 'file', 'mimes:txt,docx,text', 'max:5120'],
+        ], [
+            'rapport.required' => 'Choisissez d\'abord un rapport (TXT ou DOCX).',
+            'rapport.mimes' => 'Formats acceptés : TXT ou DOCX.',
         ]);
 
         try {
@@ -32,18 +36,21 @@ class AnalyseIaController extends Controller
                 'ok' => true,
                 'message' => 'Champs proposés par l\'IA — vérifiez avant d\'enregistrer.',
                 'data' => $extrait,
-            ]);
+            ], 200, [], JSON_INVALID_UTF8_SUBSTITUTE | JSON_UNESCAPED_UNICODE);
         } catch (Throwable $e) {
-            return response()->json(['ok' => false, 'message' => $e->getMessage()], 422);
+            return response()->json([
+                'ok' => false,
+                'message' => mb_convert_encoding($e->getMessage(), 'UTF-8', 'UTF-8'),
+            ], 422, [], JSON_INVALID_UTF8_SUBSTITUTE | JSON_UNESCAPED_UNICODE);
         }
     }
 
     public function extraire(Analyse $analyse): RedirectResponse
     {
-        $this->authorize('update', $analyse);
+        Gate::authorize('update', $analyse);
 
         if (! $analyse->rapport) {
-            return back()->with('error', 'Cette analyse n\'a pas encore de rapport PDF.');
+            return back()->with('error', 'Cette analyse n\'a pas encore de rapport.');
         }
 
         try {
@@ -73,7 +80,7 @@ class AnalyseIaController extends Controller
 
     public function resumer(Analyse $analyse): RedirectResponse
     {
-        $this->authorize('update', $analyse);
+        Gate::authorize('update', $analyse);
 
         try {
             $this->assurerCle();
@@ -88,7 +95,7 @@ class AnalyseIaController extends Controller
 
     public function risque(Lot $lot): RedirectResponse
     {
-        $this->authorize('view', $lot);
+        Gate::authorize('view', $lot);
 
         try {
             $risque = $this->ia->evaluerRisque($lot);

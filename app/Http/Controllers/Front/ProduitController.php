@@ -24,7 +24,6 @@ class ProduitController extends Controller
                 ->with(['empreinteCarbone:id,lot_id,score,co2_total', 'analyses:id,lot_id,resultat'])
                 ->withCount('etapes')
                 ->latest('date_production'),
-            'signalements' => fn ($q) => $q->valides()->with('user:id,name')->latest(),
         ])->loadAvg('empreintes', 'co2_total');
 
         // ── KPIs ─────────────────────────────────────────────────────────────

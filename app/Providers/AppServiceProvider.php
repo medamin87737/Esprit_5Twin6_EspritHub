@@ -41,7 +41,6 @@ class AppServiceProvider extends ServiceProvider
     private function definirDroitsFront(): void
     {
         Gate::define('espace-consommateur', fn (User $user) => $user->isConsommateur());
-        Gate::define('signaler', fn (User $user) => $user->isConsommateur());
 
         Gate::define('espace-pro', fn (User $user) => $user->isPro());
         Gate::define('pro-produits', fn (User $user) => $user->isPro() && (bool) $user->droitPro('gere_produits'));

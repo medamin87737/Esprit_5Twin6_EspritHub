@@ -76,7 +76,7 @@
                 <td class="nt-cell-title">
                     {{ $analyse->numero }}
                     @if ($analyse->rapport)
-                        <i class="bi bi-file-earmark-pdf text-danger ml-1" title="Rapport PDF joint" aria-label="Rapport PDF joint"></i>
+                        <i class="bi bi-file-earmark-text text-success ml-1" title="Rapport joint" aria-label="Rapport joint"></i>
                     @endif
                     @if ($analyse->estEnRetard())
                         <span class="nt-badge nt-badge-danger ml-1" title="En attente trop longtemps">Retard</span>

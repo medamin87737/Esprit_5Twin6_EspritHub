@@ -17,15 +17,15 @@ class AnalyseIaController extends Controller
     public function __construct(private AnalyseIaService $ia) {}
 
     /**
-     * Pré-remplit le formulaire à partir d'un PDF (JSON pour le JS).
+     * Pré-remplit le formulaire à partir d'un rapport TXT/DOCX (JSON pour le JS).
      */
     public function prefill(Request $request): JsonResponse
     {
         $request->validate([
-            'rapport' => ['required', 'file', 'mimes:pdf', 'max:5120'],
+            'rapport' => ['required', 'file', 'mimes:txt,docx,text', 'max:5120'],
         ], [
-            'rapport.required' => 'Choisissez d\'abord un rapport PDF.',
-            'rapport.mimes' => 'Le fichier doit être un PDF.',
+            'rapport.required' => 'Choisissez d\'abord un rapport (TXT ou DOCX).',
+            'rapport.mimes' => 'Formats acceptés : TXT ou DOCX.',
         ]);
 
         try {
@@ -36,19 +36,19 @@ class AnalyseIaController extends Controller
                 'ok' => true,
                 'message' => 'Champs proposés par l\'IA — vérifiez avant d\'enregistrer.',
                 'data' => $extrait,
-            ]);
+            ], 200, [], JSON_INVALID_UTF8_SUBSTITUTE | JSON_UNESCAPED_UNICODE);
         } catch (Throwable $e) {
             return response()->json([
                 'ok' => false,
-                'message' => $e->getMessage(),
-            ], 422);
+                'message' => mb_convert_encoding($e->getMessage(), 'UTF-8', 'UTF-8'),
+            ], 422, [], JSON_INVALID_UTF8_SUBSTITUTE | JSON_UNESCAPED_UNICODE);
         }
     }
 
     public function extraire(Analyse $analyse): RedirectResponse
     {
         if (! $analyse->rapport) {
-            return back()->with('error', 'Cette analyse n\'a pas encore de rapport PDF.');
+            return back()->with('error', 'Cette analyse n\'a pas encore de rapport.');
         }
 
         try {
