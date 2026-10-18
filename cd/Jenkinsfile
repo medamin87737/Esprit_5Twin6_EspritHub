@@ -1,6 +1,11 @@
 // NutriTrace — Pipeline CD (Deploiement Continu)
 // Script Path Jenkins : cd/Jenkinsfile
 // IMPORTANT : décocher "Lightweight checkout"
+//
+// Docker-in-Docker (socket) :
+// - build context = workspace Jenkins (.) — le client lit les fichiers dans le conteneur
+// - compose = bind-mount /workspace/nutritrace (chemin Linux, pas //c/Users/...)
+// - HOST_PROJECT_DIR (//c/...) sert uniquement aux volumes docker run (pipeline CI)
 
 pipeline {
     agent any
@@ -11,7 +16,10 @@ pipeline {
     }
 
     environment {
-        HOST_DIR = "${env.HOST_PROJECT_DIR ?: '/workspace/nutritrace'}"
+        // Bind-mount du projet (docker-compose.yml → jenkins volumes)
+        APP_DIR = '/workspace/nutritrace'
+        // Nom du projet Compose (= dossier Windows "laravelProject")
+        COMPOSE_PROJECT = 'laravelproject'
     }
 
     stages {
@@ -25,7 +33,8 @@ pipeline {
         stage('2. Construction image Docker') {
             steps {
                 sh '''
-                    docker build -t nutritrace:${BUILD_NUMBER} -t nutritrace:latest "${HOST_DIR}"
+                    docker build -t nutritrace:${BUILD_NUMBER} -t nutritrace:latest .
+                    docker tag nutritrace:latest ${COMPOSE_PROJECT}-app:latest
                 '''
             }
         }
@@ -33,9 +42,9 @@ pipeline {
         stage('3. Deploiement containers') {
             steps {
                 sh '''
-                    cd "${HOST_DIR}"
-                    docker compose up -d --build app db
-                    docker compose ps
+                    cd "${APP_DIR}"
+                    docker compose -p "${COMPOSE_PROJECT}" up -d --no-build app db
+                    docker compose -p "${COMPOSE_PROJECT}" ps
                 '''
             }
         }
