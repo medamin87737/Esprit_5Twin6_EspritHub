@@ -1,5 +1,6 @@
-// NutriTrace — Pipeline CI seul (intégration continue)
-// Script Path Jenkins : ci/Jenkinsfile
+// NutriTrace — CI seul
+// Script Path : ci/Jenkinsfile
+// IMPORTANT Jenkins : décocher "Lightweight checkout"
 
 pipeline {
     agent any
@@ -7,26 +8,20 @@ pipeline {
     options {
         disableConcurrentBuilds()
         buildDiscarder(logRotator(numToKeepStr: '20'))
+        skipDefaultCheckout(false)
     }
 
     environment {
-        PROJECT_DIR = "${env.WORKSPACE}"
+        // Chemin HOST Windows pour docker run -v (socket Docker Desktop)
+        HOST_DIR = "${env.HOST_PROJECT_DIR ?: '/workspace/nutritrace'}"
     }
 
     stages {
         stage('Checkout') {
             steps {
+                checkout scm
                 echo "=== CI NutriTrace #${env.BUILD_NUMBER} ==="
-                sh '''
-                    if [ -d /workspace/nutritrace ]; then
-                      export PROJECT_DIR=/workspace/nutritrace
-                    else
-                      export PROJECT_DIR="${WORKSPACE}"
-                    fi
-                    echo "PROJECT_DIR=$PROJECT_DIR"
-                    ls -la "$PROJECT_DIR" | head -25
-                    echo "$PROJECT_DIR" > .project_dir
-                '''
+                sh 'ls -la | head -20'
             }
         }
 
@@ -35,9 +30,8 @@ pipeline {
                 stage('Composer') {
                     steps {
                         sh '''
-                            PROJECT_DIR=$(cat .project_dir)
                             docker run --rm \
-                              -v "$PROJECT_DIR:/app" -w /app \
+                              -v "${HOST_DIR}:/app" -w /app \
                               composer:2 \
                               composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
                         '''
@@ -46,9 +40,8 @@ pipeline {
                 stage('NPM') {
                     steps {
                         sh '''
-                            PROJECT_DIR=$(cat .project_dir)
                             docker run --rm \
-                              -v "$PROJECT_DIR:/app" -w /app \
+                              -v "${HOST_DIR}:/app" -w /app \
                               node:22-alpine \
                               sh -c "npm ci || npm install"
                         '''
@@ -60,9 +53,8 @@ pipeline {
         stage('Build assets') {
             steps {
                 sh '''
-                    PROJECT_DIR=$(cat .project_dir)
                     docker run --rm \
-                      -v "$PROJECT_DIR:/app" -w /app \
+                      -v "${HOST_DIR}:/app" -w /app \
                       node:22-alpine \
                       npm run build
                 '''
@@ -72,9 +64,8 @@ pipeline {
         stage('Quality') {
             steps {
                 sh '''
-                    PROJECT_DIR=$(cat .project_dir)
                     docker run --rm \
-                      -v "$PROJECT_DIR:/app" -w /app \
+                      -v "${HOST_DIR}:/app" -w /app \
                       composer:2 \
                       sh -c "cp -n .env.example .env || true; php artisan --version || true"
                 '''
@@ -84,9 +75,8 @@ pipeline {
         stage('Tests') {
             steps {
                 sh '''
-                    PROJECT_DIR=$(cat .project_dir)
                     docker run --rm \
-                      -v "$PROJECT_DIR:/app" -w /app \
+                      -v "${HOST_DIR}:/app" -w /app \
                       -e DB_CONNECTION=sqlite \
                       -e DB_DATABASE=/app/database/testing.sqlite \
                       php:8.2-cli \
@@ -104,11 +94,7 @@ pipeline {
     }
 
     post {
-        success {
-            echo "CI SUCCESS — NutriTrace #${env.BUILD_NUMBER} (pas de déploiement)"
-        }
-        failure {
-            echo "CI FAILURE — build #${env.BUILD_NUMBER}"
-        }
+        success { echo "CI SUCCESS — #${env.BUILD_NUMBER}" }
+        failure { echo "CI FAILURE — #${env.BUILD_NUMBER}" }
     }
 }

@@ -1,6 +1,6 @@
-// NutriTrace — Pipeline CD seul (déploiement continu)
-// Script Path Jenkins : cd/Jenkinsfile
-// À lancer après un CI vert (manuellement ou trigger "Build after other projects")
+// NutriTrace — CD seul
+// Script Path : cd/Jenkinsfile
+// IMPORTANT Jenkins : décocher "Lightweight checkout"
 
 pipeline {
     agent any
@@ -10,28 +10,22 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '15'))
     }
 
+    environment {
+        HOST_DIR = "${env.HOST_PROJECT_DIR ?: '/workspace/nutritrace'}"
+    }
+
     stages {
         stage('Checkout') {
             steps {
+                checkout scm
                 echo "=== CD NutriTrace #${env.BUILD_NUMBER} ==="
-                sh '''
-                    if [ -d /workspace/nutritrace ]; then
-                      export PROJECT_DIR=/workspace/nutritrace
-                    else
-                      export PROJECT_DIR="${WORKSPACE}"
-                    fi
-                    echo "PROJECT_DIR=$PROJECT_DIR"
-                    ls -la "$PROJECT_DIR" | head -25
-                    echo "$PROJECT_DIR" > .project_dir
-                '''
             }
         }
 
         stage('Build image') {
             steps {
                 sh '''
-                    PROJECT_DIR=$(cat .project_dir)
-                    docker build -t nutritrace:${BUILD_NUMBER} -t nutritrace:latest "$PROJECT_DIR"
+                    docker build -t nutritrace:${BUILD_NUMBER} -t nutritrace:latest "${HOST_DIR}"
                 '''
             }
         }
@@ -39,8 +33,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
-                    PROJECT_DIR=$(cat .project_dir)
-                    cd "$PROJECT_DIR"
+                    cd "${HOST_DIR}"
                     docker compose up -d --build app db
                     docker compose ps
                 '''
@@ -52,19 +45,14 @@ pipeline {
                 sh '''
                     sleep 8
                     curl -fsS -o /dev/null -w "%{http_code}\\n" http://host.docker.internal:8088/ \
-                      || curl -fsS -o /dev/null -w "%{http_code}\\n" http://127.0.0.1:8088/ \
-                      || echo "Smoke: vérifier http://127.0.0.1:8088 manuellement"
+                      || echo "Vérifier http://127.0.0.1:8088"
                 '''
             }
         }
     }
 
     post {
-        success {
-            echo "CD SUCCESS — App déployée : http://127.0.0.1:8088"
-        }
-        failure {
-            echo "CD FAILURE — build #${env.BUILD_NUMBER}"
-        }
+        success { echo "CD SUCCESS — http://127.0.0.1:8088" }
+        failure { echo "CD FAILURE — #${env.BUILD_NUMBER}" }
     }
 }

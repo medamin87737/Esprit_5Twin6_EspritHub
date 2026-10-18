@@ -44,13 +44,25 @@ services:
       context: .
       dockerfile: Dockerfile.jenkins
     container_name: nutritrace-jenkins
+    # root : accès au socket Docker Desktop (sinon "permission denied")
+    user: root
+    environment:
+      # Chemin Windows vu par le daemon Docker (pour docker run -v)
+      HOST_PROJECT_DIR: //c/Users/amin/Desktop/laravelProject
     ports:
       - "8090:8080"
       - "50000:50000"
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - jenkins_home:/var/jenkins_home
       - .:/workspace/nutritrace
       - /var/run/docker.sock:/var/run/docker.sock
+    group_add:
+      - "0"
     restart: unless-stopped
 
 volumes:
