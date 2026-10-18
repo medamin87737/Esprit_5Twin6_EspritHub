@@ -13,13 +13,16 @@ class Certification extends Model
 
     public const ICONES = ['bio' => 'bi-flower1', 'local' => 'bi-geo-alt', 'equitable' => 'bi-people'];
 
-    protected $fillable = ['organisme_id', 'produit_id', 'numero', 'type', 'statut', 'date_obtention', 'date_expiration'];
+    public const DISQUE = 'local';
+
+    protected $fillable = ['organisme_id', 'produit_id', 'numero', 'type', 'statut', 'date_obtention', 'date_expiration', 'document_pdf', 'ia_verification', 'ia_incoherences', 'ia_verifie_at'];
 
     protected function casts(): array
     {
         return [
-            'date_obtention' => 'date',
+            'date_obtention'  => 'date',
             'date_expiration' => 'date',
+            'ia_verifie_at'   => 'datetime',
         ];
     }
 

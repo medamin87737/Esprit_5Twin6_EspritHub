@@ -32,9 +32,16 @@ class CertificationController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        $nbEnAttente = Certification::where('statut', 'en_attente')->count();
+        $nbExpirations = Certification::valides()
+            ->whereDate('date_expiration', '<=', today()->addDays(30))
+            ->count();
+
         return view('pages.admin.certifications.index', [
             'certifications' => $certifications,
             'organismes' => Organisme::orderBy('nom')->get(['id', 'nom']),
+            'nbEnAttente' => $nbEnAttente,
+            'nbExpirations' => $nbExpirations,
         ]);
     }
 
@@ -84,6 +91,24 @@ class CertificationController extends Controller
 
         return redirect()->route('admin.certifications.index')
             ->with('success', "La certification {$certification->numero} a été supprimée.");
+    }
+
+    public function valider(Certification $certification): RedirectResponse
+    {
+        if ($certification->date_expiration->lt(today())) {
+            return back()->with('error', "Impossible de valider {$certification->numero} : sa date d'expiration est dépassée.");
+        }
+
+        $certification->update(['statut' => 'valide']);
+
+        return back()->with('success', "La certification {$certification->numero} a été validée et est maintenant publique.");
+    }
+
+    public function suspendre(Certification $certification): RedirectResponse
+    {
+        $certification->update(['statut' => 'suspendue']);
+
+        return back()->with('success', "La certification {$certification->numero} a été suspendue.");
     }
 
     /**

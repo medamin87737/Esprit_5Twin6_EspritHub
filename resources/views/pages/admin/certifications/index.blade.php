@@ -8,7 +8,25 @@
         $organismes = $organismes ?? collect();
         $types = config('nutritrace.options.certification_types');
         $statuts = config('nutritrace.options.certification_statuts');
+        $nbEnAttente = $nbEnAttente ?? 0;
+        $nbExpirations = $nbExpirations ?? 0;
     @endphp
+
+    @if ($nbEnAttente > 0)
+        <div class="alert alert-warning" role="status">
+            <i class="bi bi-hourglass-split mr-1" aria-hidden="true"></i>
+            <strong>{{ $nbEnAttente }}</strong> certification{{ $nbEnAttente > 1 ? 's' : '' }} en attente de validation.
+            <a href="{{ route('admin.certifications.index', ['statut' => 'en_attente']) }}" class="alert-link">Voir les demandes en attente</a>
+        </div>
+    @endif
+
+    @if ($nbExpirations > 0)
+        <div class="alert alert-danger" role="status">
+            <i class="bi bi-alarm mr-1" aria-hidden="true"></i>
+            <strong>{{ $nbExpirations }}</strong> certification{{ $nbExpirations > 1 ? 's' : '' }} expire(nt) dans moins de 30 jours.
+            <a href="{{ route('admin.certifications.index', ['statut' => 'valide']) }}" class="alert-link">Voir les certifications valides</a>
+        </div>
+    @endif
 
     <x-admin.page-header title="Certifications" module="Module 5 · Certifications"
                          subtitle="Les labels attribués aux produits, l'organisme qui les délivre et leur validité.">
@@ -64,6 +82,28 @@
                 <td class="text-muted">{{ $certification->date_expiration?->format('d/m/Y') }}</td>
                 <td>@include('pages.admin.certifications._statut')</td>
                 <td class="text-right">
+                    @if ($certification->statut === 'en_attente')
+                        <form method="POST" action="{{ route('admin.certifications.valider', $certification) }}" class="d-inline">
+                            @csrf @method('PATCH')
+                            <button type="submit" class="btn btn-xs btn-success mr-1" title="Valider">
+                                <i class="bi bi-check-lg" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                    @elseif ($certification->statut === 'valide')
+                        <form method="POST" action="{{ route('admin.certifications.suspendre', $certification) }}" class="d-inline">
+                            @csrf @method('PATCH')
+                            <button type="submit" class="btn btn-xs btn-warning mr-1" title="Suspendre">
+                                <i class="bi bi-pause-circle" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                    @elseif ($certification->statut === 'suspendue')
+                        <form method="POST" action="{{ route('admin.certifications.valider', $certification) }}" class="d-inline">
+                            @csrf @method('PATCH')
+                            <button type="submit" class="btn btn-xs btn-success mr-1" title="Réactiver">
+                                <i class="bi bi-play-circle" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                    @endif
                     <x-admin.row-actions
                         :show="route('admin.certifications.show', $certification)"
                         :edit="route('admin.certifications.edit', $certification)"
