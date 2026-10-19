@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             Module4Seeder::class,
             Module5Seeder::class,
             FrontOfficeSeeder::class,
+            CatalogueDemoSeeder::class,
         ]);
     }
 }

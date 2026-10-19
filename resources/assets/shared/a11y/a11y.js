@@ -29,7 +29,7 @@ import './a11y.css';
         bigCursor: false,
         strongFocus: true,
         simplifiedReading: false,
-        shortcuts: true,
+        shortcuts: false,
     };
 
     const TEXT_STEPS = [80, 90, 100, 110, 125, 150, 175, 200];
@@ -40,13 +40,26 @@ import './a11y.css';
     let speechUtterance = null;
 
     function load() {
+        let chargees;
         try {
             const raw = localStorage.getItem(STORAGE_KEY);
-            if (!raw) return { ...DEFAULTS };
-            return { ...DEFAULTS, ...JSON.parse(raw) };
+            chargees = !raw ? { ...DEFAULTS } : { ...DEFAULTS, ...JSON.parse(raw) };
         } catch (e) {
-            return { ...DEFAULTS };
+            chargees = { ...DEFAULTS };
         }
+        // Réglages retirés du panneau : neutralisés même s'ils avaient été activés avant.
+        // Seuls les modes Clair / Sombre sont conservés.
+        if (chargees.theme !== 'dark' && chargees.theme !== 'light') {
+            chargees.theme = 'default';
+        }
+        chargees.uiZoom = 100;
+        chargees.reduceMotion = false;
+        chargees.focusMode = false;
+        chargees.strongFocus = true;
+        chargees.simplifiedReading = false;
+        chargees.shortcuts = false;
+
+        return chargees;
     }
 
     function save() {
@@ -162,20 +175,14 @@ import './a11y.css';
     function countActive() {
         let n = 0;
         if (prefs.blueFilter > 0) n++;
-        if (prefs.theme !== 'default') n++;
+        if (prefs.theme === 'dark') n++;
         if (prefs.brightness !== 100) n++;
-        if (prefs.reduceMotion) n++;
-        if (prefs.focusMode) n++;
         if (prefs.textScale !== 100) n++;
-        if (prefs.uiZoom !== 100) n++;
         if (prefs.font !== 'default') n++;
         if (prefs.letterSpacing || prefs.wordSpacing || prefs.lineHeight || prefs.paragraphSpacing) n++;
         if (prefs.highContrast) n++;
         if (prefs.underlineLinks) n++;
         if (prefs.bigCursor) n++;
-        if (!prefs.strongFocus) n++; // défaut on — compter si désactivé ? plutôt si modifié
-        if (prefs.simplifiedReading) n++;
-        if (!prefs.shortcuts) n++;
         if (!prefs.colorPatterns) n++;
         return n;
     }

@@ -8,7 +8,26 @@
     };
 @endphp
 
-<div class="nt-qp">
+@php
+    $derniere = $dernieres->first();
+    $derniereTexte = $derniere
+        ? $derniere->typeLabel().' · '.$derniere->resultatLabel().' · '.($derniere->laboratoire?->nom ?? '').' · '.$derniere->date_prelevement?->format('d/m/Y')
+        : '';
+@endphp
+
+<div class="nt-qp"
+     data-produit="{{ $produit->nom }}"
+     data-lot="{{ $lotPrincipal?->numero_lot }}"
+     data-qualite-url="{{ $lotPrincipal ? route('consommateur.qualite.index', ['numero' => $lotPrincipal->numero_lot]) : '' }}"
+     data-fiche-url="{{ route('front.produits.show', $produit) }}"
+     data-verdict="{{ $verdict['libelle'] }}"
+     data-verdict-texte="{{ $verdict['texte'] }}"
+     data-total="{{ $total }}"
+     data-conformes="{{ $conformes }}"
+     data-non-conformes="{{ $nonConformes }}"
+     data-en-attente="{{ $enAttente }}"
+     data-pct="{{ $pctConformes ?? '' }}"
+     data-derniere="{{ $derniereTexte }}">
     <div class="nt-qp__head">
         <div>
             <p class="nt-qp__cat">{{ $produit->categorie?->nom ?? 'Produit' }} · {{ $produit->origine }}</p>
@@ -70,10 +89,62 @@
         </p>
     @endforelse
 
+    {{-- Assistant intelligent intégré --}}
+    <div class="nt-qp__assistant">
+        <div class="nt-qp__assistant-head">
+            <span class="nt-qp__assistant-avatar"><i class="bi bi-stars" aria-hidden="true"></i></span>
+            <div class="nt-qp__assistant-titres">
+                <strong>Assistant NutriTrace</strong>
+                <span><span class="nt-qp__assistant-dot" aria-hidden="true"></span> En ligne — demandez-moi</span>
+            </div>
+            <i class="bi bi-chat-heart nt-qp__assistant-coeur" aria-hidden="true"></i>
+        </div>
+
+        <div class="nt-qp__assistant-log" data-assistant-log aria-live="polite">
+            <div class="nt-msg nt-msg--bot">
+                Bonjour ! Je connais la qualité de <strong>{{ $produit->nom }}</strong>.
+                @if ($lotPrincipal)
+                    Dites par exemple « <em>Amène-moi à mon espace qualité pour consulter</em> » et je vous y emmène (lot {{ $lotPrincipal->numero_lot }}).
+                @else
+                    Ce produit n'a pas encore de lot : je peux vous expliquer son statut qualité.
+                @endif
+            </div>
+        </div>
+
+        <div class="nt-qp__chips">
+            @if ($lotPrincipal)
+                <button type="button" class="nt-qp__chip" data-assistant-question="Tu peux m'amener à mon espace qualité pour consulter ?">
+                    <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i> Espace qualité
+                </button>
+            @endif
+            <button type="button" class="nt-qp__chip" data-assistant-question="Ce produit est-il conforme ?">
+                <i class="bi bi-shield-check" aria-hidden="true"></i> Est-il conforme ?
+            </button>
+            <button type="button" class="nt-qp__chip" data-assistant-question="Quelle est la dernière analyse ?">
+                <i class="bi bi-clipboard2-pulse" aria-hidden="true"></i> Dernière analyse
+            </button>
+        </div>
+
+        <form class="nt-qp__assistant-form" data-assistant-form>
+            <label class="visually-hidden" for="nt-assistant-input-{{ $produit->id }}">Écrire à l'assistant qualité</label>
+            <input type="text" id="nt-assistant-input-{{ $produit->id }}" data-assistant-input class="nt-qp__assistant-input"
+                   placeholder="Ex. Tu peux m'amener à mon espace qualité ?" autocomplete="off" maxlength="300">
+            <button type="submit" class="nt-qp__assistant-send" aria-label="Envoyer à l'assistant">
+                <i class="bi bi-send-fill" aria-hidden="true"></i>
+            </button>
+        </form>
+    </div>
+
     <div class="nt-qp__actions">
-        <a href="{{ route('consommateur.qualite.index') }}" class="btn btn-primary">
-            <i class="bi bi-clipboard2-pulse me-1" aria-hidden="true"></i> Espace Qualité complet
-        </a>
+        @if ($lotPrincipal)
+            <a href="{{ route('consommateur.qualite.index', ['numero' => $lotPrincipal->numero_lot]) }}" class="btn btn-primary">
+                <i class="bi bi-clipboard2-pulse me-1" aria-hidden="true"></i> Espace Qualité complet ({{ $lotPrincipal->numero_lot }})
+            </a>
+        @else
+            <button type="button" class="btn btn-primary" disabled title="Aucun lot enregistré pour ce produit">
+                <i class="bi bi-clipboard2-pulse me-1" aria-hidden="true"></i> Aucun lot à consulter
+            </button>
+        @endif
         <a href="{{ route('front.produits.show', $produit) }}" class="btn btn-outline-secondary">Voir la fiche</a>
     </div>
 </div>

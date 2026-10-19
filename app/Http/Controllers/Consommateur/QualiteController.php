@@ -32,8 +32,9 @@ class QualiteController extends Controller
         if ($numero !== '') {
             $lot = Lot::query()
                 ->with([
-                    'produit:id,nom,categorie_id',
+                    'produit:id,nom,categorie_id,image,origine,composition,code_barres',
                     'produit.categorie:id,nom',
+                    'produit.certifications' => fn ($q) => $q->valides()->with('organisme:id,nom')->latest('date_expiration'),
                     'analyses' => fn ($q) => $q->with('laboratoire:id,nom')->latest(),
                 ])
                 ->where('numero_lot', $numero)

@@ -12,20 +12,17 @@
             h.setAttribute('data-nt-a11y-blue', String(p.blueFilter));
         }
         if (p.textScale && p.textScale !== 100) s.setProperty('--nt-a11y-text-scale', String(p.textScale / 100));
-        if (p.uiZoom && p.uiZoom !== 100) {
-            s.setProperty('--nt-a11y-ui-zoom', String(p.uiZoom / 100));
-            h.setAttribute('data-nt-a11y-zoom', String(p.uiZoom));
-        }
-        if (p.theme && p.theme !== 'default' && !p.highContrast) h.setAttribute('data-nt-a11y-theme', p.theme);
+        // Mode d'affichage : seul le mode sombre est réappliqué (le mode clair
+        // est l'affichage par défaut). Les autres réglages retirés du panneau
+        // (thèmes, zoom interface, animations, sans distractions, lecture
+        // simplifiée, raccourcis) ne sont plus jamais appliqués.
+        if (p.theme === 'dark' && !p.highContrast) h.setAttribute('data-nt-a11y-theme', 'dark');
         if (p.highContrast) h.setAttribute('data-nt-a11y-contrast', 'high');
-        if (p.reduceMotion) h.setAttribute('data-nt-a11y-motion', 'reduce');
-        if (p.focusMode) h.setAttribute('data-nt-a11y-focus', 'on');
         if (p.font && p.font !== 'default') h.setAttribute('data-nt-a11y-font', p.font);
         if (p.underlineLinks) h.setAttribute('data-nt-a11y-links', 'on');
         if (p.colorPatterns !== false) h.setAttribute('data-nt-a11y-patterns', 'on');
         if (p.bigCursor) h.setAttribute('data-nt-a11y-cursor', 'on');
-        if (p.strongFocus !== false) h.setAttribute('data-nt-a11y-focusring', 'on');
-        if (p.simplifiedReading) h.setAttribute('data-nt-a11y-reading', 'on');
+        h.setAttribute('data-nt-a11y-focusring', 'on');
         if (p.brightness && p.brightness !== 100) {
             h.setAttribute('data-nt-a11y-brightness', String(p.brightness));
             s.setProperty('--nt-a11y-brightness-pct', String(p.brightness));

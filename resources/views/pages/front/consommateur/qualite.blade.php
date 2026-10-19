@@ -68,6 +68,10 @@
 
             {{-- Rangée de cartes alignées : analyses + score + assistant --}}
             @if ($lot)
+                <div class="nt-q-section-head">
+                    <h2><i class="bi bi-clipboard2-pulse" aria-hidden="true"></i> Analyses du lot &amp; services qualité</h2>
+                    <p>Chaque analyse est vérifiable : synthèse détaillée et rapport officiel téléchargeable.</p>
+                </div>
                 <div class="nt-q-cards-row" aria-label="Actions qualité">
                     @forelse ($lot->analyses as $analyse)
                         @include('pages.front.consommateur._qualite-analyse', [
@@ -107,7 +111,7 @@
                         <a href="{{ route('front.lots.show', $lot) }}" class="nt-q-mini__link mt-2 d-inline-flex">
                             Parcours du lot <i class="bi bi-arrow-right" aria-hidden="true"></i>
                         </a>
-                        <p class="nt-q-disclaimer">Pas un avis médical.</p>
+                        <p class="nt-q-disclaimer">Score personnalisé : qualité du lot + votre profil + composition du produit.</p>
                     </div>
 
                     <div class="nt-q-mini nt-q-mini--soft">

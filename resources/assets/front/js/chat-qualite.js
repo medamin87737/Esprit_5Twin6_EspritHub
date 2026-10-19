@@ -2,7 +2,7 @@
  * Assistant chat qualité (consommateur) — fenêtre flottante + focus produit.
  */
 const WELCOME =
-    "Bonjour. Je suis l’assistant NutriTrace : qualité, conformité et orientation produit selon votre profil (ex. diabète / sucre). Ceci n’est pas un avis médical.";
+    "Bonjour. Je suis l’assistant NutriTrace : qualité, conformité et orientation produit selon votre profil (ex. diabète, hypertension, allergies…). Posez-moi une question précise, je vous réponds en détail.";
 
 const SUGGESTIONS = [
     'Quels produits sont conformes ?',

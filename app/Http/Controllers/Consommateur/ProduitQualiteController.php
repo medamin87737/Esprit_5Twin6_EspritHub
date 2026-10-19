@@ -47,6 +47,10 @@ class ProduitQualiteController extends Controller
             'pctConformes' => $pctConformes,
             'nbLots' => $produit->lots()->count(),
             'nbLotsControles' => $produit->lots()->whereHas('analyses')->count(),
+            // Lot ouvert dans l'écran Qualité complet : le plus récent ayant des analyses,
+            // sinon le plus récent tout court.
+            'lotPrincipal' => $produit->lots()->whereHas('analyses')->latest('date_production')->first()
+                ?? $produit->lots()->latest('date_production')->first(),
             'dernieres' => (clone $analyses)
                 ->with(['laboratoire:id,nom', 'lot:id,numero_lot'])
                 ->latest('date_prelevement')

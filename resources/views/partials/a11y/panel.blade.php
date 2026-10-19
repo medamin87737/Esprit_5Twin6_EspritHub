@@ -91,81 +91,31 @@
                     <div class="nt-a11y-ctrl__label">
                         <span><i class="bi bi-moon-stars nt-a11y-ctrl__glyph" aria-hidden="true"></i> Mode d’affichage</span>
                     </div>
-
-                    <div class="nt-a11y-mode" role="group" aria-label="Clair ou sombre">
-                        <button type="button" class="nt-a11y-mode__btn nt-a11y-mode__btn--light" data-a11y-theme-btn="light" aria-pressed="false">
+                    <div class="nt-a11y-mode" role="group" aria-label="Mode clair ou sombre">
+                        <button type="button" class="nt-a11y-mode__btn nt-a11y-mode__btn--light" data-a11y-theme-btn="light" aria-pressed="true">
                             <span class="nt-a11y-mode__icon" aria-hidden="true"><i class="bi bi-sun-fill"></i></span>
                             <span class="nt-a11y-mode__text">
                                 <strong>Clair</strong>
-                                <small>Interface lumineuse</small>
+                                <small>Mode blanc</small>
                             </span>
                         </button>
                         <button type="button" class="nt-a11y-mode__btn nt-a11y-mode__btn--dark" data-a11y-theme-btn="dark" aria-pressed="false">
                             <span class="nt-a11y-mode__icon" aria-hidden="true"><i class="bi bi-moon-stars-fill"></i></span>
                             <span class="nt-a11y-mode__text">
                                 <strong>Sombre</strong>
-                                <small>Mode pro</small>
+                                <small>Mode nuit</small>
                             </span>
                         </button>
                     </div>
-
-                    <label class="nt-a11y-switch nt-a11y-switch--slate nt-a11y-switch--mode">
-                        <input type="checkbox" data-a11y-dark-toggle>
-                        <span class="nt-a11y-switch__ui" aria-hidden="true">
-                            <span class="nt-a11y-switch__track"><span class="nt-a11y-switch__knob"></span></span>
-                        </span>
-                        <span class="nt-a11y-switch__label">
-                            <span class="nt-a11y-switch__icon"><i class="bi bi-moon"></i></span>
-                            Activer le mode sombre
-                        </span>
-                    </label>
-
-                    <div class="nt-a11y-themes" role="group" aria-label="Variantes de thème">
-                        <button type="button" class="nt-a11y-theme-card nt-a11y-theme-card--default" data-a11y-theme-btn="default" aria-pressed="true">
-                            <span class="nt-a11y-theme-card__swatch" aria-hidden="true"></span>
-                            <span class="nt-a11y-theme-card__name">Défaut</span>
-                        </button>
-                        <button type="button" class="nt-a11y-theme-card nt-a11y-theme-card--soft" data-a11y-theme-btn="soft" aria-pressed="false">
-                            <span class="nt-a11y-theme-card__swatch" aria-hidden="true"></span>
-                            <span class="nt-a11y-theme-card__name">Doux</span>
-                        </button>
-                        <button type="button" class="nt-a11y-theme-card nt-a11y-theme-card--night" data-a11y-theme-btn="night" aria-pressed="false">
-                            <span class="nt-a11y-theme-card__swatch" aria-hidden="true"></span>
-                            <span class="nt-a11y-theme-card__name">Nuit</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="nt-a11y-toggles">
-                    <label class="nt-a11y-switch nt-a11y-switch--amber">
-                        <input type="checkbox" data-a11y="reduceMotion">
-                        <span class="nt-a11y-switch__ui" aria-hidden="true">
-                            <span class="nt-a11y-switch__track"><span class="nt-a11y-switch__knob"></span></span>
-                        </span>
-                        <span class="nt-a11y-switch__label">
-                            <span class="nt-a11y-switch__icon"><i class="bi bi-pause-circle"></i></span>
-                            Moins d’animations
-                        </span>
-                    </label>
-                    <label class="nt-a11y-switch nt-a11y-switch--orange">
-                        <input type="checkbox" data-a11y="focusMode">
-                        <span class="nt-a11y-switch__ui" aria-hidden="true">
-                            <span class="nt-a11y-switch__track"><span class="nt-a11y-switch__knob"></span></span>
-                        </span>
-                        <span class="nt-a11y-switch__label">
-                            <span class="nt-a11y-switch__icon"><i class="bi bi-bullseye"></i></span>
-                            Sans distractions
-                        </span>
-                    </label>
                 </div>
             </div>
         </div>
 
-        {{-- B. Texte et zoom --}}
+        {{-- B. Texte --}}
         <div class="nt-a11y-cat nt-a11y-cat--text">
             <button type="button" class="nt-a11y-cat__btn" aria-expanded="false" aria-controls="nt-a11y-cat-texte">
                 <span class="nt-a11y-cat__icon" aria-hidden="true"><i class="bi bi-type"></i></span>
-                <span class="nt-a11y-cat__label">Texte &amp; zoom</span>
+                <span class="nt-a11y-cat__label">Texte</span>
                 <i class="bi bi-chevron-down nt-a11y-cat__chevron" aria-hidden="true"></i>
             </button>
             <div id="nt-a11y-cat-texte" class="nt-a11y-cat__body" hidden>
@@ -181,23 +131,6 @@
                             <input type="range" min="80" max="200" step="10" value="100" data-a11y="textScale" class="nt-a11y-pot__input" aria-label="Taille du texte">
                         </div>
                         <div class="nt-a11y-pot__ends" aria-hidden="true"><span>A</span><span style="font-size:1.15rem">A</span></div>
-                    </div>
-                    <div class="nt-a11y-ctrl__row nt-a11y-ctrl__row--seg">
-                        <button type="button" class="nt-a11y-chip" data-a11y-action="text-down" aria-label="Réduire le texte">A−</button>
-                        <button type="button" class="nt-a11y-chip" data-a11y-action="text-reset">Normal</button>
-                        <button type="button" class="nt-a11y-chip" data-a11y-action="text-up" aria-label="Agrandir le texte">A+</button>
-                    </div>
-                </div>
-
-                <div class="nt-a11y-ctrl">
-                    <div class="nt-a11y-ctrl__label">
-                        <span><i class="bi bi-zoom-in nt-a11y-ctrl__glyph" aria-hidden="true"></i> Zoom interface</span>
-                        <span class="nt-a11y-value nt-a11y-value--blue" data-a11y-label="uiZoom">100 %</span>
-                    </div>
-                    <div class="nt-a11y-meter" role="group" aria-label="Niveaux de zoom">
-                        @foreach ([90, 100, 125, 150] as $z)
-                            <button type="button" class="nt-a11y-meter__seg" data-a11y-zoom-btn="{{ $z }}" aria-pressed="{{ $z === 100 ? 'true' : 'false' }}">{{ $z }}%</button>
-                        @endforeach
                     </div>
                 </div>
 
@@ -308,51 +241,18 @@
                             Curseur visible
                         </span>
                     </label>
-                    <label class="nt-a11y-switch nt-a11y-switch--purple">
-                        <input type="checkbox" data-a11y="strongFocus" checked>
-                        <span class="nt-a11y-switch__ui" aria-hidden="true">
-                            <span class="nt-a11y-switch__track"><span class="nt-a11y-switch__knob"></span></span>
-                        </span>
-                        <span class="nt-a11y-switch__label">
-                            <span class="nt-a11y-switch__icon"><i class="bi bi-bounding-box"></i></span>
-                            Focus renforcé
-                        </span>
-                    </label>
                 </div>
             </div>
         </div>
 
-        {{-- D. Navigation et lecture --}}
+        {{-- D. Lecture vocale --}}
         <div class="nt-a11y-cat nt-a11y-cat--nav">
             <button type="button" class="nt-a11y-cat__btn" aria-expanded="false" aria-controls="nt-a11y-cat-nav">
                 <span class="nt-a11y-cat__icon" aria-hidden="true"><i class="bi bi-compass"></i></span>
-                <span class="nt-a11y-cat__label">Navigation &amp; lecture</span>
+                <span class="nt-a11y-cat__label">Lecture vocale</span>
                 <i class="bi bi-chevron-down nt-a11y-cat__chevron" aria-hidden="true"></i>
             </button>
             <div id="nt-a11y-cat-nav" class="nt-a11y-cat__body" hidden>
-                <div class="nt-a11y-toggles">
-                    <label class="nt-a11y-switch nt-a11y-switch--green">
-                        <input type="checkbox" data-a11y="simplifiedReading">
-                        <span class="nt-a11y-switch__ui" aria-hidden="true">
-                            <span class="nt-a11y-switch__track"><span class="nt-a11y-switch__knob"></span></span>
-                        </span>
-                        <span class="nt-a11y-switch__label">
-                            <span class="nt-a11y-switch__icon"><i class="bi bi-text-paragraph"></i></span>
-                            Lecture simplifiée
-                        </span>
-                    </label>
-                    <label class="nt-a11y-switch nt-a11y-switch--teal">
-                        <input type="checkbox" data-a11y="shortcuts" checked>
-                        <span class="nt-a11y-switch__ui" aria-hidden="true">
-                            <span class="nt-a11y-switch__track"><span class="nt-a11y-switch__knob"></span></span>
-                        </span>
-                        <span class="nt-a11y-switch__label">
-                            <span class="nt-a11y-switch__icon"><i class="bi bi-keyboard"></i></span>
-                            Raccourcis Alt+A / 1 / 2 / 3
-                        </span>
-                    </label>
-                </div>
-
                 <div class="nt-a11y-ctrl">
                     <span class="nt-a11y-ctrl__label"><i class="bi bi-volume-up nt-a11y-ctrl__glyph" aria-hidden="true"></i> Lecture vocale</span>
                     <div class="nt-a11y-speech" data-state="idle">
@@ -361,12 +261,6 @@
                         <button type="button" class="nt-a11y-chip" data-speech="stop"><i class="bi bi-stop-fill" aria-hidden="true"></i> Stop</button>
                     </div>
                     <p id="nt-a11y-speech-status" class="nt-a11y-ctrl__help" role="status">Lecture arrêtée.</p>
-                </div>
-
-                <div class="nt-a11y-ctrl__row">
-                    <a class="nt-a11y-chip" href="#contenu-principal"><i class="bi bi-file-text" aria-hidden="true"></i> Contenu</a>
-                    <a class="nt-a11y-chip" href="#navigation-principale"><i class="bi bi-list" aria-hidden="true"></i> Menu</a>
-                    <a class="nt-a11y-chip" href="#table-search"><i class="bi bi-search" aria-hidden="true"></i> Recherche</a>
                 </div>
             </div>
         </div>
