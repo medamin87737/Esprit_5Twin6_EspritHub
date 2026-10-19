@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Support\Periode;
 use App\Support\TableauDeBord;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class LotModule3Test extends TestCase
@@ -26,6 +27,10 @@ class LotModule3Test extends TestCase
         parent::setUp();
 
         $this->withoutVite();
+
+        Http::fake([
+            '*openrouter.ai*' => Http::response([], 500),
+        ]);
 
         $this->admin = User::factory()->create([
             'role' => 'admin',
@@ -638,6 +643,126 @@ class LotModule3Test extends TestCase
 
         $conseilPerime = $iaService->genererConseilAntiGaspillage($lotPerime);
         $this->assertSame('perime', $conseilPerime['urgence']);
+    }
+
+    public function test_pro_assistant_ai_etape_analyse_phrase_pour_professionnel(): void
+    {
+        $user = User::factory()->professionnel('producteur')->create();
+        $typeActeur = TypeActeur::factory()->create(['libelle' => 'Producteur', 'role_chaine' => 'producteur']);
+        Acteur::factory()->create([
+            'user_id' => $user->id,
+            'type_acteur_id' => $typeActeur->id,
+        ]);
+
+        $response = $this->actingAs($user)->postJson(route('pro.etapes.assistant-ai'), [
+            'prompt' => 'Récolté à Béja le 15/10/2026 à 08h00 par camion frigorifique',
+        ]);
+
+        $response->assertOk();
+        $response->assertJson([
+            'success' => true,
+            'data' => [
+                'type_etape' => 'production',
+                'lieu' => 'Béja',
+                'mode_transport' => 'camion_frigorifique',
+            ],
+        ]);
+        $this->assertStringContainsString('T08:00', $response->json('data.date_heure'));
+    }
+
+    public function test_pro_assistant_ai_lot_analyse_phrase_pour_nouveau_lot(): void
+    {
+        $user = User::factory()->professionnel('producteur')->create();
+        $typeActeur = TypeActeur::factory()->create(['libelle' => 'Producteur', 'role_chaine' => 'producteur']);
+        Acteur::factory()->create([
+            'user_id' => $user->id,
+            'type_acteur_id' => $typeActeur->id,
+        ]);
+
+        $produit = Produit::factory()->create([
+            'proprietaire_id' => $user->id,
+            'nom' => 'Huile d\'olive Extra',
+        ]);
+
+        $response = $this->actingAs($user)->postJson(route('pro.lots.assistant-ai'), [
+            'prompt' => '500 bouteilles de Huile d\'olive Extra produites le 15/10/2026 expirant le 25/10/2027',
+        ]);
+
+        $response->assertOk();
+        $response->assertJson([
+            'success' => true,
+            'data' => [
+                'produit_id' => $produit->id,
+                'quantite' => 500,
+                'date_production' => '2026-10-15',
+                'date_peremption' => '2027-10-25',
+            ],
+        ]);
+    }
+
+    public function test_export_csv_filtre_strictement_par_peremption(): void
+    {
+        $categorie = Categorie::factory()->create(['nom' => 'Frais', 'type' => 'autres']);
+        $produit = Produit::factory()->create(['categorie_id' => $categorie->id]);
+
+        // Lot périmé
+        $lotPerime = Lot::factory()->create([
+            'produit_id' => $produit->id,
+            'numero_lot' => 'LOT-PERIME-999',
+            'date_production' => today()->subDays(60),
+            'date_peremption' => today()->subDays(5),
+        ]);
+
+        // Lot valide
+        $lotValide = Lot::factory()->create([
+            'produit_id' => $produit->id,
+            'numero_lot' => 'LOT-VALIDE-111',
+            'date_production' => today()->subDays(5),
+            'date_peremption' => today()->addDays(60),
+        ]);
+
+        // Export avec filtre peremption = expire
+        $response = $this->actingAs($this->admin)->get(route('admin.lots.export', ['peremption' => 'expire']));
+        $response->assertOk();
+
+        ob_start();
+        $response->sendContent();
+        $contenu = ob_get_clean();
+
+        $this->assertStringContainsString('LOT-PERIME-999', $contenu);
+        $this->assertStringNotContainsString('LOT-VALIDE-111', $contenu);
+    }
+
+    public function test_pro_peut_creer_etape_avec_coordonnees_gps(): void
+    {
+        $user = User::factory()->professionnel('producteur')->create();
+        $typeActeur = TypeActeur::factory()->create(['libelle' => 'Producteur', 'role_chaine' => 'producteur']);
+        $acteur = Acteur::factory()->create([
+            'user_id' => $user->id,
+            'type_acteur_id' => $typeActeur->id,
+        ]);
+
+        $lot = Lot::factory()->create([
+            'acteur_courant_id' => $acteur->id,
+            'date_production' => today()->subDays(2),
+        ]);
+
+        $response = $this->actingAs($user)->post(route('pro.etapes.store', $lot), [
+            'type_etape' => 'production',
+            'date_heure' => today()->subDays(1)->setTime(10, 0)->format('Y-m-d\TH:i'),
+            'lieu' => 'Ferme de Test Zaghouan',
+            'latitude' => 36.4029,
+            'longitude' => 10.1429,
+            'mode_transport' => 'aucun',
+            'remarques' => 'Étape créée via map picker pro',
+        ]);
+
+        $response->assertRedirect(route('pro.lots.show', $lot));
+        $etape = Etape::where('lot_id', $lot->id)->first();
+        $this->assertNotNull($etape);
+        $this->assertSame('Ferme de Test Zaghouan', $etape->lieu);
+        $this->assertEquals(36.4029, $etape->latitude);
+        $this->assertEquals(10.1429, $etape->longitude);
     }
 }
 

@@ -765,4 +765,91 @@ class TracabiliteIaService
             'remarques' => '',
         ];
     }
+
+    /**
+     * Analyse un texte en langage naturel pour préremplir un formulaire de création de lot.
+     *
+     * @return array{
+     *     produit_id: int|null,
+     *     quantite: int|null,
+     *     date_production: string,
+     *     date_peremption: string|null
+     * }
+     */
+    public function analyserTexteLot(string $texte, $produits = null): array
+    {
+        $texte = trim($texte);
+        $texteLower = mb_strtolower($texte);
+
+        // 1. Détection de la quantité
+        $quantite = 100;
+        if (preg_match('/(\d{1,7})\s*(?:unit[eé]s?|kg|litres?|l\b|bouteilles?|pots?|pi[eè]ces?|paquets?|bo[iî]tes?|sacs?)?/ui', $texteLower, $mQte)) {
+            $quantite = (int) $mQte[1];
+        }
+
+        // 2. Détection Produit si fourni
+        $produitId = null;
+        if ($produits && count($produits) > 0) {
+            foreach ($produits as $prod) {
+                $nomProd = mb_strtolower($prod->nom ?? '');
+                if (! empty($nomProd) && str_contains($texteLower, $nomProd)) {
+                    $produitId = $prod->id;
+                    break;
+                }
+            }
+            if (! $produitId) {
+                foreach ($produits as $prod) {
+                    $mots = preg_split('/\s+/', mb_strtolower($prod->nom ?? ''));
+                    foreach ($mots as $mot) {
+                        if (mb_strlen($mot) >= 4 && str_contains($texteLower, $mot)) {
+                            $produitId = $prod->id;
+                            break 2;
+                        }
+                    }
+                }
+            }
+        }
+
+        // 3. Détection Date Production
+        $dateProd = today();
+        if (preg_match('/\bhier\b/u', $texteLower)) {
+            $dateProd = today()->subDay();
+        } elseif (preg_match('/avant[\s-]hier/u', $texteLower)) {
+            $dateProd = today()->subDays(2);
+        } elseif (preg_match('/(?:produit|fabriqu[eé]|r[eé]colt[eé]|le)\s+(\d{1,2})[\/\.-](\d{1,2})[\/\.-](\d{2,4})/ui', $texte, $mDateP)) {
+            try {
+                $annee = strlen($mDateP[3]) === 2 ? '20' . $mDateP[3] : $mDateP[3];
+                $dateProd = Carbon::createFromDate((int) $annee, (int) $mDateP[2], (int) $mDateP[1]);
+            } catch (Throwable) {}
+        }
+
+        // 4. Détection Date Péremption
+        $datePerempt = null;
+        if (preg_match('/(?:expir|p[eé]rim|dlc|ddm|valable|jusqu)\D{0,15}(\d{1,2})[\/\.-](\d{1,2})[\/\.-](\d{2,4})/ui', $texte, $mDateE)) {
+            try {
+                $annee = strlen($mDateE[3]) === 2 ? '20' . $mDateE[3] : $mDateE[3];
+                $datePerempt = Carbon::createFromDate((int) $annee, (int) $mDateE[2], (int) $mDateE[1])->format('Y-m-d');
+            } catch (Throwable) {}
+        } elseif (preg_match('/(?:dans|sous)\s+(\d{1,3})\s+(mois|jours?|ans?|semaines?)/ui', $texteLower, $mDelai)) {
+            $nb = (int) $mDelai[1];
+            $unite = $mDelai[2];
+            $d = $dateProd->copy();
+            if (str_starts_with($unite, 'jour')) $d->addDays($nb);
+            elseif (str_starts_with($unite, 'semaine')) $d->addWeeks($nb);
+            elseif (str_starts_with($unite, 'mois')) $d->addMonths($nb);
+            elseif (str_starts_with($unite, 'an')) $d->addYears($nb);
+            $datePerempt = $d->format('Y-m-d');
+        }
+
+        if (! $datePerempt) {
+            $datePerempt = $dateProd->copy()->addMonths(6)->format('Y-m-d');
+        }
+
+        return [
+            'produit_id' => $produitId,
+            'quantite' => $quantite,
+            'date_production' => $dateProd->format('Y-m-d'),
+            'date_peremption' => $datePerempt,
+        ];
+    }
 }

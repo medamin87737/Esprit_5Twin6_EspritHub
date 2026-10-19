@@ -55,11 +55,13 @@ class Module1Seeder extends Seeder
         ];
 
         foreach ($catalogue as [$nom, $type, $description, $produits]) {
-            $categorie = Categorie::factory()->create([
-                'nom' => $nom,
-                'type' => $type,
-                'description' => $description,
-            ]);
+          $categorie = Categorie::firstOrCreate(
+    ['nom' => $nom],
+    [
+        'type' => $type,
+        'description' => $description,
+    ]
+);
 
             foreach ($produits as [$produit, $ville, $composition]) {
                 Produit::factory()->for($categorie)->create([
