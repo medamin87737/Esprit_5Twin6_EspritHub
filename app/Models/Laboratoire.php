@@ -12,7 +12,20 @@ class Laboratoire extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nom', 'ville', 'pays', 'accreditation', 'email', 'telephone'];
+    protected $fillable = ['nom', 'ville', 'pays', 'latitude', 'longitude', 'accreditation', 'email', 'telephone'];
+
+    protected function casts(): array
+    {
+        return [
+            'latitude' => 'float',
+            'longitude' => 'float',
+        ];
+    }
+
+    public function hasCoordinates(): bool
+    {
+        return $this->latitude !== null && $this->longitude !== null;
+    }
 
     /**
      * Recherche libre sur tous les champs utiles du laboratoire.

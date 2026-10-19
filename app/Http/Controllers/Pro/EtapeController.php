@@ -26,29 +26,6 @@ class EtapeController extends Controller
         ]);
     }
 
-    /**
-     * Analyse un texte en langage naturel pour préremplir les champs d'étape dans l'espace Pro.
-     */
-    public function assistantAi(Request $request, \App\Services\TracabiliteIaService $iaService): \Illuminate\Http\JsonResponse
-    {
-        $request->validate([
-            'prompt' => ['required', 'string', 'max:500'],
-        ]);
-
-        $data = $iaService->analyserTexteEtape($request->input('prompt'));
-
-        // Adapter selon les types autorisés pour le rôle pro connecté
-        $typesAutorises = array_keys($this->typesAutorises($request));
-        if (! in_array($data['type_etape'], $typesAutorises)) {
-            $data['type_etape'] = $typesAutorises[0] ?? $data['type_etape'];
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => $data,
-        ]);
-    }
-
     public function store(Request $request, Lot $lot): RedirectResponse
     {
         $data = $this->valider($request, $lot);
@@ -111,8 +88,6 @@ class EtapeController extends Controller
             'type_etape' => ['required', Rule::in(array_keys($this->typesAutorises($request)))],
             'date_heure' => ['required', 'date', 'after_or_equal:'.$minimum, 'before_or_equal:now'],
             'lieu' => ['required', 'string', 'max:150'],
-            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
-            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'mode_transport' => ['required', Rule::in(array_keys(config('nutritrace.options.modes_transport')))],
             'remarques' => ['nullable', 'string', 'max:1000'],
         ], [

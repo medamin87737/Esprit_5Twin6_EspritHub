@@ -1,6 +1,7 @@
 <x-admin.help-card parent="Laboratoire" child="Analyses" :rules="[
     'Nom' => 'obligatoire, unique, 120 caractères max.',
     'Ville et pays' => 'obligatoires.',
+    'Position' => 'facultative — placez le marqueur sur la carte (pas de saisie latitude / longitude).',
     'Accréditation' => 'obligatoire (ex. TUNAC ISO/IEC 17025 n° 1-0042).',
     'E-mail' => 'obligatoire, valide et unique.',
     'Téléphone' => 'chiffres, espaces, points, tirets (8 caractères min.).',

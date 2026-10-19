@@ -44,24 +44,6 @@ class LotController extends Controller
         ]);
     }
 
-    /**
-     * Assistant IA pour préremplir le formulaire de création de lot.
-     */
-    public function assistantAi(Request $request, \App\Services\TracabiliteIaService $iaService): \Illuminate\Http\JsonResponse
-    {
-        $request->validate([
-            'prompt' => ['required', 'string', 'max:500'],
-        ]);
-
-        $produits = $request->user()->produits()->get(['id', 'nom']);
-        $data = $iaService->analyserTexteLot($request->input('prompt'), $produits);
-
-        return response()->json([
-            'success' => true,
-            'data' => $data,
-        ]);
-    }
-
     public function store(Request $request): RedirectResponse
     {
         $user = $request->user();

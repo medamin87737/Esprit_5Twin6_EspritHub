@@ -8,7 +8,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
-use Illuminate\Session\TokenMismatchException;
+use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -38,14 +39,32 @@ return Application::configure(basePath: dirname(__DIR__))
         });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->render(function (TokenMismatchException $e, Request $request) {
+        // Anti « 419 | PAGE EXPIRED » sur TOUTES les routes.
+        // Laravel convertit TokenMismatchException en HttpException(419) AVANT
+        // les callbacks : il faut donc intercepter HttpExceptionInterface + code 419
+        // (un callback typé TokenMismatchException ne se déclenche jamais).
+        $exceptions->render(function (HttpExceptionInterface $e, Request $request) {
+            if ($e->getStatusCode() !== 419) {
+                return null;
+            }
+
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Session expirée. Rechargez la page.'], 419);
+            }
+
+            // Déconnexion : même avec un jeton expiré, on déconnecte proprement
+            // au lieu d'afficher la page 419.
+            if ($request->routeIs('logout')) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return redirect()->route('home');
             }
 
             return redirect()
                 ->back()
                 ->withInput($request->except(['_token', 'password', 'password_confirmation', 'current_password', 'delete_password']))
-                ->with('error', 'Votre session a expiré. Rechargez la page puis réessayez.');
+                ->with('error', 'Votre session a expiré. La page a été rechargée : vous pouvez réessayer.');
         });
     })->create();

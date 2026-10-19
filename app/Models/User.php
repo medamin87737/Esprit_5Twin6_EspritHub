@@ -159,7 +159,31 @@ HTML;
 
     public function hasTwoFactorEnabled(): bool
     {
-        return filled($this->two_factor_secret) && $this->two_factor_confirmed_at !== null;
+        // Secret illisible (ex. APP_KEY régénérée après l'enrôlement) = 2FA
+        // inutilisable : on ne bloque pas l'utilisateur avec des codes
+        // toujours refusés, il pourra réactiver la 2FA depuis ses réglages.
+        return filled($this->two_factor_secret)
+            && $this->two_factor_confirmed_at !== null
+            && $this->twoFactorSecret() !== null;
+    }
+
+    /**
+     * Supprime une configuration 2FA devenue illisible (secret indéchiffrable).
+     * Retourne true si une réparation a été faite.
+     */
+    public function reparerDeuxFacteursSiIllisible(): bool
+    {
+        if (filled($this->two_factor_secret) && $this->twoFactorSecret() === null) {
+            $this->forceFill([
+                'two_factor_secret' => null,
+                'two_factor_recovery_codes' => null,
+                'two_factor_confirmed_at' => null,
+            ])->save();
+
+            return true;
+        }
+
+        return false;
     }
 
     public function twoFactorSecret(): ?string

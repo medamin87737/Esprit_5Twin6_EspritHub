@@ -48,6 +48,10 @@ class LoginController extends Controller
             ]);
         }
 
+        // 2FA devenue illisible (APP_KEY régénérée) : on la réinitialise
+        // au lieu de bloquer l'utilisateur avec des codes toujours refusés.
+        $user->reparerDeuxFacteursSiIllisible();
+
         if ($user->hasTwoFactorEnabled()) {
             Auth::logout();
             $request->session()->put('login.id', $user->id);

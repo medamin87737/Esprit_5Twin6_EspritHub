@@ -6,6 +6,10 @@
     <x-admin.page-header title="Laboratoires d'analyse" module="Module 2 · Analyses qualité"
                          subtitle="Les laboratoires accrédités qui contrôlent la qualité sanitaire des lots.">
         <x-slot:actions>
+            {{-- Télécharge en CSV exactement les laboratoires filtrés (q, ville) --}}
+            <a href="{{ route('admin.laboratoires.export', request()->query()) }}" class="btn btn-light">
+                <i class="bi bi-download mr-1" aria-hidden="true"></i> Export CSV
+            </a>
             <a href="{{ route('admin.laboratoires.create') }}" class="btn btn-primary">
                 <i class="bi bi-plus-lg mr-1" aria-hidden="true"></i> Nouveau laboratoire
             </a>

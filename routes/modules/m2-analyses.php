@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\AnalyseController;
 use App\Http\Controllers\Admin\AnalyseExportController;
 use App\Http\Controllers\Admin\AnalyseIaController;
 use App\Http\Controllers\Admin\LaboratoireController;
+use App\Http\Controllers\Admin\LaboratoireExportController;
 use App\Http\Controllers\Front\RapportAnalyseController;
 use Illuminate\Support\Facades\Route;
 
@@ -18,6 +19,8 @@ Route::get('/analyses/{analyse}/rapport', RapportAnalyseController::class)
     ->name('front.analyses.rapport');
 
 Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    // Export AVANT le resource (sinon « export » serait pris pour un id de laboratoire)
+    Route::get('laboratoires/export', LaboratoireExportController::class)->name('laboratoires.export');
     Route::resource('laboratoires', LaboratoireController::class);
 
     Route::get('analyses/export', AnalyseExportController::class)->name('analyses.export');

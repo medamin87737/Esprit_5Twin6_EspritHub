@@ -29,19 +29,21 @@
             <x-front.score-badge :score="$score" taille="sm" class="product-card-score" />
         @endif
 
-        {{-- Accès espace Qualité (assistant uniquement sur /mon-espace/qualite) --}}
+        {{-- Qualité : ouvre un popup (modale) sans quitter le catalogue --}}
         @auth
             @can('espace-consommateur')
-                <a
-                    href="{{ route('consommateur.qualite.index') }}"
+                <button
+                    type="button"
                     class="nt-qualite-avatar"
-                    title="Espace Qualité NutriTrace"
-                    aria-label="Ouvrir l'espace Qualité"
+                    data-nt-qualite-popup
+                    data-url="{{ route('consommateur.qualite.produit', $produit) }}"
+                    title="Voir la qualité de ce produit"
+                    aria-label="Voir la qualité de {{ $produit->nom }} dans un popup"
                 >
                     <span class="nt-qualite-avatar__pulse" aria-hidden="true"></span>
                     <i class="bi bi-clipboard2-pulse" aria-hidden="true"></i>
                     <span class="nt-qualite-avatar__badge">Qualité</span>
-                </a>
+                </button>
             @endcan
         @endauth
     </div>
@@ -100,3 +102,8 @@
         </a>
     </div>
 </article>
+
+{{-- Modale Qualité : incluse une seule fois par page, même avec 12 cartes --}}
+@once
+    @include('partials.front.qualite-modal')
+@endonce
