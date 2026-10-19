@@ -56,7 +56,7 @@ class PasswordResetController extends Controller
             }
 
             throw ValidationException::withMessages([
-                'email' => 'Impossible d\'envoyer l\'e-mail pour le moment. Vérifiez RESEND_API_KEY et le domaine expéditeur sur resend.com.',
+                'email' => 'Impossible d\'envoyer l\'e-mail. Vérifiez MAIL_USERNAME / MAIL_PASSWORD (Gmail) dans .env, puis php artisan config:clear.',
             ]);
         }
     }

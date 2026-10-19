@@ -23,7 +23,7 @@ class EmailTemplate
     }
 
     /**
-     * URL publique (prévisualisation locale). En envoi Resend, préférer cid:logo.
+     * URL publique (prévisualisation locale). En envoi SMTP, préférer cid:logo.
      */
     public static function logoUrl(): string
     {
@@ -42,7 +42,7 @@ class EmailTemplate
     }
 
     /**
-     * PNG du logo en base64 (pièce jointe inline Resend).
+     * PNG du logo en base64 (pièce jointe inline SMTP).
      */
     public static function logoAttachment(): array
     {

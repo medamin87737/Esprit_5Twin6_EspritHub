@@ -18,11 +18,6 @@ return [
         'key' => env('POSTMARK_API_KEY'),
     ],
 
-    'resend' => [
-        'key' => env('RESEND_API_KEY'),
-        'redirect_to' => env('RESEND_REDIRECT_TO'),
-    ],
-
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
