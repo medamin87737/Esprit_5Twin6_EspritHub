@@ -109,7 +109,7 @@ HTML;
             $this->getEmailForPasswordReset(),
             'Réinitialisation de votre mot de passe NutriTrace',
             $html,
-            [EmailTemplate::logoAttachment()],
+            EmailTemplate::logoAttachments(),
         );
     }
 
@@ -153,7 +153,7 @@ HTML;
             $this->getEmailForVerification(),
             'Vérifiez votre adresse e-mail NutriTrace',
             $html,
-            [EmailTemplate::logoAttachment()],
+            EmailTemplate::logoAttachments(),
         );
     }
 
