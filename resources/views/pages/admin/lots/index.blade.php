@@ -11,7 +11,7 @@
     <x-admin.page-header title="Lots" module="Module 3 · Traçabilité des lots"
                          subtitle="Chaque lot de production, son produit et ses dates clés.">
         <x-slot:actions>
-            <a href="{{ route('admin.lots.export', request()->query()) }}" class="btn btn-outline-success mr-2" title="Exporter la liste filtrée au format CSV / Excel">
+            <a id="btn-export-lots" data-base-url="{{ route('admin.lots.export') }}" href="{{ route('admin.lots.export', request()->query()) }}" class="btn btn-outline-success mr-2" title="Exporter la liste filtrée au format CSV / Excel">
                 <i class="bi bi-file-earmark-spreadsheet mr-1" aria-hidden="true"></i> Exporter CSV / Excel
             </a>
             <a href="{{ route('admin.lots.create') }}" class="btn btn-primary">
@@ -113,4 +113,41 @@
             </x-admin.empty-state>
         </x-slot:empty>
     </x-admin.table-card>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const btnExport = document.getElementById('btn-export-lots');
+                if (!btnExport) return;
+
+                function updateExportHref() {
+                    const form = document.querySelector('[data-nt-live-form]');
+                    const baseUrl = btnExport.dataset.baseUrl || btnExport.href.split('?')[0];
+                    if (form) {
+                        const params = new URLSearchParams(new FormData(form));
+                        params.delete('page');
+                        for (const [key, value] of Array.from(params.entries())) {
+                            if (!value || !value.trim()) params.delete(key);
+                        }
+                        const qs = params.toString();
+                        btnExport.href = qs ? `${baseUrl}?${qs}` : baseUrl;
+                    } else if (window.location.search) {
+                        btnExport.href = baseUrl + window.location.search;
+                    }
+                }
+
+                btnExport.addEventListener('click', updateExportHref);
+                document.addEventListener('change', function (e) {
+                    if (e.target.closest('[data-nt-live-form]')) {
+                        updateExportHref();
+                    }
+                });
+                document.addEventListener('input', function (e) {
+                    if (e.target.closest('[data-nt-live-form]')) {
+                        updateExportHref();
+                    }
+                });
+            });
+        </script>
+    @endpush
 @endsection

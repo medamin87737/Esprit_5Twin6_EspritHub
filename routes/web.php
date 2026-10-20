@@ -329,11 +329,13 @@ Route::middleware(['auth', 'verified', 'can:espace-pro'])->prefix('pro')->name('
         Route::get('/lots', [ProLotController::class, 'index'])->name('lots.index');
         Route::middleware('can:pro-creer-lot')->group(function () {
             Route::get('/lots/create', [ProLotController::class, 'create'])->name('lots.create');
+            Route::post('/lots/assistant-ai', [ProLotController::class, 'assistantAi'])->name('lots.assistant-ai');
             Route::post('/lots', [ProLotController::class, 'store'])->name('lots.store');
         });
         Route::get('/lots/{lot}', [ProLotController::class, 'show'])->name('lots.show')->can('view', 'lot');
         Route::post('/lots/{lot}/transfert', [ProLotController::class, 'transferer'])->name('lots.transfert')->can('transferer', 'lot');
 
+        Route::post('/etapes/assistant-ai', [ProEtapeController::class, 'assistantAi'])->name('etapes.assistant-ai');
         Route::get('/lots/{lot}/etapes/create', [ProEtapeController::class, 'create'])->name('etapes.create')->can('ajouterEtape', 'lot');
         Route::post('/lots/{lot}/etapes', [ProEtapeController::class, 'store'])->name('etapes.store')->can('ajouterEtape', 'lot');
         Route::get('/etapes/{etape}/edit', [ProEtapeController::class, 'edit'])->name('etapes.edit')->can('update', 'etape');
