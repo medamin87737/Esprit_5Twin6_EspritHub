@@ -9,6 +9,12 @@
             <a href="{{ route('front.certifications.index', ['numero' => $certification->numero]) }}" class="btn btn-light" target="_blank" rel="noopener">
                 <i class="bi bi-box-arrow-up-right mr-1" aria-hidden="true"></i> Vue publique
             </a>
+            <a href="{{ route('admin.certifications.pdf', $certification) }}" class="btn btn-light" target="_blank">
+                <i class="bi bi-file-earmark-pdf mr-1" aria-hidden="true"></i> Télécharger PDF
+            </a>
+            <button type="button" class="btn btn-light" onclick="afficherQr()">
+                <i class="bi bi-qr-code mr-1" aria-hidden="true"></i> QR Code
+            </button>
             @if ($certification->statut === 'en_attente')
                 <form method="POST" action="{{ route('admin.certifications.valider', $certification) }}" class="d-inline">
                     @csrf @method('PATCH')
@@ -96,6 +102,21 @@
                             @endif
                         </div>
                     </div>
+                </div>
+            </div>
+
+            {{-- Traduction de la fiche (MyMemory fr/en/ar) --}}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="nt-card-title"><i class="bi bi-translate mr-1" aria-hidden="true"></i> Traduction de la fiche</h2>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <button class="btn btn-sm btn-outline-secondary" onclick="traduire('fr')">🇫🇷 Français</button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="traduire('en')">🇬🇧 English</button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="traduire('ar')">🇹🇳 العربية</button>
+                    </div>
+                    <div id="traduction-resultat" style="display:none"></div>
                 </div>
             </div>
 
@@ -193,6 +214,48 @@
     const csrfToken = '{{ csrf_token() }}';
     const urlVerifier = '{{ route('admin.certifications.ia.verifier', $certification) }}';
     const urlIncoherences = '{{ route('admin.certifications.ia.incoherences', $certification) }}';
+    const urlQr = '{{ route('admin.certifications.qr', $certification) }}';
+    const urlTraduire = '{{ route('admin.certifications.traduire', $certification) }}';
+
+    // ---- Traduction ----
+    const labelsTraduction = {
+        fr: { type_label: 'Type de label', statut: 'Statut', produit: 'Produit', categorie: 'Catégorie', organisme: 'Organisme', pays: 'Pays', accreditation: 'Accréditation', origine: 'Origine' },
+        en: { type_label: 'Label type', statut: 'Status', produit: 'Product', categorie: 'Category', organisme: 'Organisation', pays: 'Country', accreditation: 'Accreditation', origine: 'Origin' },
+        ar: { type_label: 'نوع التسمية', statut: 'الحالة', produit: 'المنتج', categorie: 'الفئة', organisme: 'الهيئة', pays: 'البلد', accreditation: 'الاعتماد', origine: 'المنشأ' },
+    };
+    const nomsLangues = { fr: '🇫🇷 Français', en: '🇬🇧 English', ar: '🇹🇳 العربية' };
+
+    async function traduire(langue) {
+        const el = document.getElementById('traduction-resultat');
+        el.style.display = '';
+        el.innerHTML = '<div class="text-muted small"><span class="spinner-border spinner-border-sm mr-1"></span> Traduction en cours…</div>';
+
+        try {
+            const r = await fetch(urlTraduire, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                body: JSON.stringify({ langue })
+            });
+            const d = await r.json();
+
+            if (d.ok) {
+                const dir = langue === 'ar' ? 'rtl' : 'ltr';
+                const labels = labelsTraduction[langue] || labelsTraduction['fr'];
+                let rows = Object.entries(d.champs)
+                    .filter(([, v]) => v)
+                    .map(([k, v]) => `<div class="nt-role-row"><span class="text-muted">${labels[k] || k}</span><strong>${v}</strong></div>`)
+                    .join('');
+                el.innerHTML = `<div dir="${dir}" class="border rounded p-3 bg-light">
+                    <div class="small font-weight-600 mb-2">${nomsLangues[langue]}</div>
+                    ${rows}
+                </div>`;
+            } else {
+                el.innerHTML = `<div class="alert alert-danger small">${d.message}</div>`;
+            }
+        } catch {
+            el.innerHTML = '<div class="alert alert-danger small">Erreur réseau.</div>';
+        }
+    }
 
     function iaAfficher(html) {
         const el = document.getElementById('ia-resultat');
@@ -248,6 +311,27 @@
             }
         } catch { iaAfficher('<div class="alert alert-danger small">Erreur réseau.</div>'); }
         iaTermine('btn-incoherences');
+    }
+
+    async function afficherQr() {
+        try {
+            const r = await fetch(urlQr, { headers: { 'Accept': 'application/json' } });
+            const d = await r.json();
+            if (d.ok) {
+                const modal = `<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;" onclick="this.remove()">
+                    <div style="background:#fff;border-radius:12px;padding:32px;text-align:center;max-width:300px;" onclick="event.stopPropagation()">
+                        <h5 class="mb-3">QR Code — {{ $certification->numero }}</h5>
+                        <img src="${d.qr_url}" alt="QR Code" style="width:200px;height:200px;border:4px solid #1a3a2a;border-radius:8px;">
+                        <p class="small text-muted mt-3 mb-3">Scannez pour vérifier ce label</p>
+                        <a href="${d.qr_url}" download="qr-{{ $certification->numero }}.png" class="btn btn-sm btn-primary mr-2">
+                            <i class="bi bi-download mr-1"></i> Télécharger
+                        </a>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="this.closest('[style]').remove()">Fermer</button>
+                    </div>
+                </div>`;
+                document.body.insertAdjacentHTML('beforeend', modal);
+            }
+        } catch { alert('Erreur lors de la génération du QR code.'); }
     }
     </script>
     @endpush

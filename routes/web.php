@@ -18,7 +18,9 @@ use App\Http\Controllers\Admin\AnalyseExportController;
 use App\Http\Controllers\Admin\AnalyseIaController as AdminAnalyseIaController;
 use App\Http\Controllers\Admin\CategorieController;
 use App\Http\Controllers\Admin\CertificationController as AdminCertificationController;
+use App\Http\Controllers\Admin\CertificationExportController;
 use App\Http\Controllers\Admin\CertificationIaController;
+use App\Http\Controllers\Admin\CertificationTraductionController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\EmpreinteCarboneController;
 use App\Http\Controllers\Admin\EmpreinteIaController;
@@ -280,6 +282,13 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     Route::resource('certifications', AdminCertificationController::class);
     Route::patch('certifications/{certification}/valider', [AdminCertificationController::class, 'valider'])->name('certifications.valider');
     Route::patch('certifications/{certification}/suspendre', [AdminCertificationController::class, 'suspendre'])->name('certifications.suspendre');
+
+    // Export QR Code + PDF certificat (Module 5)
+    Route::get('certifications/{certification}/pdf', [CertificationExportController::class, 'pdf'])->name('certifications.pdf');
+    Route::get('certifications/{certification}/qr', [CertificationExportController::class, 'qr'])->name('certifications.qr');
+
+    // Traduction de la fiche (fr/en/ar)
+    Route::post('certifications/{certification}/traduire', CertificationTraductionController::class)->name('certifications.traduire');
 
     // IA certifications
     Route::post('certifications/{certification}/ia/upload', [CertificationIaController::class, 'upload'])->name('certifications.ia.upload');
