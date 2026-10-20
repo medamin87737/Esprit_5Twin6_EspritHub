@@ -85,7 +85,10 @@
                     @if ($compte->active)
                         <span class="nt-badge"><i class="fa-solid fa-circle" style="font-size: 0.45rem;" aria-hidden="true"></i> Actif</span>
                     @else
-                        <span class="nt-badge nt-badge-danger"><i class="fa-solid fa-ban" aria-hidden="true"></i> Suspendu</span>
+                        <span class="nt-badge nt-badge-danger"><i class="fa-solid fa-ban" aria-hidden="true"></i> {{ $compte->estEnPauseVolontaire() ? 'En pause' : 'Suspendu' }}</span>
+                        @if ($compte->deactivated_at)
+                            <div class="nt-cell-sub">depuis le {{ $compte->deactivated_at->format('d/m/Y') }}@if ($compte->estEnPauseVolontaire()) (par l'utilisateur)@endif</div>
+                        @endif
                     @endif
                 </td>
                 <td class="text-muted">{{ $compte->created_at?->format('d/m/Y') }}</td>
@@ -97,10 +100,28 @@
                     @endif
                 </td>
                 <td class="text-right">
-                    <x-admin.row-actions
-                        :edit="route('admin.users.edit', $compte)"
-                        :delete="$compte->is(auth()->user()) ? null : route('admin.users.destroy', $compte)"
-                        :confirm="'Supprimer définitivement le compte de ' . $compte->name . ' ?'" />
+                    <div class="d-flex align-items-center justify-content-end" style="gap: 0.25rem;">
+                        @if ($compte->is(auth()->user()))
+                            <span class="nt-badge nt-badge-muted" data-toggle="tooltip" title="Utilisez « Mon profil » pour mettre votre compte en pause">Vous</span>
+                        @else
+                            <form method="POST" action="{{ route('admin.users.toggle-active', $compte) }}" class="d-inline m-0"
+                                  onsubmit="return confirm(@js($compte->active ? 'Désactiver le compte de ' . $compte->name . ' ? Il sera déconnecté et ne pourra plus se connecter.' : 'Réactiver le compte de ' . $compte->name . ' ?'));">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit"
+                                        class="nt-action {{ $compte->active ? '' : 'nt-action-success' }}"
+                                        data-toggle="tooltip"
+                                        title="{{ $compte->active ? 'Désactiver ce compte' : 'Réactiver ce compte' }}">
+                                    <i class="bi {{ $compte->active ? 'bi-pause-circle' : 'bi-play-circle' }}" aria-hidden="true"></i>
+                                    <span class="sr-only">{{ $compte->active ? 'Désactiver' : 'Réactiver' }} {{ $compte->name }}</span>
+                                </button>
+                            </form>
+                        @endif
+                        <x-admin.row-actions
+                            :edit="route('admin.users.edit', $compte)"
+                            :delete="$compte->is(auth()->user()) ? null : route('admin.users.destroy', $compte)"
+                            :confirm="'Supprimer définitivement le compte de ' . $compte->name . ' ?'" />
+                    </div>
                 </td>
             </tr>
         @endforeach

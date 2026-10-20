@@ -93,6 +93,26 @@
                     <button type="submit" class="btn btn-primary"><i class="fa-solid fa-key mr-1" aria-hidden="true"></i> Changer le mot de passe</button>
                 </div>
             </form>
+
+            <form method="POST" action="{{ route('profile.deactivate') }}" novalidate class="card mb-4"
+                  onsubmit="return confirm('Mettre votre compte en pause ? Vous serez déconnecté immédiatement. Vous pourrez le réactiver à votre prochaine connexion.');">
+                @csrf
+                <div class="card-header"><h2 class="nt-card-title"><i class="fa-solid fa-pause-circle text-muted mr-2" aria-hidden="true"></i>Disponibilité du compte</h2></div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">
+                        <span class="nt-badge"><i class="fa-solid fa-circle" style="font-size: 0.45rem;" aria-hidden="true"></i> Compte actif</span>
+                        <span class="ml-2">Mettez votre compte en pause : déconnexion immédiate, accès bloqué, données conservées. Réactivation par vous-même à la prochaine connexion.</span>
+                    </p>
+                    <div class="form-group mb-0">
+                        <label for="deactivate_password_admin">Confirmez avec votre mot de passe</label>
+                        <input id="deactivate_password_admin" name="deactivate_password" type="password" class="form-control @error('deactivate_password', 'deactivation') is-invalid @enderror" autocomplete="current-password" required>
+                        @error('deactivate_password', 'deactivation') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                    </div>
+                </div>
+                <div class="card-footer text-right">
+                    <button type="submit" class="btn btn-outline-warning"><i class="fa-solid fa-pause mr-1" aria-hidden="true"></i> Mettre mon compte en pause</button>
+                </div>
+            </form>
         </div>
     </div>
 @endsection

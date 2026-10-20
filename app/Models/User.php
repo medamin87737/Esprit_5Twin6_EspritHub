@@ -67,6 +67,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
+            'deactivated_at' => 'datetime',
             'two_factor_confirmed_at' => 'datetime',
             'active' => 'boolean',
             'password' => 'hashed',
@@ -354,6 +355,35 @@ HTML;
         $position = array_search($this->role, $roles, true);
 
         return $position === false ? [] : array_slice($roles, $position + 1);
+    }
+
+    /**
+     * Désactive le compte. $par : 'soi-meme' (pause volontaire, réactivable
+     * à la connexion) ou 'admin' (suspension, réactivation par un admin).
+     */
+    public function desactiver(string $par = 'admin'): void
+    {
+        $this->forceFill([
+            'active' => false,
+            'deactivated_at' => now(),
+            'deactivated_by' => $par,
+        ])->save();
+    }
+
+    /** Réactive le compte et efface la trace de désactivation. */
+    public function activer(): void
+    {
+        $this->forceFill([
+            'active' => true,
+            'deactivated_at' => null,
+            'deactivated_by' => null,
+        ])->save();
+    }
+
+    /** Pause volontaire : l'utilisateur peut réactiver seul à la connexion. */
+    public function estEnPauseVolontaire(): bool
+    {
+        return ! $this->active && $this->deactivated_by === 'soi-meme';
     }
 
     public function isLastActiveAdmin(): bool
