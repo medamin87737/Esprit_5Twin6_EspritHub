@@ -36,7 +36,7 @@ class Totp
         return str_pad((string) $valeur, $chiffres, '0', STR_PAD_LEFT);
     }
 
-    public static function verifier(string $secret, string $code, int $fenetre = 1): bool
+    public static function verifier(string $secret, string $code, int $fenetre = 2): bool
     {
         $code = preg_replace('/\s+/', '', $code) ?? '';
 

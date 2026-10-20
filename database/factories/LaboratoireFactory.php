@@ -16,6 +16,8 @@ class LaboratoireFactory extends Factory
             'nom' => 'Laboratoire '.fake()->unique()->lastName(),
             'ville' => fake()->randomElement(['Tunis', 'Sfax', 'Sousse', 'Bizerte', 'Nabeul']),
             'pays' => 'Tunisie',
+            'latitude' => fake()->latitude(33, 37.3),
+            'longitude' => fake()->longitude(8, 11.5),
             'accreditation' => 'TUNAC ISO/IEC 17025 n° 1-'.fake()->numerify('####'),
             'email' => fake()->unique()->safeEmail(),
             'telephone' => '+216 7'.fake()->numerify('# ### ###'),

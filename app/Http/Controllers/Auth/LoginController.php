@@ -43,10 +43,22 @@ class LoginController extends Controller
         if (! $user->active) {
             Auth::logout();
 
+            // Pause volontaire : l'utilisateur a prouvé son identité
+            // (mot de passe correct), on lui propose de se réactiver.
+            if ($user->estEnPauseVolontaire()) {
+                $request->session()->put('reactivation.user_id', $user->id);
+
+                return redirect()->route('account.deactivated');
+            }
+
             throw ValidationException::withMessages([
                 'email' => 'Ce compte est suspendu. Contactez un administrateur NutriTrace.',
             ]);
         }
+
+        // 2FA devenue illisible (APP_KEY régénérée) : on la réinitialise
+        // au lieu de bloquer l'utilisateur avec des codes toujours refusés.
+        $user->reparerDeuxFacteursSiIllisible();
 
         if ($user->hasTwoFactorEnabled()) {
             Auth::logout();
@@ -82,6 +94,62 @@ class LoginController extends Controller
         }
 
         return redirect()->intended($user->espaceParDefaut());
+    }
+
+    /**
+     * Page « compte en pause » : affichée uniquement après une connexion
+     * réussie (mot de passe vérifié) sur un compte en pause volontaire.
+     */
+    public function deactivated(Request $request): View|RedirectResponse
+    {
+        $user = $this->utilisateurEnPause($request);
+
+        if (! $user) {
+            return redirect()->route('login');
+        }
+
+        return view('pages.auth.compte-desactive', ['user' => $user]);
+    }
+
+    /** Réactive le compte en pause puis connecte l'utilisateur. */
+    public function reactivate(Request $request): RedirectResponse
+    {
+        $user = $this->utilisateurEnPause($request);
+
+        if (! $user) {
+            return redirect()->route('login')
+                ->withErrors(['email' => 'Reconnectez-vous pour réactiver votre compte.']);
+        }
+
+        $request->session()->forget('reactivation.user_id');
+        $user->activer();
+        $user->reparerDeuxFacteursSiIllisible();
+
+        if ($user->hasTwoFactorEnabled()) {
+            $request->session()->put('login.id', $user->id);
+            $request->session()->put('login.remember', false);
+
+            return redirect()->route('two-factor.challenge');
+        }
+
+        Auth::login($user);
+        $request->session()->regenerate();
+        $user->forceFill(['last_login_at' => now()])->save();
+
+        return redirect()->intended($user->espaceParDefaut())
+            ->with('status', 'Bon retour ! Votre compte est réactivé.');
+    }
+
+    private function utilisateurEnPause(Request $request): ?\App\Models\User
+    {
+        $id = $request->session()->get('reactivation.user_id');
+        if (! $id) {
+            return null;
+        }
+
+        $user = \App\Models\User::find($id);
+
+        return $user && $user->estEnPauseVolontaire() ? $user : null;
     }
 
     public function destroy(Request $request): RedirectResponse

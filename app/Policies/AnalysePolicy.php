@@ -25,6 +25,8 @@ class AnalysePolicy
 
     public function telechargerRapport(User $user, Analyse $analyse): bool
     {
-        return $analyse->rapport !== null;
+        // Toujours téléchargeable par un compte connecté : fichier joint
+        // s'il existe, sinon rapport qualité généré à la volée.
+        return true;
     }
 }

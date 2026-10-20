@@ -131,14 +131,29 @@
         el.id = 'nt-ia-modal';
         el.innerHTML = `
 <style>
-#nt-ia-modal{position:fixed;inset:0;z-index:1080;display:none;align-items:center;justify-content:center;padding:1rem;background:rgba(32,43,40,.48)}
+#nt-ia-modal{position:fixed;inset:0;z-index:1080;display:none;align-items:center;justify-content:center;padding:1rem;background:rgba(20,35,28,.55);backdrop-filter:blur(3px)}
 #nt-ia-modal.open{display:flex}
-#nt-ia-modal .box{width:min(520px,100%);background:#fff;border-radius:16px;overflow:hidden;border:1px solid #dde6e1;box-shadow:0 18px 48px rgba(32,43,40,.2)}
-#nt-ia-modal .hd{background:#087f5b;color:#fff;padding:1.05rem 1.2rem;position:relative}
-#nt-ia-modal .hd small{display:block;color:#c8f0de;font-weight:700;letter-spacing:.07em;text-transform:uppercase;font-size:.65rem;margin-bottom:.3rem}
-#nt-ia-modal .hd h3{margin:0;font-size:1.12rem;font-weight:700}
+#nt-ia-modal .box{width:min(620px,100%);max-height:88vh;overflow-y:auto;background:#fff;border-radius:20px;border:1px solid #dde6e1;box-shadow:0 28px 70px rgba(6,60,38,.35);animation:ntpop .3s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes ntpop{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+#nt-ia-modal .hd{background:linear-gradient(120deg,#064e35,#0a8f52 70%,#12b76a);color:#fff;padding:1.15rem 1.3rem;position:relative;overflow:hidden}
+#nt-ia-modal .hd::after{content:"";position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.12)}
+#nt-ia-modal .hd small{display:block;color:#ffd97a;font-weight:800;letter-spacing:.09em;text-transform:uppercase;font-size:.65rem;margin-bottom:.3rem}
+#nt-ia-modal .hd h3{margin:0;font-size:1.18rem;font-weight:750;display:flex;align-items:center;gap:.55rem}
+#nt-ia-modal .hd h3::before{content:"✦";display:grid;place-items:center;width:2rem;height:2rem;border-radius:50%;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.4);font-size:.95rem}
 #nt-ia-modal .x{position:absolute;top:.65rem;right:.75rem;border:0;background:transparent;color:#fff;font-size:1.35rem;line-height:1;cursor:pointer}
 #nt-ia-modal .bd{padding:1.2rem 1.25rem;min-height:5.5rem;line-height:1.7;color:#202b28;font-size:.95rem;white-space:pre-wrap}
+#nt-ia-modal .nt-resume-sec{border-radius:.9rem;padding:.8rem .95rem;margin-bottom:.65rem;border:1px solid #e2ece4;border-left:5px solid #087f5b;background:#f4faf6;white-space:normal;animation:ntsec .35s ease}
+#nt-ia-modal .nt-resume-sec h4{margin:0 0 .3rem;font-size:.86rem;font-weight:800;letter-spacing:.02em;text-transform:uppercase}
+#nt-ia-modal .nt-resume-sec p{margin:0;font-size:.93rem;line-height:1.6}
+#nt-ia-modal .nt-resume-sec--verdict{border-left-color:#087f5b;background:linear-gradient(140deg,#eafaf0,#f7fdf9)}
+#nt-ia-modal .nt-resume-sec--verdict h4{color:#0b5d33}
+#nt-ia-modal .nt-resume-sec--confirmes{border-left-color:#2f9e6e;background:#f2faf5}
+#nt-ia-modal .nt-resume-sec--confirmes h4{color:#12714a}
+#nt-ia-modal .nt-resume-sec--vigilance{border-left-color:#e0a800;background:#fff9e6}
+#nt-ia-modal .nt-resume-sec--vigilance h4{color:#8a5a00}
+#nt-ia-modal .nt-resume-sec--recommandation{border-left-color:#3b6fe0;background:#eef4ff}
+#nt-ia-modal .nt-resume-sec--recommandation h4{color:#274b9f}
+@keyframes ntsec{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 #nt-ia-modal .ft{padding:0 1.25rem 1.15rem;display:flex;justify-content:flex-end}
 #nt-ia-modal .ft button{border:0;border-radius:.7rem;background:#087f5b;color:#fff;padding:.55rem 1rem;font-weight:600;cursor:pointer}
 #nt-ia-modal .cur{display:inline-block;width:.45ch;height:1em;background:#087f5b;margin-left:1px;vertical-align:-2px;animation:ntb .7s step-end infinite}
@@ -174,14 +189,79 @@
         });
     }
 
+    const RESUME_SECTIONS = [
+        { match: /^verdict/i, cls: 'verdict', icon: '⚖' },
+        { match: /^points confirm/i, cls: 'confirmes', icon: '✓' },
+        { match: /^points de vigilance/i, cls: 'vigilance', icon: '!' },
+        { match: /^recommandation/i, cls: 'recommandation', icon: '➜' },
+    ];
+
+    function sectionsResume(text) {
+        const lignes = String(text || '').split(/\n+/).map((l) => l.trim()).filter(Boolean);
+        const sections = [];
+        let courante = null;
+
+        lignes.forEach((ligne) => {
+            const trouvee = RESUME_SECTIONS.find((s) => s.match.test(ligne));
+            if (trouvee) {
+                courante = {
+                    cls: trouvee.cls,
+                    icon: trouvee.icon,
+                    titre: ligne.replace(/:.*$/, ''),
+                    texte: ligne.replace(/^[^:]+:\s*/, ''),
+                };
+                sections.push(courante);
+            } else if (courante) {
+                courante.texte += (courante.texte ? ' ' : '') + ligne;
+            } else {
+                courante = { cls: 'verdict', icon: '⚖', titre: 'Synthèse', texte: ligne };
+                sections.push(courante);
+            }
+        });
+
+        return sections;
+    }
+
+    function taperTexte(node, texte, vitesse) {
+        return new Promise((resolve) => {
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const plein = String(texte || '');
+            if (reduce) {
+                node.innerHTML = format(plein);
+                resolve();
+                return;
+            }
+            let i = 0;
+            const tick = () => {
+                i += 2;
+                node.innerHTML = format(plein.slice(0, i)) + (i < plein.length ? '<span class="cur">|</span>' : '');
+                if (i < plein.length) setTimeout(tick, vitesse);
+                else resolve();
+            };
+            tick();
+        });
+    }
+
     async function showResume(text, titre) {
         const m = modal();
         const title = m.querySelector('[data-t]');
         const body = m.querySelector('[data-b]');
         title.textContent = titre || 'Synthèse qualité';
-        body.innerHTML = '<span class="cur">|</span>';
         m.classList.add('open');
-        await typewrite(body, text || 'Synthèse indisponible.', 14);
+
+        const sections = sectionsResume(text || 'Synthèse indisponible.');
+
+        // Écriture lettre par lettre, section colorée après section colorée.
+        body.innerHTML = sections.map((s) => `
+            <div class="nt-resume-sec nt-resume-sec--${s.cls}">
+                <h4>${s.icon} ${escapeHtml(s.titre)}</h4>
+                <p data-sec-texte></p>
+            </div>`).join('');
+
+        const zones = [...body.querySelectorAll('[data-sec-texte]')];
+        for (let i = 0; i < sections.length; i++) {
+            await taperTexte(zones[i], sections[i].texte, 13);
+        }
     }
 
     window.ntIaShowResume = showResume;

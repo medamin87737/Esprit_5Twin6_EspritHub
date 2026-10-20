@@ -59,10 +59,46 @@ class UserController extends Controller
             unset($data['password']);
         }
 
+        $etaitActif = (bool) $user->active;
         $user->update($data);
+
+        // Le statut modifié via le formulaire garde la même traçabilité
+        // que le bouton d'activation / désactivation.
+        if ($etaitActif && ! $user->active) {
+            $user->forceFill(['deactivated_at' => now(), 'deactivated_by' => 'admin'])->save();
+        } elseif (! $etaitActif && $user->active) {
+            $user->forceFill(['deactivated_at' => null, 'deactivated_by' => null])->save();
+        }
 
         return redirect()->route('admin.users.index')
             ->with('success', "Le compte de {$user->name} a été mis à jour.");
+    }
+
+    /**
+     * Active / désactive un compte (bascule).
+     * Verrous : impossible de se désactiver soi-même ni de désactiver
+     * le dernier administrateur actif. Un compte désactivé est déconnecté
+     * dès sa prochaine requête (middleware EnsureAccountIsActive).
+     */
+    public function toggleActive(Request $request, User $user): RedirectResponse
+    {
+        if ($user->active) {
+            if ($user->is($request->user())) {
+                return back()->with('error', 'Vous ne pouvez pas désactiver votre propre compte depuis cette page. Utilisez « Mon profil » pour mettre votre compte en pause.');
+            }
+
+            if ($user->isLastActiveAdmin()) {
+                return back()->with('error', 'Impossible de désactiver le dernier administrateur actif.');
+            }
+
+            $user->desactiver('admin');
+
+            return back()->with('success', "Le compte de {$user->name} a été désactivé. Il sera déconnecté immédiatement et ne pourra plus se connecter.");
+        }
+
+        $user->activer();
+
+        return back()->with('success', "Le compte de {$user->name} a été réactivé. Il peut à nouveau se connecter.");
     }
 
     public function destroy(Request $request, User $user): RedirectResponse

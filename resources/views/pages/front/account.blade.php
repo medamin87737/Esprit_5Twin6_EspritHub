@@ -137,6 +137,28 @@
                         </div>
                     </form>
 
+                    <form method="POST" action="{{ route('profile.deactivate') }}" class="account-card mb-4" novalidate
+                          onsubmit="return confirm('Mettre votre compte en pause ? Vous serez déconnecté immédiatement. Vous pourrez le réactiver à votre prochaine connexion.');">
+                        @csrf
+                        <h2 class="account-card-title"><i class="bi bi-pause-circle" aria-hidden="true"></i> Disponibilité du compte</h2>
+                        <p class="text-muted small mb-3">
+                            <span class="nt-badge"><i class="fa-solid fa-circle" style="font-size: 0.45rem;" aria-hidden="true"></i> Compte actif</span>
+                            <span class="ms-2">Mettez votre compte en pause si vous ne l'utilisez plus temporairement : vous serez déconnecté, personne ne pourra utiliser votre compte, et vous pourrez le <strong>réactiver vous-même</strong> à votre prochaine connexion. Vos données sont conservées.</span>
+                        </p>
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-7">
+                                <label class="form-label" for="deactivate_password">Confirmez avec votre mot de passe</label>
+                                <input class="form-control @error('deactivate_password', 'deactivation') is-invalid @enderror" id="deactivate_password" name="deactivate_password" type="password" autocomplete="current-password" required>
+                                @error('deactivate_password', 'deactivation') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                            <div class="col-md-5 d-grid">
+                                <button class="btn btn-outline-warning" type="submit">
+                                    <i class="bi bi-pause-circle me-1" aria-hidden="true"></i> Mettre mon compte en pause
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
                     <form method="POST" action="{{ route('profile.destroy') }}" class="account-card account-danger" novalidate
                           onsubmit="return confirm('Supprimer définitivement votre compte NutriTrace ?');">
                         @csrf

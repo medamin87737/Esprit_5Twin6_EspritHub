@@ -24,6 +24,19 @@
                     <div class="nt-role-row"><span class="text-muted">E-mail</span><a href="mailto:{{ $laboratoire->email }}">{{ $laboratoire->email }}</a></div>
                     <div class="nt-role-row"><span class="text-muted">Téléphone</span><strong>{{ $laboratoire->telephone }}</strong></div>
                     <div class="nt-role-row"><span class="text-muted">Ajouté le</span><strong>{{ $laboratoire->created_at?->format('d/m/Y') }}</strong></div>
+                    <div class="nt-role-row">
+                        <span class="text-muted">Position</span>
+                        @if ($laboratoire->hasCoordinates())
+                            <a href="https://www.openstreetmap.org/?mlat={{ $laboratoire->latitude }}&mlon={{ $laboratoire->longitude }}#map=13/{{ $laboratoire->latitude }}/{{ $laboratoire->longitude }}"
+                               target="_blank" rel="noopener">
+                                <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+                                {{ number_format($laboratoire->latitude, 6) }}, {{ number_format($laboratoire->longitude, 6) }}
+                                — voir sur la carte
+                            </a>
+                        @else
+                            <span class="text-muted">Non renseignée</span>
+                        @endif
+                    </div>
                 </div>
             </div>
 

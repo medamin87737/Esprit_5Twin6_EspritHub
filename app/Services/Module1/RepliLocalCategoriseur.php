@@ -26,6 +26,22 @@ class RepliLocalCategoriseur implements CategoriseurInterface
         'autres' => [],
     ];
 
+    /**
+     * Compositions typiques par type de catégorie — utilisées quand
+     * le champ composition est vide.
+     *
+     * @var array<string, string>
+     */
+    private const COMPOSITIONS_TYPES = [
+        'fruits' => 'Fruit frais',
+        'legumes' => 'Légume frais',
+        'laitiers' => 'Lait pasteurisé, ferments lactiques',
+        'viandes' => 'Viande fraîche',
+        'cereales' => 'Farine de blé, eau, sel',
+        'boissons' => 'Eau, extrait naturel',
+        'autres' => 'Ingrédients naturels',
+    ];
+
     /** {@inheritDoc} */
     public function categoriser(
         string $nom,
@@ -79,11 +95,15 @@ class RepliLocalCategoriseur implements CategoriseurInterface
             'categorie_id' => $categorieMatch['id'] ?? null,
             'categorie_nom' => $categorieMatch['nom'] ?? null,
             'type' => $meilleurType,
-            'composition' => null,
-            'description' => null,
+            'composition' => ! empty($composition)
+                ? $composition
+                : (self::COMPOSITIONS_TYPES[$meilleurType] ?? 'Ingrédients naturels'),
+            'description' => ! empty($description)
+                ? $description
+                : $nom.' — produit '.($categorieMatch['nom'] ?? $meilleurType).'.',
             'confiance' => $maxScore > 0 ? min(0.6, $maxScore * 0.1) : 0.1,
             'justification' => 'Suggestion locale par mots-clés (type détecté : '.$meilleurType.').',
-            'avertissement' => 'Suggestion générée localement (IA indisponible). Vérifiez la catégorie proposée.',
+            'avertissement' => 'Suggestion générée localement (IA indisponible). Vérifiez les champs proposés.',
         ];
     }
 }

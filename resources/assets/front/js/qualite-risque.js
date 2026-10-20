@@ -45,24 +45,55 @@ function ensureModal() {
     el.id = 'nt-risk-modal';
     el.innerHTML = `
 <style>
-#nt-risk-modal{position:fixed;inset:0;z-index:1090;display:none;align-items:center;justify-content:center;padding:1rem;background:rgba(32,43,40,.5)}
+#nt-risk-modal{position:fixed;inset:0;z-index:1090;display:none;align-items:center;justify-content:center;padding:1rem;background:rgba(20,35,28,.55);backdrop-filter:blur(3px)}
 #nt-risk-modal.open{display:flex}
-#nt-risk-modal .box{width:min(560px,100%);background:#fff;border-radius:16px;border:1px solid #dde6e1;box-shadow:0 20px 50px rgba(32,43,40,.22);overflow:hidden}
-#nt-risk-modal .hd{background:#087f5b;color:#fff;padding:1.1rem 1.25rem;position:relative}
-#nt-risk-modal .hd small{display:block;color:#c8f0de;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;margin-bottom:.3rem}
-#nt-risk-modal .hd h3{margin:0;font-size:1.15rem;font-weight:700}
-#nt-risk-modal .x{position:absolute;top:.7rem;right:.8rem;border:0;background:transparent;color:#fff;font-size:1.4rem;cursor:pointer;line-height:1}
-#nt-risk-modal .bd{padding:1.25rem;color:#202b28}
-#nt-risk-modal .ft{padding:0 1.25rem 1.2rem;display:flex;justify-content:flex-end;gap:.5rem}
-#nt-risk-modal .btn{border:0;border-radius:.7rem;padding:.6rem 1rem;font-weight:650;cursor:pointer}
-#nt-risk-modal .btn-primary{background:#087f5b;color:#fff}
+#nt-risk-modal .box{width:min(580px,100%);max-height:88vh;overflow-y:auto;background:#fff;border-radius:20px;border:1px solid #dde6e1;box-shadow:0 28px 70px rgba(6,60,38,.35);animation:ntriskpop .3s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes ntriskpop{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+#nt-risk-modal .hd{background:linear-gradient(120deg,#064e35,#0a8f52 70%,#12b76a);color:#fff;padding:1.15rem 1.3rem;position:relative;overflow:hidden}
+#nt-risk-modal .hd::after{content:"";position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.12)}
+#nt-risk-modal .hd small{display:block;color:#ffd97a;font-size:.65rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;margin-bottom:.3rem}
+#nt-risk-modal .hd h3{margin:0;font-size:1.18rem;font-weight:750;display:flex;align-items:center;gap:.55rem}
+#nt-risk-modal .hd h3::before{content:"✦";display:grid;place-items:center;width:2rem;height:2rem;border-radius:50%;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.4);font-size:.95rem}
+#nt-risk-modal .x{position:absolute;top:.7rem;right:.8rem;border:0;background:transparent;color:#fff;font-size:1.4rem;cursor:pointer;line-height:1;z-index:1}
+#nt-risk-modal .bd{padding:1.3rem;color:#202b28}
+#nt-risk-modal .ft{padding:0 1.3rem 1.25rem;display:flex;justify-content:flex-end;gap:.5rem}
+#nt-risk-modal .btn{border:0;border-radius:.7rem;padding:.6rem 1.05rem;font-weight:650;cursor:pointer}
+#nt-risk-modal .btn-primary{background:linear-gradient(120deg,#0a8f52,#087f5b);color:#fff;box-shadow:0 6px 16px rgba(8,127,91,.3)}
 #nt-risk-modal .btn-ghost{background:#fff;color:#202b28;border:1px solid #dde6e1}
+#nt-risk-modal .nt-hero{display:flex;gap:1.1rem;align-items:center;background:linear-gradient(135deg,#f2faf5,#e6f4ec);border:1px solid #d7ecdf;border-radius:16px;padding:1rem 1.1rem;margin-bottom:1rem}
+#nt-risk-modal .nt-ring{position:relative;flex:0 0 auto;width:92px;height:92px}
+#nt-risk-modal .nt-ring svg{transform:rotate(-90deg)}
+#nt-risk-modal .nt-ring .nt-ring-val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#nt-risk-modal .nt-ring .nt-ring-val b{font-size:1.7rem;line-height:1;font-weight:800}
+#nt-risk-modal .nt-ring .nt-ring-val span{font-size:.62rem;font-weight:700;color:#697772;letter-spacing:.05em}
+#nt-risk-modal .nt-hero-meta strong{display:block;font-size:1.12rem;color:#17351f;margin-bottom:.3rem}
+#nt-risk-modal .nt-verdict-card{border-left:5px solid #087f5b;background:#f8fbf9;border:1px solid #e2ece4;border-left:5px solid #087f5b;border-radius:12px;padding:.95rem 1.05rem;margin-top:1rem}
 #nt-risk-modal .q-list{display:grid;gap:.55rem;margin:0 0 1rem}
 #nt-risk-modal .q-item{display:flex;gap:.65rem;align-items:flex-start;padding:.7rem .8rem;border:1px solid #dde6e1;border-radius:.75rem;background:#f8fbf9}
 #nt-risk-modal .q-item input{margin-top:.2rem}
 #nt-risk-modal label.nt-q-label{display:block;font-size:.82rem;font-weight:650;margin-bottom:.35rem}
 #nt-risk-modal textarea,#nt-risk-modal .nt-q-input{width:100%;border:1px solid #dde6e1;border-radius:.7rem;padding:.7rem .85rem;font:inherit}
 #nt-risk-modal .hint{font-size:.78rem;color:#697772;margin:.45rem 0 0}
+#nt-risk-modal .nt-gauge{height:.65rem;border-radius:999px;background:#e8efea;overflow:hidden;margin:.4rem 0 1rem}
+#nt-risk-modal .nt-gauge span{display:block;height:100%;border-radius:999px;transition:width .6s ease}
+#nt-risk-modal .nt-breakdown{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.35rem}
+#nt-risk-modal .nt-chip{font-size:.74rem;font-weight:700;border-radius:999px;padding:.22rem .6rem}
+#nt-risk-modal .nt-chip--qualite{background:#e5f6ec;color:#0b5d33}
+#nt-risk-modal .nt-chip--profil{background:#fdeeda;color:#8a5a00}
+#nt-risk-modal .nt-chip--total{background:#202b28;color:#fff}
+#nt-risk-modal .nt-profils{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.8rem}
+#nt-risk-modal .nt-profil-chip{font-size:.76rem;font-weight:700;border-radius:999px;padding:.25rem .65rem;background:linear-gradient(120deg,#6c4bd8,#9b7bff);color:#fff}
+#nt-risk-modal .nt-aptitude{display:inline-block;margin-top:.3rem;font-size:.78rem;font-weight:700;border-radius:999px;padding:.22rem .6rem}
+#nt-risk-modal .nt-aptitude.is-ok{background:#e5f6ec;color:#0b5d33}
+#nt-risk-modal .nt-aptitude.is-wait{background:#fff3d6;color:#8a5a00}
+#nt-risk-modal .nt-aptitude.is-ko{background:#fdecec;color:#8c1d18}
+#nt-risk-modal .nt-detail-title{font-size:.92rem;font-weight:750;margin:.6rem 0 .5rem;color:#17351f}
+#nt-risk-modal .nt-facteurs{display:grid;gap:.5rem;margin-bottom:1rem}
+#nt-risk-modal .nt-facteur{display:flex;gap:.65rem;align-items:flex-start;background:#f8fbf9;border:1px solid #e2ece4;border-radius:.8rem;padding:.6rem .7rem}
+#nt-risk-modal .nt-facteur-impact{flex:0 0 auto;color:#fff;font-size:.72rem;font-weight:800;border-radius:.55rem;padding:.28rem .45rem;margin-top:.1rem}
+#nt-risk-modal .nt-facteur strong{font-size:.88rem;color:#202b28}
+#nt-risk-modal .nt-facteur small{color:#697772}
+#nt-risk-modal .nt-facteur p{margin:.15rem 0 0;font-size:.82rem;color:#4c5a50;line-height:1.5}
 #nt-risk-modal .score-row{display:flex;gap:1rem;align-items:center;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid #dde6e1}
 #nt-risk-modal .score-n{font-size:2.4rem;font-weight:800;line-height:1;color:#087f5b}
 #nt-risk-modal .score-n.is-moyen{color:#b86e13}
@@ -117,16 +148,58 @@ function verdictText(data) {
     const produit = data.produit || 'ce produit';
     let head = '';
     if (aptitude === 'adapte') {
-        head = `Verdict : « ${produit} » peut convenir à votre profil, sous réserve de l'étiquette nutritionnelle et d'un avis médical.`;
+        head = `Verdict : « ${produit} » peut convenir à votre profil. Les facteurs détectés dans sa composition restent favorables.`;
     } else if (aptitude === 'prudence') {
-        head = `Verdict : « ${produit} » demande de la prudence pour votre profil. Une consommation modérée et un avis professionnel sont recommandés.`;
+        head = `Verdict : « ${produit} » demande de la prudence pour votre profil : certains facteurs de sa composition font monter le score. Consommez-le en portion maîtrisée, pas quotidiennement.`;
     } else if (aptitude === 'deconseille') {
-        head = `Verdict : « ${produit} » n'est pas recommandé pour votre profil dans l'état actuel des informations.`;
+        head = `Verdict : « ${produit} » est peu recommandé pour votre profil dans l'état actuel des informations. Mieux vaut choisir une alternative plus adaptée.`;
     } else {
         head = `Verdict qualité : ${data.libelle || 'évaluation'} (${data.score ?? '—'}/100) pour « ${produit} ».`;
     }
-    const conseil = (data.conseil_sante || '').trim();
-    return conseil ? `${head}\n\n${conseil}` : `${head}\n\nCeci n'est pas un avis médical.`;
+
+    let texte = head;
+    if (data.justification) texte += `\n\n${data.justification}`;
+
+    const conseils = Array.isArray(data.conseils) && data.conseils.length
+        ? data.conseils
+        : (data.conseil_sante ? [data.conseil_sante] : []);
+    if (conseils.length) {
+        texte += '\n\n**Conseils personnalisés :**\n' + conseils.map((c) => `• ${c}`).join('\n');
+    }
+
+    return texte;
+}
+
+function couleurImpact(impact) {
+    if (impact >= 14) return '#c83d45';
+    if (impact > 0) return '#b86e13';
+    return '#087f5b';
+}
+
+function detailRisqueHtml(data) {
+    let html = '';
+
+    const profils = Array.isArray(data.profils_detectes) ? data.profils_detectes : [];
+    if (profils.length) {
+        html += '<div class="nt-profils">' + profils.map((p) =>
+            `<span class="nt-profil-chip">${escapeHtml(p.label || '')}</span>`).join('') + '</div>';
+    }
+
+    const facteurs = Array.isArray(data.facteurs) ? data.facteurs : [];
+    if (facteurs.length) {
+        html += '<h4 class="nt-detail-title">Pourquoi ce score ? Facteurs détectés</h4><div class="nt-facteurs">'
+            + facteurs.map((f) => `
+                <div class="nt-facteur">
+                    <span class="nt-facteur-impact" style="background:${couleurImpact(Number(f.impact || 0))}">${Number(f.impact) > 0 ? '+' : ''}${escapeHtml(String(f.impact))} pts</span>
+                    <div>
+                        <strong>${escapeHtml(f.libelle || '')}</strong> <small>· ${escapeHtml(f.profil || '')}</small>
+                        <p>${escapeHtml(f.detail || '')}</p>
+                    </div>
+                </div>`).join('')
+            + '</div>';
+    }
+
+    return html;
 }
 
 export function openProfilQuestionnaire({ action, csrf, produit }) {
@@ -135,7 +208,7 @@ export function openProfilQuestionnaire({ action, csrf, produit }) {
         bodyHtml: `
             <p class="hint" style="margin-top:0;margin-bottom:1rem">
                 Indiquez votre situation pour une orientation personnalisée sur « ${escapeHtml(produit)} ».
-                Aucun diagnostic médical n'est délivré.
+                Plus le profil est précis, plus le score et les conseils seront ciblés et détaillés.
             </p>
             <form id="nt-risk-q-form" action="${escapeHtml(action)}" method="POST">
                 <input type="hidden" name="_token" value="${escapeHtml(csrf)}">
@@ -143,7 +216,10 @@ export function openProfilQuestionnaire({ action, csrf, produit }) {
                 <div class="q-list">
                     <label class="q-item"><input type="checkbox" name="profil_opt" value="diabète / sucre"> <span>Diabète / sensibilité au sucre</span></label>
                     <label class="q-item"><input type="checkbox" name="profil_opt" value="hypertension / sel"> <span>Hypertension / limitation du sel</span></label>
+                    <label class="q-item"><input type="checkbox" name="profil_opt" value="cholestérol / graisses"> <span>Cholestérol / graisses à surveiller</span></label>
                     <label class="q-item"><input type="checkbox" name="profil_opt" value="allergie ou intolérance"> <span>Allergie ou intolérance alimentaire</span></label>
+                    <label class="q-item"><input type="checkbox" name="profil_opt" value="grossesse"> <span>Grossesse</span></label>
+                    <label class="q-item"><input type="checkbox" name="profil_opt" value="enfant"> <span>Pour un enfant</span></label>
                     <label class="q-item"><input type="checkbox" name="profil_opt" value="régime particulier"> <span>Régime alimentaire particulier</span></label>
                 </div>
                 <label class="nt-q-label" for="nt-risk-detail">Précisions (optionnel)</label>
@@ -173,27 +249,36 @@ export function openProfilQuestionnaire({ action, csrf, produit }) {
 
 export async function showRisqueResult(data) {
     const niveau = data.niveau || 'moyen';
-    const scoreClass = niveau === 'eleve' ? 'is-eleve' : niveau === 'moyen' ? 'is-moyen' : '';
+    const couleurScore = niveau === 'eleve' ? '#c83d45' : niveau === 'moyen' ? '#b86e13' : '#0a8f52';
+    const aptitudeClass = data.aptitude === 'deconseille' ? 'is-ko' : data.aptitude === 'prudence' ? 'is-wait' : 'is-ok';
+    const score = Math.max(0, Math.min(100, Number(data.score ?? 0)));
+    const circonference = 2 * Math.PI * 40;
     const el = openModal({
         title: 'Résultat pour votre profil',
         bodyHtml: `
-            <div class="score-row">
-                <div>
-                    <span class="score-n ${scoreClass}">${escapeHtml(String(data.score ?? '—'))}</span>
-                    <span class="score-meta">/100</span>
+            <div class="nt-hero">
+                <div class="nt-ring">
+                    <svg width="92" height="92" viewBox="0 0 92 92">
+                        <circle cx="46" cy="46" r="40" fill="none" stroke="#dcefe2" stroke-width="9"/>
+                        <circle cx="46" cy="46" r="40" fill="none" stroke="${couleurScore}" stroke-width="9"
+                            stroke-linecap="round" stroke-dasharray="${circonference}"
+                            stroke-dashoffset="${circonference * (1 - score / 100)}"/>
+                    </svg>
+                    <div class="nt-ring-val"><b style="color:${couleurScore}">${escapeHtml(String(data.score ?? '—'))}</b><span>/ 100</span></div>
                 </div>
-                <div class="score-meta">
-                    <strong style="display:block;color:#202b28;font-size:1rem">${escapeHtml(data.libelle || '')}</strong>
-                    ${data.aptitude_label ? `<span>${escapeHtml(data.aptitude_label)}</span>` : ''}
+                <div class="nt-hero-meta">
+                    <strong>${escapeHtml(data.libelle || '')}</strong>
+                    ${data.aptitude_label ? `<span class="nt-aptitude ${aptitudeClass}">${escapeHtml(data.aptitude_label)}</span>` : ''}
                 </div>
             </div>
-            <div class="verdict" data-verdict><span class="nt-risk-cur">|</span></div>
+            ${detailRisqueHtml(data)}
+            <div class="nt-verdict-card verdict" data-verdict><span class="nt-risk-cur">|</span></div>
         `,
         footerHtml: `<button type="button" class="btn btn-primary" data-close>Fermer</button>`,
     });
 
     const node = el.querySelector('[data-verdict]');
-    if (node) await typewrite(node, verdictText(data), 15);
+    if (node) await typewrite(node, verdictText(data), 11);
 }
 
 window.ntShowRisqueResult = showRisqueResult;

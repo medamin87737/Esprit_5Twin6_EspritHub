@@ -77,6 +77,37 @@ class ProfileController extends Controller
         return back()->with('status', 'Votre mot de passe a été modifié.');
     }
 
+    /**
+     * Pause volontaire du compte : confirmation par mot de passe,
+     * déconnexion immédiate. Réactivation possible à la prochaine
+     * connexion (page « compte en pause »), sans passer par un admin.
+     */
+    public function deactivate(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        $request->validateWithBag('deactivation', [
+            'deactivate_password' => ['required', 'current_password'],
+        ], [
+            'deactivate_password.current_password' => 'Le mot de passe est incorrect.',
+        ], [
+            'deactivate_password' => 'mot de passe',
+        ]);
+
+        if ($user->isLastActiveAdmin()) {
+            return back()->withErrors(['deactivate_password' => 'Vous êtes le dernier administrateur actif : impossible de mettre ce compte en pause.'], 'deactivation');
+        }
+
+        $user->desactiver('soi-meme');
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login')
+            ->with('status', 'Votre compte est en pause. Pour le réactiver, reconnectez-vous : un bouton de réactivation vous sera proposé.');
+    }
+
     public function destroyAvatar(Request $request): RedirectResponse
     {
         $request->user()->supprimerAvatar();

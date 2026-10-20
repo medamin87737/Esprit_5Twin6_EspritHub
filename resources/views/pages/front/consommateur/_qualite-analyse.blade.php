@@ -42,9 +42,10 @@
         </button>
     </form>
     @if ($peutTelecharger)
-        <a href="{{ route('front.analyses.rapport', $analyse) }}" class="nt-q-mini__link mt-2 d-inline-flex">
+        <a href="{{ route('front.analyses.rapport', $analyse) }}" class="nt-q-btn nt-q-btn--ghost w-100 mt-2"
+           title="{{ $analyse->rapport ? 'Télécharger le rapport du laboratoire' : 'Télécharger le rapport qualité généré' }}">
             <i class="bi bi-download" aria-hidden="true"></i>
-            Rapport
+            Télécharger le rapport
         </a>
     @endif
 </article>

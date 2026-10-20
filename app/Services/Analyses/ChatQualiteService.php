@@ -28,6 +28,13 @@ class ChatQualiteService
             throw new RuntimeException('Écrivez une question sur la qualité des produits.');
         }
 
+        // Profil santé déclaré : réponse déterministe et professionnelle
+        // (jamais une simple liste du catalogue sans tri).
+        $profil = $this->profilDetecte(mb_strtolower($message));
+        if ($profil !== null) {
+            return $this->reponseProfil($profil, $catalogue, $produitId);
+        }
+
         try {
             if ($this->openRouter->configure()) {
                 return $this->viaOpenRouter($message, $historique, $catalogue, $produitId);
@@ -37,6 +44,168 @@ class ChatQualiteService
         }
 
         return $this->reponseLocale($message, $catalogue, $produitId);
+    }
+
+    /** @return array{key: string, label: string}|null */
+    private function profilDetecte(string $q): ?array
+    {
+        return match (true) {
+            preg_match('/diab|glyc/u', $q) === 1 => ['key' => 'diabete', 'label' => 'Diabète / sucre'],
+            preg_match('/hypertens|tension art/u', $q) === 1 => ['key' => 'hypertension', 'label' => 'Hypertension / sel'],
+            preg_match('/cholest/u', $q) === 1 => ['key' => 'cholesterol', 'label' => 'Cholestérol / graisses'],
+            preg_match('/allerg|intol[eé]ran|gluten|lactose/u', $q) === 1 => ['key' => 'allergie', 'label' => 'Allergie / intolérance'],
+            preg_match('/enceinte|grossesse/u', $q) === 1 => ['key' => 'grossesse', 'label' => 'Grossesse'],
+            preg_match('/enfant|b[eé]b[eé]/u', $q) === 1 => ['key' => 'enfant', 'label' => 'Enfant'],
+            default => null,
+        };
+    }
+
+    /** @return array{statut: string, raison: string} */
+    private function classifierProduit(array $p, string $profilKey): array
+    {
+        $t = mb_strtolower($p['nom'].' '.($p['categorie'] ?? '').' '.$p['composition']);
+        $a = fn (string $r) => ['statut' => 'adapte', 'raison' => $r];
+        $pr = fn (string $r) => ['statut' => 'prudence', 'raison' => $r];
+        $d = fn (string $r) => ['statut' => 'deconseille', 'raison' => $r];
+
+        if ($profilKey === 'diabete') {
+            if (preg_match('/eau min[eé]rale|eau de source/u', $t)) {
+                return $a("aucun sucre ni calorie, c'est la boisson de référence pour la glycémie.");
+            }
+            if (preg_match('/boga|coca|pepsi|fanta|sprite|orangina|cola|soda|cidre|boisson gazeuse|citronnade|limonade|boisson [eé]nergisante/u', $t)) {
+                return $d("boisson sucrée type soda (≈10 g de sucres rapides/100 ml) : pic glycémique rapide, à éviter avec un diabète.");
+            }
+            if (preg_match('/\bjus\b|nectar|smoothie/u', $t)) {
+                return $d('jus/nectar : sucres des fruits sans les fibres, glycémie qui monte vite.');
+            }
+            if (preg_match('/sucre|miel|sirop|confiture|chocolat|bonbon/u', $t)) {
+                return $d('produit sucré : charge glycémique élevée, pas adapté au quotidien.');
+            }
+            if (preg_match('/datte|raisin sec|fruit sec/u', $t)) {
+                return $pr('sucres naturels concentrés : petite quantité (2-3 pièces) au sein d’un repas, pas en grignotage seul.');
+            }
+            if (preg_match('/couscous|semoule|p[aâ]tes|riz blanc|pain blanc/u', $t)) {
+                return $pr('féculent raffiné à index glycémique élevé : portion mesurée, toujours avec légumes et protéines.');
+            }
+
+            return $a('aucun sucre ni boisson sucrée détecté dans sa composition.');
+        }
+
+        if ($profilKey === 'hypertension') {
+            if (preg_match('/saumure|charcuterie|saucisson|jambon fum|chips/u', $t)) {
+                return $d('très salé (saumure/charcuterie) : le sodium fait monter la tension.');
+            }
+            if (preg_match('/\bsel\b|sodium|c[aâ]pre|olive.*vinaigre|fromage|conserve/u', $t)) {
+                return $pr('apport en sel à surveiller : petite portion, sans rajouter de sel au repas.');
+            }
+            if (preg_match('/eau min[eé]rale/u', $t)) {
+                return $a('aide à équilibrer les apports en sodium de la journée.');
+            }
+
+            return $a('pas de facteur salé marqué détecté.');
+        }
+
+        if ($profilKey === 'cholesterol') {
+            if (preg_match('/beurre|charcuterie|huile de palme|frit/u', $t)) {
+                return $d('graisses saturées importantes : impact direct sur le mauvais cholestérol (LDL).');
+            }
+            if (preg_match('/fromage|cr[eè]me|viande rouge/u', $t)) {
+                return $pr('graisses saturées présentes : fréquence et portion à limiter.');
+            }
+            if (preg_match('/huile d.olive/u', $t)) {
+                return $a('graisses insaturées favorables au profil lipidique.');
+            }
+
+            return $a('aucun facteur gras majeur détecté.');
+        }
+
+        if ($profilKey === 'enfant') {
+            if (preg_match('/boga|coca|soda|citronnade|limonade|bonbon/u', $t)) {
+                return $d('boisson/produit sucré : caries et goût du sucre, pas au quotidien chez l’enfant.');
+            }
+            if (preg_match('/sucre|miel|chocolat/u', $t)) {
+                return $pr('sucré : au goûter uniquement, en petite portion.');
+            }
+
+            return $a('compatible avec une alimentation enfant équilibrée, en portion adaptée à l’âge.');
+        }
+
+        if ($profilKey === 'grossesse') {
+            if (preg_match('/alcool|lait cru|non pasteuris/u', $t)) {
+                return $d('à éviter pendant la grossesse (alcool ou produit non pasteurisé).');
+            }
+
+            return $a('aucun facteur de risque grossesse détecté ; privilégiez les produits pasteurisés et bien cuits.');
+        }
+
+        // Allergie : on signale les allergènes majeurs présents.
+        $allergenes = [];
+        foreach (['lait/lactose' => '/lait|lactose|fromage|yaourt/u', 'gluten' => '/bl[eé]|farine|p[aâ]tes|pain/u', 'arachide' => '/arachide/u', 'fruits à coque' => '/noix|noisette|amande/u', 'soja' => '/soja/u', 'œuf' => '/oeuf|œuf/u'] as $label => $regex) {
+            if (preg_match($regex, $t)) {
+                $allergenes[] = $label;
+            }
+        }
+
+        return $allergenes !== []
+            ? $pr('allergène(s) présent(s) : '.implode(', ', $allergenes).' — à éviter si c’est votre allergie.')
+            : $a('aucun allergène majeur détecté dans la composition déclarée.');
+    }
+
+    /**
+     * @param  array{key: string, label: string}  $profil
+     * @param  Collection<int, array<string, mixed>>  $catalogue
+     * @return array{reponse: string, produits: list<array<string, mixed>>}
+     */
+    private function reponseProfil(array $profil, Collection $catalogue, ?int $produitId = null): array
+    {
+        if ($produitId) {
+            $cible = $catalogue->firstWhere('id', $produitId);
+            if ($cible) {
+                $c = $this->classifierProduit($cible, $profil['key']);
+                $verdict = match ($c['statut']) {
+                    'adapte' => '✅ Plutôt adapté à votre profil',
+                    'prudence' => '⚠️ À consommer avec prudence',
+                    default => '⛔ Peu recommandé pour votre profil',
+                };
+
+                return [
+                    'reponse' => "Profil {$profil['label']} — « {$cible['nom']} »\n{$verdict} : {$c['raison']}\n\nBilan qualité du lot : {$cible['bilan_label']} ({$cible['details']}).",
+                    'produits' => [$this->carteProduit($cible)],
+                ];
+            }
+        }
+
+        $classes = $catalogue->map(fn (array $p) => $p + $this->classifierProduit($p, $profil['key']));
+        $adaptes = $classes->where('statut', 'adapte')->take(5)->values();
+        $prudence = $classes->where('statut', 'prudence')->take(3)->values();
+        $eviter = $classes->where('statut', 'deconseille')->take(5)->values();
+
+        $texte = "Pour un profil {$profil['label']}, voici mon orientation dans le catalogue NutriTrace :\n";
+
+        if ($adaptes->isNotEmpty()) {
+            $texte .= "\n✅ Produits que je vous conseille :\n".$adaptes
+                ->map(fn (array $p) => "• {$p['nom']} ({$p['bilan_label']}) — {$p['raison']}")
+                ->implode("\n");
+        } else {
+            $texte .= "\nAucun produit franchement adapté repéré dans le catalogue actuel pour ce profil.";
+        }
+
+        if ($prudence->isNotEmpty()) {
+            $texte .= "\n\n⚠️ Avec prudence :\n".$prudence
+                ->map(fn (array $p) => "• {$p['nom']} — {$p['raison']}")
+                ->implode("\n");
+        }
+
+        if ($eviter->isNotEmpty()) {
+            $texte .= "\n\n⛔ À éviter pour votre profil : ".$eviter->pluck('nom')->implode(', ').'.';
+        }
+
+        $texte .= "\n\nCliquez sur une fiche conseillée pour voir ses analyses et télécharger son rapport.";
+
+        return [
+            'reponse' => $texte,
+            'produits' => $adaptes->map(fn (array $p) => $this->carteProduit($p))->values()->all(),
+        ];
     }
 
     /**
@@ -73,11 +242,11 @@ Tu es l'assistant qualité & orientation produit NutriTrace (Tunisie). Tu répon
 - lots et rapports qualité du catalogue fourni
 - orientation produit selon un profil déclaré (ex. diabète / sucre, hypertension, allergies) :
   dis clairement si un produit paraît adapté, à consommer avec prudence, ou peu recommandé
-  en te basant sur la composition/catégorie/bilan qualité — JAMAIS un diagnostic médical
+  en te basant sur la composition/catégorie/bilan qualité, avec des détails concrets (facteurs, portions, alternatives)
 
 Refuse poliment : prix, recettes détaillées, politique, code, sujets hors alimentation/qualité.
 
-Style : français professionnel, clair, rassurant. Mentionne une fois si besoin : « ceci n'est pas un avis médical ».
+Style : français professionnel, détaillé, concret et rassurant. Ne dis jamais « je ne sais pas » sans proposer ce que tu sais, et ne mets aucune mention de type « pas un avis médical ».
 Quand tu cites un produit du catalogue, utilise exactement son nom et place son id dans "produits_ids".
 N'invente jamais un produit absent du catalogue.
 Réponds en JSON strict :
@@ -163,8 +332,8 @@ PROMPT;
                     && preg_match('/sucre|miel|confitur|chocolat|sirop|dessert/u', $bas);
 
                 $msg = $prudenceSucre
-                    ? "Pour un profil lié au sucre / diabète, « {$cible['nom']} » mérite de la prudence (composition potentiellement sucrée). Bilan qualité : {$cible['bilan_label']}. Ceci n'est pas un avis médical."
-                    : "Compte tenu de votre profil, « {$cible['nom']} » peut être envisagé avec attention à l'étiquette. Bilan qualité : {$cible['bilan_label']}. Ceci n'est pas un avis médical.";
+                    ? "Pour un profil lié au sucre / diabète, « {$cible['nom']} » mérite de la prudence : sa composition paraît sucrée, donc préférez une portion réduite, au cours d'un repas riche en fibres, plutôt qu'à jeun. Bilan qualité du lot : {$cible['bilan_label']}."
+                    : "Compte tenu de votre profil, « {$cible['nom']} » peut être envisagé sereinement : aucun facteur aggravant majeur repéré dans sa composition. Bilan qualité du lot : {$cible['bilan_label']}. Gardez des portions régulières et variez les produits.";
 
                 return [
                     'reponse' => $msg,

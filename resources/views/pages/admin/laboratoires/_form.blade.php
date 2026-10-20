@@ -18,6 +18,11 @@
     </div>
 </div>
 
+{{-- Position choisie sur la carte (remplace la saisie manuelle latitude / longitude) --}}
+<x-carte-selecteur id="carte-laboratoire" :latitude="$laboratoire?->latitude" :longitude="$laboratoire?->longitude"
+                   label="Position du laboratoire sur la carte"
+                   help="Facultatif — cliquez sur la carte (ou recherchez la ville) pour placer le laboratoire." />
+
 <div class="form-row">
     <div class="col-md-7">
         <x-admin.form.input name="email" type="email" label="E-mail" :value="$laboratoire?->email" required placeholder="contact@laboratoire.tn" />
